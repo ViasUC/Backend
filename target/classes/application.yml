@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: validate  # solo valida que las tablas existen
+    show-sql: true
+  graphql:
+    schema:
+      printer:
+        enabled: true

@@ -1,0 +1,10 @@
+type Alumno {
+    idUsuario: ID!
+    carrera: String
+    semestre: Int
+    idAuditoria: Int
+}
+
+type Query {
+    alumnos: [Alumno]
+}
