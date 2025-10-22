@@ -12,12 +12,16 @@ public class Alumno {
     @Column(name = "id_usuario")
     private Integer idUsuario;
 
-    @Column(name = "carrera")
+    @OneToOne
+    @JoinColumn(name = "id_usuario", referencedColumnName = "id_usuario")
+    private Usuario usuario; // 👈 relación con la tabla usuarios
+
+    @Column(nullable = false)
     private String carrera;
 
-    @Column(name = "semestre")
+    @Column(nullable = false)
     private Integer semestre;
 
-    @Column(name = "id_auditoria")
+    @Column(name = "id_auditoria", nullable = false)
     private Integer idAuditoria;
 }

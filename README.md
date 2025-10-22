@@ -6,10 +6,15 @@ Readme para el backend que todos van a usar en sus frontend
 -Instalar Linux
 
 ## Uso para usuarios de Linux :
--Tener instalado el Java 21.0.8
+1-Tener instalado el Java 21.0.8
 
--Tener instalado y corriendo el PostgreSQL con las tablas creadas
+2-Tener instalado y corriendo el PostgreSQL con las tablas creadas
 
--Meter crendeciales de la base de datos local en application.yaml
+3-Meter crendeciales de la base de datos local en application.yaml
 
--Correr el programa en BackendApplication.Java
+4-Sincronizar el maven. Apretar el ciclo de flechas: 
+![img.png](img.png)
+
+5-Correr el programa en BackendApplication.Java
+
+6-Ir a http://localhost:8080/graphiql?path=/graphql 
