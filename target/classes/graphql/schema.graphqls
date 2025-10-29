@@ -1,10 +1,36 @@
+type Usuario {
+    idUsuario: ID!
+    nombre: String
+    apellido: String
+    email: String
+    telefono: String
+    ubicacion: String
+}
+
 type Alumno {
     idUsuario: ID!
     carrera: String
     semestre: Int
     idAuditoria: Int
+    usuario: Usuario
 }
 
 type Query {
     alumnos: [Alumno]
+}
+
+input UsuarioInput {
+    nombre: String
+    apellido: String
+    email: String
+}
+
+input AlumnoInput {
+    usuario: UsuarioInput
+    carrera: String
+    semestre: Int
+}
+
+type Mutation {
+    actualizarAlumno(id: ID!, input: AlumnoInput): Alumno
 }
