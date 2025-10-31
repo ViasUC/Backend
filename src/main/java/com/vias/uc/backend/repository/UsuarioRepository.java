@@ -13,4 +13,5 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     // Si querés forzar búsqueda case-insensitive en Postgres, podés usar esta alternativa:
     // @Query("SELECT u FROM Usuario u WHERE LOWER(u.email) = LOWER(:email)")
     // Optional<Usuario> findByEmailIgnoreCase(@Param("email") String email);
+
 }

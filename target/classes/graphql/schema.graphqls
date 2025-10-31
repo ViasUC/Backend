@@ -3,16 +3,17 @@
 # =========================
 
 type Usuario {
-  id_usuario: ID!
+  idUsuario: ID!
   nombre: String!
   apellido: String
   email: String!
-  rol_principal: String
+  rolPrincipal: String
   completitud: Int!
 }
 
 type Alumno {
-  id_alumno: ID
+  # PK = FK a usuarios.id_usuario
+  idUsuario: ID!
   usuario: Usuario
   carrera: String
   semestre: Int
@@ -32,8 +33,8 @@ type Oportunidad {
   tipo: String
   fechaPublicacion: String
   fechaCierre: String
-  estado: String
-  idCreador: Int!
+  estado: String        # en BD: activo/borrador/pausada/cerrado
+  creador: Usuario!     # <-- reemplaza a idCreador
 }
 
 # =========================
@@ -45,54 +46,29 @@ Estados posibles de la postulación (deben coincidir con el enum Java Postulacio
 """
 enum PostulacionEstado {
   PENDIENTE
-  EN_REVISION
   ACEPTADA
   RECHAZADA
-  DESCARTADA
 }
 
 type HistorialPostulacion {
-  id_historial: ID!
-  estado_anterior: PostulacionEstado
-  estado_nuevo: PostulacionEstado!
+  idHistorial: ID!
+  estadoAnterior: PostulacionEstado
+  estadoNuevo: PostulacionEstado!
+  fechaCambio: String!
   motivo: String
-  fecha_cambio: String!
 }
 
 type Postulacion {
   idPostulacion: ID!
-  fechaPostulacion: String!
-  mensaje: String
-  curriculumUrl: String
-  estado: PostulacionEstado!
-  usuario: Usuario!
+  alumno: Alumno!
   oportunidad: Oportunidad!
-  historial: [HistorialPostulacion!]!
-}
-
-# ===== Filtros y paginación para F1 =====
-
-input PostulacionFilter {
-  estados: [PostulacionEstado!]
-  q: String
-}
-
-input PageableInput {
-  page: Int = 0
-  size: Int = 20
-  sort: String
-}
-
-type PostulacionPage {
-  content: [Postulacion!]!
-  totalElements: Int!
-  totalPages: Int!
-  number: Int!
-  size: Int!
+  postulante: Usuario!
+  estado: String!
+  fechaPostulacion: String
 }
 
 # =========================
-# Query (UNICA)
+# Query
 # =========================
 
 type Query {
@@ -103,18 +79,21 @@ type Query {
   # Alumnos
   alumnos: [Alumno!]!
   alumno(id: ID!): Alumno
+  alumnoPorId(id: ID!): Alumno
 
-  # Postulaciones (F1)
-  postulacion(id: ID!): Postulacion
-  postulacionesPorOportunidad(
-    oportunidadId: ID!
-    filter: PostulacionFilter
-    page: PageableInput
-  ): PostulacionPage!
+  # Oportunidades
+  oportunidades: [Oportunidad!]!
+  oportunidadesPorEstado(estado: String!): [Oportunidad!]!
+
+  # Postulaciones
+    postulaciones: [Postulacion]
+    postulacionesPorAlumno(idAlumno: ID!): [Postulacion]
+    postulacionesPorOportunidad(idOportunidad: ID!): [Postulacion]
+
 }
 
 # =========================
-# Mutation (UNICA)
+# Mutation
 # =========================
 
 type Mutation {
@@ -128,12 +107,8 @@ type Mutation {
   ): Alumno
 
   # Postulaciones (F1)
-  crearPostulacion(
-    usuarioId: ID!
-    oportunidadId: ID!
-    mensaje: String
-    curriculumUrl: String
-  ): Postulacion!
+  crearPostulacion(idAlumno: ID!, idOportunidad: ID!): Postulacion
+
 
   actualizarEstadoPostulacion(
     idPostulacion: ID!
