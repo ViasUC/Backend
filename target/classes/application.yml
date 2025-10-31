@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5432/vias_uc_docentes
     username: postgres
-    password:
+    password: postgres
   jpa:
     hibernate:
       ddl-auto: validate  # solo valida que las tablas existen

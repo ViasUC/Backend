@@ -1,27 +1,30 @@
 package com.vias.uc.backend.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
-@Data
 @Entity
 @Table(name = "alumnos")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Alumno {
 
+    // La PK es id_usuario (FK a usuarios). Usamos @MapsId para compartir el ID.
     @Id
     @Column(name = "id_usuario")
-    private Integer idUsuario;
+    private Long idUsuario;
 
-    @OneToOne
-    @JoinColumn(name = "id_usuario", referencedColumnName = "id_usuario")
-    private Usuario usuario; // 👈 relación con la tabla usuarios
+    @OneToOne(optional = false)
+    @MapsId
+    @JoinColumn(name = "id_usuario")
+    private Usuario usuario;
 
-    @Column(nullable = false)
+    @Column(name = "carrera", nullable = false)
     private String carrera;
 
-    @Column(nullable = false)
+    @Column(name = "semestre", nullable = false)
     private Integer semestre;
 
-    @Column(name = "id_auditoria", nullable = false)
-    private Integer idAuditoria;
+    @OneToOne(optional = false, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "id_auditoria", nullable = false)
+    private Auditoria auditoria;
 }

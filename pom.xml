@@ -54,6 +54,12 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
+        <!-- Validaciones (Bean Validation para anotaciones @NotNull, @Email, etc.) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
         <!-- PostgreSQL Driver -->
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -139,10 +145,10 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<schemaPaths>
-								<param>src/main/resources/graphql-client</param>
-							</schemaPaths>
-							<packageName>com.vias.uc.backend.codegen</packageName>
+                            <schemaPaths>
+                                <param>src/main/resources/graphql</param>
+                            </schemaPaths>
+                            <packageName>com.vias.uc.backend.codegen</packageName>
 							<addGeneratedAnnotation>true</addGeneratedAnnotation>
 							<disableDatesInGeneratedAnnotation>true</disableDatesInGeneratedAnnotation>
 						</configuration>
