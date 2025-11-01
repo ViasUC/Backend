@@ -1,0 +1,76 @@
+# --- Tipos base ---
+enum RolUsuario { administrador profesor investigador egresado alumno empresa }
+
+type Usuario {
+    idUsuario: ID!
+    nombre: String!
+    apellido: String
+    email: String!
+    telefono: String
+
+    ubicacion: String
+    rolPrincipal: RolUsuario
+    completitud: Int
+}
+
+type Alumno {
+    idUsuario: ID!
+    carrera: String!
+    semestre: Int!
+    idAuditoria: Int!
+    usuario: Usuario!
+}
+
+# --- Queries ---
+type Query {
+    alumnos: [Alumno!]!
+    alumno(id: ID!): Alumno
+    alumnoPorEmail(email: String!): Alumno
+}
+
+# --- Inputs para actualización parcial (tu caso actual) ---
+input UsuarioInput {
+    nombre: String
+    apellido: String
+    email: String
+    telefono: String
+    ubicacion: String
+}
+
+input AlumnoInput {
+    usuario: UsuarioInput
+    carrera: String
+    semestre: Int
+}
+# src/main/resources/graphql/schema.graphqls
+
+# --- Inputs para registro (alta) ---
+# No exponemos 'password' en los tipos de salida.
+
+input UsuarioRegistroInput {
+    nombre: String!
+    apellido: String
+    email: String!
+    telefono: String
+    ubicacion: String
+    password: String!
+    rolPrincipal: RolUsuario = alumno
+    completitud: Int = 0
+}
+
+input RegistroAlumnoInput {
+    usuario: UsuarioRegistroInput!
+    carrera: String!
+    semestre: Int!
+    detalleAuditoria: String = "registro alumno"
+}
+
+
+# --- Mutations ---
+type Mutation {
+    # Alta (crea usuario + alumno + auditoría)
+    registrarAlumno(input: RegistroAlumnoInput!): Alumno!
+
+    # Tu mutación existente para actualizar datos parcialmente
+    actualizarAlumno(id: ID!, input: AlumnoInput): Alumno
+}
