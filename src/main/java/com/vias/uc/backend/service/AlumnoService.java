@@ -1,90 +1,103 @@
 package com.vias.uc.backend.service;
 
 import com.vias.uc.backend.model.Alumno;
+import com.vias.uc.backend.model.Auditoria;
 import com.vias.uc.backend.model.Usuario;
+import com.vias.uc.backend.model.dto.RegistroAlumnoInput;
 import com.vias.uc.backend.repository.AlumnoRepository;
+import com.vias.uc.backend.repository.AuditoriaRepository;
 import com.vias.uc.backend.repository.UsuarioRepository;
-import jakarta.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import com.vias.uc.backend.model.dto.RegistroAlumnoInput;
+import com.vias.uc.backend.model.dto.UsuarioRegistroInput;
+import com.vias.uc.backend.model.enums.RolUsuario;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AlumnoService {
 
-    @Autowired
-    private AlumnoRepository alumnoRepository;
+    private final AlumnoRepository alumnoRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final AuditoriaRepository auditoriaRepository;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    // En AlumnoService.java
-
-    @Transactional
-    public Alumno actualizarAlumno(Integer id, Alumno nuevosDatos) {
-
-        // --- 1️⃣ a 4️⃣: (Tu código de búsqueda está perfecto) ---
-        System.out.println("=== [DEBUG] 1. Recibido ID para buscar: " + id + " ===");
-        Optional<Alumno> optionalAlumno = alumnoRepository.findByIdUsuario(id);
-        if (optionalAlumno.isPresent()) {
-            System.out.println("=== [DEBUG] 2. ¡ÉXITO! Alumno ENCONTRADO. ===");
-        } else {
-            System.out.println("=== [DEBUG] 2. ¡FALLO! Alumno NO ENCONTRADO. ===");
-        }
-        Alumno alumno = optionalAlumno.orElseThrow(() ->
-                new RuntimeException("Alumno no encontrado con id_usuario: " + id));
-
-
-        // --- 5️⃣: Verificar y actualizar datos del usuario ---
-        Usuario usuario = alumno.getUsuario();
-        Usuario nuevosDatosUsuario = nuevosDatos.getUsuario();
-
-        if (nuevosDatosUsuario != null) {
-            System.out.println("=== [DEBUG] 3. Actualizando datos del USUARIO asociado. ===");
-
-            // ¡YA NO NECESITAS LOS IFs AQUÍ!
-            // La consulta COALESCE se encarga de los nulls.
-
-            // --- 7️⃣: Guardar cambios en usuario ---
-            usuarioRepository.actualizarDatosUsuario(
-                    usuario.getIdUsuario(),
-                    nuevosDatosUsuario.getNombre(),
-                    nuevosDatosUsuario.getApellido(),
-                    nuevosDatosUsuario.getEmail()
-            );
-        } else {
-            System.out.println("=== [DEBUG] 3. No se recibieron datos para actualizar el usuario. ===");
-        }
-
-        // --- 6️⃣: Verificar y actualizar datos del alumno (¡Ojo! Mismo problema) ---
-        // APLICA LA MISMA LÓGICA DE COALESCE
-
-        // Si no envías 'carrera', 'nuevosDatos.getCarrera()' será 'null' y borrará el dato.
-        // Usamos la misma lógica: si el nuevo valor es null, usa el valor antiguo.
-
-        alumno.setCarrera(
-                COALESCE(nuevosDatos.getCarrera(), alumno.getCarrera())
-        );
-        alumno.setSemestre(
-                COALESCE(nuevosDatos.getSemestre(), alumno.getSemestre())
-        );
-
-        System.out.println("=== [DEBUG] 4. Datos de Alumno actualizados. ===");
-
-
-        // --- 7️⃣: Guardar cambios en alumno ---
-        Alumno guardado = alumnoRepository.save(alumno);
-
-        System.out.println("=== [DEBUG] 5. Datos guardados correctamente. ===");
-        // ... (tus logs de salida) ...
-
-        return guardado;
+    public AlumnoService(AlumnoRepository alumnoRepository,
+                         UsuarioRepository usuarioRepository,
+                         AuditoriaRepository auditoriaRepository) {
+        this.alumnoRepository = alumnoRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.auditoriaRepository = auditoriaRepository;
     }
 
-    // --- 8️⃣: Añade esta función 'helper' a tu clase AlumnoService ---
-// Esto es un reemplazo en Java para la función COALESCE de SQL.
-    private <T> T COALESCE(T nuevoValor, T valorAntiguo) {
-        return nuevoValor != null ? nuevoValor : valorAntiguo;
+
+
+// ...
+
+
+    @Transactional
+    public Alumno registrarAlumno(RegistroAlumnoInput input) {
+        if (input == null || input.usuario() == null) {
+            throw new IllegalArgumentException("El objeto 'usuario' es obligatorio.");
+        }
+        UsuarioRegistroInput ui = input.usuario();
+
+        if (ui.email() == null || ui.email().isBlank()) {
+            throw new IllegalArgumentException("El email es obligatorio.");
+        }
+        if (ui.password() == null || ui.password().isBlank()) {
+            throw new IllegalArgumentException("El password es obligatorio.");
+        }
+
+        if (usuarioRepository.existsByEmail(ui.email())) {
+            throw new IllegalArgumentException("El email ya está registrado: " + ui.email());
+        }
+
+        // Auditoría
+        Auditoria audit = new Auditoria();
+        audit.setAccion("create");
+        audit.setDetalle(
+                (input.detalleAuditoria() != null && !input.detalleAuditoria().isBlank())
+                        ? input.detalleAuditoria() : "registro alumno"
+        );
+        audit = auditoriaRepository.save(audit);
+
+        // Usuario
+        Usuario u = new Usuario();
+        u.setNombre(ui.nombre());
+        u.setApellido(ui.apellido());
+        u.setUbicacion(ui.ubicacion());
+        u.setTelefono(ui.telefono());
+        u.setEmail(ui.email());
+        u.setPassword(passwordEncoder.encode(ui.password()));
+        u.setCompletitud(ui.completitud() != null ? ui.completitud() : 0);
+        // mapear enum -> String (BD sigue siendo VARCHAR/ENUM PG)
+        RolUsuario rol = ui.rolPrincipal() != null ? ui.rolPrincipal() : RolUsuario.alumno;
+        u.setRolPrincipal(rol);
+        u.setIdAuditoria(audit.getIdAuditoria());
+        u = usuarioRepository.save(u);
+
+        // Alumno (PK compartida con Usuario)
+        Alumno a = new Alumno();
+        a.setUsuario(u);                  // @MapsId
+        a.setCarrera(input.carrera());
+        a.setSemestre(input.semestre());
+        a.setIdAuditoria(audit.getIdAuditoria());
+
+        return alumnoRepository.save(a);
+    }
+
+
+    @Transactional(readOnly = true)
+    public Alumno getAlumno(Integer id) {
+        return alumnoRepository.findByIdUsuario(id)
+                .orElse(null);
     }
 }

@@ -3,18 +3,22 @@ package com.vias.uc.backend.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import jakarta.persistence.*;
+import lombok.Data;
+
 @Data
 @Entity
 @Table(name = "alumnos")
-public class Alumno {
+public class Alumno {           // (opcional) implements Persistable<Integer> ver abajo
 
     @Id
     @Column(name = "id_usuario")
     private Integer idUsuario;
 
-    @OneToOne
-    @JoinColumn(name = "id_usuario", referencedColumnName = "id_usuario")
-    private Usuario usuario; // 👈 relación con la tabla usuarios
+    @OneToOne(optional = false)
+    @MapsId
+    @JoinColumn(name = "id_usuario")
+    private Usuario usuario;
 
     @Column(nullable = false)
     private String carrera;
