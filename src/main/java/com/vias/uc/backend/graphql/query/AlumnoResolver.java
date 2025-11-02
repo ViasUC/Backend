@@ -48,4 +48,11 @@ public class AlumnoResolver {
     public List<Alumno> alumnos() {
         return alumnoRepository.findAll();
     }
+
+    @MutationMapping
+    public Alumno actualizarAlumno(@Argument Integer id, @Argument com.vias.uc.backend.model.dto.AlumnoInput input) {
+        System.out.println("=== [DEBUG] Entrando a Mutation actualizarAlumno ===");
+        return alumnoService.actualizarAlumno(id, input);
+    }
+
 }
