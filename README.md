@@ -25,4 +25,4 @@ choco upgrade maven
 ![img_1.png](img_1.png)
 Ir a src->main->resources y cambiar el nombre de la carpeta graphql por graphql-client
 
-7-Ir a http://localhost:8080/graphiql?path=/graphql 
+7-Ir a http://localhost:8080/graphiql?path=/graphql (capaz tarda un poquito al cargar)
