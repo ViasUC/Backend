@@ -149,7 +149,7 @@
 							<schemaPaths>
 								<param>src/main/resources/graphql</param>
 							</schemaPaths>
-							<packageName>com.vias.uc.backend.codegen</packageName>
+							<packageName>com.vias.uc.backend.client.codegen</packageName>
 							<addGeneratedAnnotation>true</addGeneratedAnnotation>
 							<disableDatesInGeneratedAnnotation>true</disableDatesInGeneratedAnnotation>
 						</configuration>

@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "alumnos")
-public class Alumno {           // (opcional) implements Persistable<Integer> ver abajo
+public class Alumno {
 
     @Id
     @Column(name = "id_usuario")
