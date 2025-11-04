@@ -2,11 +2,16 @@ package com.vias.uc.backend.service;
 
 import com.vias.uc.backend.model.*;
 import com.vias.uc.backend.repository.*;
+import com.vias.uc.backend.repository.spec.PostulacionSpecifications;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.time.format.DateTimeParseException;
+import java.util.*;
 
 @Service
 public class PostulacionService {
@@ -14,13 +19,19 @@ public class PostulacionService {
     private final PostulacionRepository postulacionRepository;
     private final AlumnoRepository alumnoRepository;
     private final OportunidadRepository oportunidadRepository;
+    private final HistorialPostulacionRepository historialRepository;
+    private final UsuarioRepository usuarioRepository;
 
     public PostulacionService(PostulacionRepository postulacionRepository,
                               AlumnoRepository alumnoRepository,
-                              OportunidadRepository oportunidadRepository) {
+                              OportunidadRepository oportunidadRepository,
+                              HistorialPostulacionRepository historialRepository,
+                              UsuarioRepository usuarioRepository) {
         this.postulacionRepository = postulacionRepository;
         this.alumnoRepository = alumnoRepository;
         this.oportunidadRepository = oportunidadRepository;
+        this.historialRepository = historialRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @Transactional
@@ -39,11 +50,21 @@ public class PostulacionService {
         Postulacion p = new Postulacion();
         p.setAlumno(alumno);
         p.setOportunidad(oportunidad);
-        p.setPostulante(postulante); // 👈 clave para no romper NOT NULL
+        p.setPostulante(postulante);
         p.setEstado(EstadoPostulacion.PENDIENTE);
         p.setFechaPostulacion(LocalDateTime.now());
 
-        return postulacionRepository.save(p);
+        Postulacion guardada = postulacionRepository.save(p);
+
+        // primer registro de historial
+        HistorialPostulacion h = new HistorialPostulacion();
+        h.setPostulacion(guardada);
+        h.setEstadoAnterior(null);
+        h.setEstadoNuevo(EstadoPostulacion.PENDIENTE);
+        h.setMotivo("Creación de postulación");
+        historialRepository.save(h);
+
+        return guardada;
     }
 
     public List<Postulacion> listarTodas() {
@@ -62,5 +83,92 @@ public class PostulacionService {
         return postulacionRepository.findByOportunidad(oportunidad);
     }
 
+    // =======================
+    // Paginación + filtros
+    // =======================
+    public Page<Postulacion> buscarConFiltros(Long idOportunidad, Long idAlumno,
+                                              List<EstadoPostulacion> estados,
+                                              String fechaDesdeStr, String fechaHastaStr,
+                                              String texto, Pageable pageable) {
 
+        Oportunidad op = null;
+        if (idOportunidad != null) {
+            op = oportunidadRepository.findById(idOportunidad)
+                    .orElseThrow(() -> new RuntimeException("Oportunidad no encontrada: " + idOportunidad));
+        }
+
+        Alumno alumno = null;
+        if (idAlumno != null) {
+            alumno = alumnoRepository.findById(idAlumno)
+                    .orElseThrow(() -> new RuntimeException("Alumno no encontrado: " + idAlumno));
+        }
+
+        LocalDateTime desde = parseFechaInicio(fechaDesdeStr);
+        LocalDateTime hasta = parseFechaFin(fechaHastaStr);
+
+        Specification<Postulacion> spec = Specification.where(PostulacionSpecifications.porOportunidad(op))
+                .and(PostulacionSpecifications.porAlumno(alumno))
+                .and(PostulacionSpecifications.porEstados(estados))
+                .and(PostulacionSpecifications.desde(desde))
+                .and(PostulacionSpecifications.hasta(hasta))
+                .and(PostulacionSpecifications.texto(texto));
+
+        return postulacionRepository.findAll(spec, pageable);
+    }
+
+    private LocalDateTime parseFechaInicio(String s) {
+        if (s == null || s.isBlank()) return null;
+        try { return LocalDate.parse(s).atStartOfDay(); } catch (DateTimeParseException e) { return null; }
+    }
+
+    private LocalDateTime parseFechaFin(String s) {
+        if (s == null || s.isBlank()) return null;
+        try { return LocalDate.parse(s).atTime(23,59,59); } catch (DateTimeParseException e) { return null; }
+    }
+
+    // =======================
+    // Estados permitidos + historial
+    // =======================
+    private static final Map<EstadoPostulacion, Set<EstadoPostulacion>> TRANSICIONES = Map.of(
+            EstadoPostulacion.PENDIENTE, Set.of(EstadoPostulacion.ACEPTADA, EstadoPostulacion.RECHAZADA, EstadoPostulacion.CANCELADA),
+            EstadoPostulacion.ACEPTADA, Set.of(EstadoPostulacion.CANCELADA),
+            EstadoPostulacion.RECHAZADA, Set.of(EstadoPostulacion.CANCELADA),
+            EstadoPostulacion.CANCELADA, Set.of()
+    );
+
+    @Transactional
+    public Postulacion actualizarEstado(Long idPostulacion, EstadoPostulacion nuevo, String motivo, Long idActor) {
+        Postulacion p = postulacionRepository.findById(idPostulacion)
+                .orElseThrow(() -> new RuntimeException("Postulación no encontrada: " + idPostulacion));
+
+        EstadoPostulacion anterior = p.getEstado();
+        if (anterior == nuevo) throw new RuntimeException("La postulación ya está en estado " + nuevo);
+
+        Set<EstadoPostulacion> permitidos = TRANSICIONES.getOrDefault(anterior, Set.of());
+        if (!permitidos.contains(nuevo)) {
+            throw new RuntimeException("Transición no permitida: " + anterior + " -> " + nuevo);
+        }
+
+        p.setEstado(nuevo);
+        postulacionRepository.save(p);
+
+        HistorialPostulacion h = new HistorialPostulacion();
+        h.setPostulacion(p);
+        h.setEstadoAnterior(anterior);
+        h.setEstadoNuevo(nuevo);
+        h.setMotivo(motivo);
+
+        if (idActor != null) {
+            usuarioRepository.findById(idActor).ifPresent(h::setActor);
+        }
+        historialRepository.save(h);
+
+        return p;
+    }
+
+    public List<HistorialPostulacion> historial(Long idPostulacion) {
+        Postulacion p = postulacionRepository.findById(idPostulacion)
+                .orElseThrow(() -> new RuntimeException("Postulación no encontrada: " + idPostulacion));
+        return historialRepository.findByPostulacionOrderByFechaCambioDesc(p);
+    }
 }

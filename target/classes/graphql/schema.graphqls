@@ -42,12 +42,13 @@ type Oportunidad {
 # =========================
 
 """
-Estados posibles de la postulación (deben coincidir con el enum Java Postulacion.EstadoPostulacion).
+Estados posibles de la postulación (coinciden con el enum Java EstadoPostulacion).
 """
 enum PostulacionEstado {
   PENDIENTE
   ACEPTADA
   RECHAZADA
+  CANCELADA
 }
 
 type HistorialPostulacion {
@@ -56,6 +57,7 @@ type HistorialPostulacion {
   estadoNuevo: PostulacionEstado!
   fechaCambio: String!
   motivo: String
+  actor: Usuario
 }
 
 type Postulacion {
@@ -63,8 +65,24 @@ type Postulacion {
   alumno: Alumno!
   oportunidad: Oportunidad!
   postulante: Usuario!
-  estado: String!
+  estado: PostulacionEstado!
   fechaPostulacion: String
+}
+
+input PostulacionFiltro {
+  idOportunidad: ID
+  idAlumno: ID
+  estados: [PostulacionEstado!]
+  fechaDesde: String
+  fechaHasta: String
+  texto: String
+}
+
+type PostulacionPage {
+  items: [Postulacion!]!
+  total: Int!
+  page: Int!
+  size: Int!
 }
 
 # =========================
@@ -85,11 +103,20 @@ type Query {
   oportunidades: [Oportunidad!]!
   oportunidadesPorEstado(estado: String!): [Oportunidad!]!
 
-  # Postulaciones
-    postulaciones: [Postulacion]
-    postulacionesPorAlumno(idAlumno: ID!): [Postulacion]
-    postulacionesPorOportunidad(idOportunidad: ID!): [Postulacion]
+  # Postulaciones (existentes)
+  postulaciones: [Postulacion]
+  postulacionesPorAlumno(idAlumno: ID!): [Postulacion]
+  postulacionesPorOportunidad(idOportunidad: ID!): [Postulacion]
 
+  # Postulaciones (F1)
+  postulacionesPage(
+    filtro: PostulacionFiltro
+    page: Int = 0
+    size: Int = 10
+    sort: String = "fechaPostulacion,desc"
+  ): PostulacionPage!
+
+  historialPostulacion(idPostulacion: ID!): [HistorialPostulacion!]!
 }
 
 # =========================
@@ -106,13 +133,13 @@ type Mutation {
     semestre: Int!
   ): Alumno
 
-  # Postulaciones (F1)
+  # Postulaciones
   crearPostulacion(idAlumno: ID!, idOportunidad: ID!): Postulacion
-
 
   actualizarEstadoPostulacion(
     idPostulacion: ID!
     estado: PostulacionEstado!
     motivo: String
+    idActor: ID
   ): Postulacion!
 }
