@@ -102,6 +102,7 @@ type Query {
   # Oportunidades
   oportunidades: [Oportunidad!]!
   oportunidadesPorEstado(estado: String!): [Oportunidad!]!
+  oportunidad(id: ID!): Oportunidad
 
   # Postulaciones (existentes)
   postulaciones: [Postulacion]
@@ -142,4 +143,23 @@ type Mutation {
     motivo: String
     idActor: ID
   ): Postulacion!
+
+  # Docentes - Oportunidades
+  crearOportunidadDocente(input: CrearOportunidadInput!): Oportunidad!
+}
+
+# =========================
+# Inputs
+# =========================
+
+input CrearOportunidadInput {
+  idCreador: ID!          # temporal hasta tomarlo del token en backend
+  titulo: String!
+  descripcion: String
+  requisitos: String
+  ubicacion: String
+  modalidad: String!      # "presencial" | "remoto" | "híbrido"
+  tipo: String!           # "pasantía" | "empleo" | ...
+  fechaCierre: String
+  estado: String          # default backend: "activo"
 }

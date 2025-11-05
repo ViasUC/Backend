@@ -39,7 +39,7 @@ public class PostulacionService {
         Alumno alumno = alumnoRepository.findById(idAlumno)
                 .orElseThrow(() -> new RuntimeException("Alumno no encontrado: " + idAlumno));
 
-        Oportunidad oportunidad = oportunidadRepository.findById(idOportunidad)
+        Oportunidad oportunidad = oportunidadRepository.findById(Math.toIntExact(idOportunidad))
                 .orElseThrow(() -> new RuntimeException("Oportunidad no encontrada: " + idOportunidad));
 
         Usuario postulante = alumno.getUsuario();
@@ -78,7 +78,7 @@ public class PostulacionService {
     }
 
     public List<Postulacion> listarPorOportunidad(Long idOportunidad) {
-        Oportunidad oportunidad = oportunidadRepository.findById(idOportunidad)
+        Oportunidad oportunidad = oportunidadRepository.findById(Math.toIntExact(idOportunidad))
                 .orElseThrow(() -> new RuntimeException("Oportunidad no encontrada: " + idOportunidad));
         return postulacionRepository.findByOportunidad(oportunidad);
     }
@@ -93,7 +93,7 @@ public class PostulacionService {
 
         Oportunidad op = null;
         if (idOportunidad != null) {
-            op = oportunidadRepository.findById(idOportunidad)
+            op = oportunidadRepository.findById(Math.toIntExact(idOportunidad))
                     .orElseThrow(() -> new RuntimeException("Oportunidad no encontrada: " + idOportunidad));
         }
 

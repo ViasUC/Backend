@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "oportunidades")
 public class Oportunidad {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_oportunidad")
@@ -33,7 +32,6 @@ public class Oportunidad {
     @Column(name = "id_auditoria")
     private Integer idAuditoria;
 
-    // getters/setters
     public Integer getIdOportunidad() { return idOportunidad; }
     public void setIdOportunidad(Integer idOportunidad) { this.idOportunidad = idOportunidad; }
 
@@ -69,4 +67,5 @@ public class Oportunidad {
 
     public Integer getIdAuditoria() { return idAuditoria; }
     public void setIdAuditoria(Integer idAuditoria) { this.idAuditoria = idAuditoria; }
+
 }
