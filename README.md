@@ -139,3 +139,26 @@ mutation crearAlumno {
   }
 }
 ```
+
+### Crear Oportunidad
+```graphql
+mutation crearOportunidadDocente{
+  crearOportunidadDocente(input: {
+    idCreador: 51
+    titulo: "Pasantía QA Backend"
+    descripcion: "Testing de APIs GraphQL"
+    requisitos: "Java, JUnit, Postman"
+    ubicacion: "Asunción"
+    modalidad: "híbrido"
+    tipo: "pasantía"
+    fechaCierre: "2025-12-31T23:59:00"
+    estado: "activo"
+  }) {
+    idOportunidad
+    titulo
+    estado
+    fechaPublicacion
+    creador { idUsuario nombre email }
+  }
+}
+```
