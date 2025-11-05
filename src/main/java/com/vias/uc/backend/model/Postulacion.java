@@ -10,7 +10,7 @@ public class Postulacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_postulacion")
-    private Long idPostulacion;
+    private Integer idPostulacion;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_alumno", nullable = false)
@@ -20,10 +20,15 @@ public class Postulacion {
     @JoinColumn(name = "id_oportunidad", nullable = false)
     private Oportunidad oportunidad;
 
-    // 👇 NUEVO: el usuario que postula (no nulo en BD)
+    // Usuario que postula (obligatorio)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_postulante", nullable = false)
     private Usuario postulante;
+
+    // Usuario ofertante (creador de la oportunidad, obligatorio)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "id_ofertante", nullable = false)
+    private Usuario ofertante;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false, length = 20)
@@ -32,9 +37,17 @@ public class Postulacion {
     @Column(name = "fecha_postulacion", nullable = false)
     private LocalDateTime fechaPostulacion;
 
-    public Postulacion() {}
+    // Auditoría obligatoria (columna NOT NULL)
+    @OneToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.PERSIST)
+    @JoinColumn(
+            name = "id_auditoria",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_postulaciones_auditoria")
+    )
+    private Auditoria auditoria;
 
-    // Constructor útil si querés crear rápido
+    public Postulacion() { }
+
     public Postulacion(Alumno alumno, Oportunidad oportunidad, Usuario postulante, EstadoPostulacion estado) {
         this.alumno = alumno;
         this.oportunidad = oportunidad;
@@ -45,17 +58,14 @@ public class Postulacion {
 
     @PrePersist
     protected void onCreate() {
-        if (this.fechaPostulacion == null) {
-            this.fechaPostulacion = LocalDateTime.now();
-        }
-        // fallback por si el service no lo setea (evita NULL)
-        if (this.postulante == null && this.alumno != null) {
-            this.postulante = this.alumno.getUsuario();
-        }
+        if (this.fechaPostulacion == null) this.fechaPostulacion = LocalDateTime.now();
+        if (this.postulante == null && this.alumno != null) this.postulante = this.alumno.getUsuario();
+        // La auditoría se setea desde el service (obligatoria)
     }
 
     // ===== Getters & Setters =====
-    public Long getIdPostulacion() { return idPostulacion; }
+    public Integer getIdPostulacion() { return idPostulacion; }
+
     public Alumno getAlumno() { return alumno; }
     public void setAlumno(Alumno alumno) { this.alumno = alumno; }
 
@@ -65,17 +75,15 @@ public class Postulacion {
     public Usuario getPostulante() { return postulante; }
     public void setPostulante(Usuario postulante) { this.postulante = postulante; }
 
+    public Usuario getOfertante() { return ofertante; }
+    public void setOfertante(Usuario ofertante) { this.ofertante = ofertante; }
+
     public EstadoPostulacion getEstado() { return estado; }
     public void setEstado(EstadoPostulacion estado) { this.estado = estado; }
 
     public LocalDateTime getFechaPostulacion() { return fechaPostulacion; }
     public void setFechaPostulacion(LocalDateTime fechaPostulacion) { this.fechaPostulacion = fechaPostulacion; }
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_ofertante", nullable = false)
-    private Usuario ofertante;
-
-    public Usuario getOfertante() { return ofertante; }
-    public void setOfertante(Usuario ofertante) { this.ofertante = ofertante; }
-
+    public Auditoria getAuditoria() { return auditoria; }
+    public void setAuditoria(Auditoria auditoria) { this.auditoria = auditoria; }
 }

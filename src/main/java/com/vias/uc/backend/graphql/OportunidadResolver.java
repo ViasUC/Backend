@@ -89,7 +89,7 @@ public class OportunidadResolver {
     // =========================
     @SchemaMapping(typeName = "Oportunidad", field = "creador")
     public Usuario resolverCreador(Oportunidad oportunidad) {
-        return usuarioRepository.findById(Long.valueOf(oportunidad.getIdCreador()))
+        return usuarioRepository.findById(Math.toIntExact(Long.valueOf(oportunidad.getIdCreador())))
                 .orElseThrow(() -> new RuntimeException("Creador no encontrado: " + oportunidad.getIdCreador()));
     }
 

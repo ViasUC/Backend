@@ -21,42 +21,62 @@ public class PostulacionService {
     private final OportunidadRepository oportunidadRepository;
     private final HistorialPostulacionRepository historialRepository;
     private final UsuarioRepository usuarioRepository;
+    private final AuditoriaRepository auditoriaRepository;
 
     public PostulacionService(PostulacionRepository postulacionRepository,
                               AlumnoRepository alumnoRepository,
                               OportunidadRepository oportunidadRepository,
                               HistorialPostulacionRepository historialRepository,
-                              UsuarioRepository usuarioRepository) {
+                              UsuarioRepository usuarioRepository,
+                              AuditoriaRepository auditoriaRepository) {
         this.postulacionRepository = postulacionRepository;
         this.alumnoRepository = alumnoRepository;
         this.oportunidadRepository = oportunidadRepository;
         this.historialRepository = historialRepository;
         this.usuarioRepository = usuarioRepository;
+        this.auditoriaRepository = auditoriaRepository;
     }
 
-    @Transactional
+    @Transactional(readOnly = false)
     public Postulacion crearPostulacion(Long idAlumno, Long idOportunidad) {
-        Alumno alumno = alumnoRepository.findById(idAlumno)
+        Alumno alumno = alumnoRepository.findById(Math.toIntExact(idAlumno))
                 .orElseThrow(() -> new RuntimeException("Alumno no encontrado: " + idAlumno));
 
         Oportunidad oportunidad = oportunidadRepository.findById(Math.toIntExact(idOportunidad))
                 .orElseThrow(() -> new RuntimeException("Oportunidad no encontrada: " + idOportunidad));
 
-        Usuario postulante = alumno.getUsuario();
-        if (postulante == null) {
-            throw new RuntimeException("El Alumno " + idAlumno + " no tiene Usuario asociado (postulante).");
+        Usuario postulante = Optional.ofNullable(alumno.getUsuario())
+                .orElseThrow(() -> new RuntimeException("El Alumno " + idAlumno + " no tiene Usuario asociado."));
+
+        // Resolver ofertante desde id_creador de la oportunidad
+        Integer idCreador = oportunidad.getIdCreador();
+        if (idCreador == null) {
+            throw new RuntimeException("La oportunidad " + idOportunidad + " no tiene id_creador (ofertante).");
         }
+        Usuario ofertante = usuarioRepository.findById(idCreador)
+                .orElseThrow(() -> new RuntimeException("Ofertante inexistente: " + idCreador));
+
+        // Auditoría obligatoria
+        Auditoria au = Auditoria.builder()
+                .accion("CREAR_POSTULACION")
+                .detalle("Alumno " + idAlumno + " postula a oportunidad " + idOportunidad)
+                .actorId(postulante.getIdUsuario())
+                .fechaEvento(LocalDateTime.now())
+                .build();
+        auditoriaRepository.save(au);
 
         Postulacion p = new Postulacion();
         p.setAlumno(alumno);
         p.setOportunidad(oportunidad);
         p.setPostulante(postulante);
+        p.setOfertante(ofertante);
         p.setEstado(EstadoPostulacion.PENDIENTE);
         p.setFechaPostulacion(LocalDateTime.now());
+        p.setAuditoria(au); // <- evita el NULL en id_auditoria
 
         Postulacion guardada = postulacionRepository.save(p);
 
-        // primer registro de historial
+        // primer historial
         HistorialPostulacion h = new HistorialPostulacion();
         h.setPostulacion(guardada);
         h.setEstadoAnterior(null);
@@ -67,12 +87,13 @@ public class PostulacionService {
         return guardada;
     }
 
+    // ===== Listados simples =====
     public List<Postulacion> listarTodas() {
         return postulacionRepository.findAll();
     }
 
     public List<Postulacion> listarPorAlumno(Long idAlumno) {
-        Alumno alumno = alumnoRepository.findById(idAlumno)
+        Alumno alumno = alumnoRepository.findById(Math.toIntExact(idAlumno))
                 .orElseThrow(() -> new RuntimeException("Alumno no encontrado: " + idAlumno));
         return postulacionRepository.findByAlumno(alumno);
     }
@@ -83,9 +104,7 @@ public class PostulacionService {
         return postulacionRepository.findByOportunidad(oportunidad);
     }
 
-    // =======================
-    // Paginación + filtros
-    // =======================
+    // ===== Búsqueda con filtros =====
     public Page<Postulacion> buscarConFiltros(Long idOportunidad, Long idAlumno,
                                               List<EstadoPostulacion> estados,
                                               String fechaDesdeStr, String fechaHastaStr,
@@ -99,7 +118,7 @@ public class PostulacionService {
 
         Alumno alumno = null;
         if (idAlumno != null) {
-            alumno = alumnoRepository.findById(idAlumno)
+            alumno = alumnoRepository.findById(Math.toIntExact(idAlumno))
                     .orElseThrow(() -> new RuntimeException("Alumno no encontrado: " + idAlumno));
         }
 
@@ -126,9 +145,7 @@ public class PostulacionService {
         try { return LocalDate.parse(s).atTime(23,59,59); } catch (DateTimeParseException e) { return null; }
     }
 
-    // =======================
-    // Estados permitidos + historial
-    // =======================
+    // ===== Transiciones de estado + historial =====
     private static final Map<EstadoPostulacion, Set<EstadoPostulacion>> TRANSICIONES = Map.of(
             EstadoPostulacion.PENDIENTE, Set.of(EstadoPostulacion.ACEPTADA, EstadoPostulacion.RECHAZADA, EstadoPostulacion.CANCELADA),
             EstadoPostulacion.ACEPTADA, Set.of(EstadoPostulacion.CANCELADA),
@@ -159,7 +176,7 @@ public class PostulacionService {
         h.setMotivo(motivo);
 
         if (idActor != null) {
-            usuarioRepository.findById(idActor).ifPresent(h::setActor);
+            usuarioRepository.findById(Math.toIntExact(idActor)).ifPresent(h::setActor);
         }
         historialRepository.save(h);
 

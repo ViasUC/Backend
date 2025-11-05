@@ -1,12 +1,24 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/vias_uc_docentes
+    url: jdbc:postgresql://34.95.213.224:5432/postgres
     username: postgres
-    password: postgres
+    password: UniversidadCatolica2025*
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+
   jpa:
     hibernate:
-      ddl-auto: validate  # solo valida que las tablas existen
+      ddl-auto: validate    # valida que las tablas ya existen, no las toca
     show-sql: true
+    properties:
+      hibernate:
+        default_schema: public
+        jdbc:
+          lob:
+            non_contextual_creation: true
+    open-in-view: false
+
   graphql:
     schema:
       printer:

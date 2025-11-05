@@ -6,19 +6,43 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "oportunidades")
 public class Oportunidad {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_oportunidad")
     private Integer idOportunidad;
 
+    // FK (obligatoria) hacia usuarios.id_usuario del ofertante/creador
     @Column(name = "id_creador", nullable = false)
-    private Integer idCreador; // FK a usuarios.id_usuario (docente/no-alumno)
+    private Integer idCreador;
 
+    // Relación opcional para acceder al objeto Usuario creador
+    // (no escribe la FK; sólo lectura del objeto)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "id_creador",
+            insertable = false,
+            updatable = false,
+            foreignKey = @ForeignKey(name = "fk_oportunidades_usuarios")
+    )
+    private Usuario creador;
+
+    @Column(name = "titulo")
     private String titulo;
+
+    @Column(name = "descripcion")
     private String descripcion;
+
+    @Column(name = "requisitos")
     private String requisitos;
+
+    @Column(name = "ubicacion")
     private String ubicacion;
+
+    @Column(name = "modalidad")
     private String modalidad;
+
+    @Column(name = "tipo")
     private String tipo;
 
     @Column(name = "fecha_publicacion")
@@ -27,16 +51,21 @@ public class Oportunidad {
     @Column(name = "fecha_cierre")
     private LocalDateTime fechaCierre;
 
-    private String estado; // 'activo','borrador','pausada','cerrado'
+    // 'activo','borrador','pausada','cerrado'
+    @Column(name = "estado")
+    private String estado;
 
     @Column(name = "id_auditoria")
     private Integer idAuditoria;
 
+    // ===== Getters/Setters =====
     public Integer getIdOportunidad() { return idOportunidad; }
     public void setIdOportunidad(Integer idOportunidad) { this.idOportunidad = idOportunidad; }
 
     public Integer getIdCreador() { return idCreador; }
     public void setIdCreador(Integer idCreador) { this.idCreador = idCreador; }
+
+    public Usuario getCreador() { return creador; }
 
     public String getTitulo() { return titulo; }
     public void setTitulo(String titulo) { this.titulo = titulo; }
@@ -67,5 +96,4 @@ public class Oportunidad {
 
     public Integer getIdAuditoria() { return idAuditoria; }
     public void setIdAuditoria(Integer idAuditoria) { this.idAuditoria = idAuditoria; }
-
 }

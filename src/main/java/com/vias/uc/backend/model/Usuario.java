@@ -1,5 +1,8 @@
 package com.vias.uc.backend.model;
 
+import com.vias.uc.backend.model.enums.RolUsuario;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 import jakarta.persistence.*;
 
 @Entity
@@ -10,7 +13,7 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario")
-    private Long idUsuario;
+    private Integer idUsuario;
 
     @Column(nullable = false)
     private String nombre;
@@ -20,8 +23,14 @@ public class Usuario {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "rol_principal")
-    private String rolPrincipal;
+    // Campo password requerido por la BD (NOT NULL)
+    @Column(name = "password", nullable = false)
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rol_principal", columnDefinition = "rol_usuario", nullable = false)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
+    private RolUsuario rolPrincipal;
 
     @Column(name = "completitud", nullable = false)
     private Integer completitud = 0;
@@ -32,13 +41,33 @@ public class Usuario {
             foreignKey = @ForeignKey(name = "fk_usuarios_auditoria"))
     private Auditoria auditoria;
 
+    // ======= constructores =======
+
+    public Usuario() { }
+
+    public Usuario(String nombre,
+                   String apellido,
+                   String email,
+                   String password,
+                   RolUsuario rolPrincipal,
+                   Integer completitud,
+                   Auditoria auditoria) {
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.email = email;
+        this.password = password;
+        this.rolPrincipal = rolPrincipal;
+        this.completitud = (completitud != null ? completitud : 0);
+        this.auditoria = auditoria;
+    }
+
     // ======= getters / setters =======
 
-    public Long getIdUsuario() {
+    public Integer getIdUsuario() {
         return idUsuario;
     }
 
-    public void setIdUsuario(Long idUsuario) {
+    public void setIdUsuario(Integer idUsuario) {
         this.idUsuario = idUsuario;
     }
 
@@ -66,11 +95,19 @@ public class Usuario {
         this.email = email;
     }
 
-    public String getRolPrincipal() {
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public RolUsuario getRolPrincipal() {
         return rolPrincipal;
     }
 
-    public void setRolPrincipal(String rolPrincipal) {
+    public void setRolPrincipal(RolUsuario rolPrincipal) {
         this.rolPrincipal = rolPrincipal;
     }
 
@@ -87,19 +124,6 @@ public class Usuario {
     }
 
     public void setAuditoria(Auditoria auditoria) {
-        this.auditoria = auditoria;
-    }
-
-    // ======= constructores =======
-
-    public Usuario() { }
-
-    public Usuario(String nombre, String apellido, String email, String rolPrincipal, Integer completitud, Auditoria auditoria) {
-        this.nombre = nombre;
-        this.apellido = apellido;
-        this.email = email;
-        this.rolPrincipal = rolPrincipal;
-        this.completitud = (completitud != null ? completitud : 0);
         this.auditoria = auditoria;
     }
 }

@@ -10,7 +10,7 @@ public class HistorialPostulacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_historial")
-    private Long idHistorial;
+    private Integer idHistorial;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_postulacion", nullable = false)
@@ -39,7 +39,7 @@ public class HistorialPostulacion {
         if (fechaCambio == null) fechaCambio = LocalDateTime.now();
     }
 
-    public Long getIdHistorial() { return idHistorial; }
+    public Integer getIdHistorial() { return idHistorial; }
     public Postulacion getPostulacion() { return postulacion; }
     public void setPostulacion(Postulacion postulacion) { this.postulacion = postulacion; }
     public EstadoPostulacion getEstadoAnterior() { return estadoAnterior; }

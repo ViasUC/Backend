@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface HistorialPostulacionRepository extends JpaRepository<HistorialPostulacion, Long> {
+public interface HistorialPostulacionRepository extends JpaRepository<HistorialPostulacion, Integer> {
     List<HistorialPostulacion> findByPostulacionOrderByFechaCambioDesc(Postulacion postulacion);
 }

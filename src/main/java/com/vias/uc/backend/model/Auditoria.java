@@ -12,7 +12,7 @@ public class Auditoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_auditoria")
-    private Long idAuditoria;
+    private Integer idAuditoria;
 
     @Column(name = "actor_id")
     private Integer actorId; // Cambiá a Long si tus IDs de usuario son Long
