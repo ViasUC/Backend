@@ -118,6 +118,11 @@ type Query {
   ): PostulacionPage!
 
   historialPostulacion(idPostulacion: ID!): [HistorialPostulacion!]!
+
+  # Endorsements
+  endorsementsReceived(status: EndorsementStatus): [Endorsement!]!
+  endorsementsGiven: [Endorsement!]!
+  publicEndorsementsOf(userId: Int!): [Endorsement!]!
 }
 
 # =========================
@@ -146,6 +151,10 @@ type Mutation {
 
   # Docentes - Oportunidades
   crearOportunidadDocente(input: CrearOportunidadInput!): Oportunidad!
+
+  #Endorsements
+  createEndorsement(input: CreateEndorsementInput!): Endorsement!
+  decideEndorsement(id: ID!, accept: Boolean!): Endorsement!
 }
 
 # =========================
@@ -163,3 +172,24 @@ input CrearOportunidadInput {
   fechaCierre: String
   estado: String          # default backend: "activo"
 }
+
+enum EndorsementStatus { PENDING ACCEPTED REJECTED }
+
+type Endorsement {
+  idEndorsement: ID!
+  fromUserId: Int!
+  toUserId: Int!
+  skill: String
+  message: String
+  status: EndorsementStatus!
+  createdAt: String
+  decidedAt: String
+}
+
+input CreateEndorsementInput {
+  toUserId: Int!
+  skill: String
+  message: String
+}
+
+

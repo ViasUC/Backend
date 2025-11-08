@@ -17,4 +17,9 @@ public class AuditoriaService {
                 .actorId(actorId)
                 .build());
     }
+
+    public Integer log(int userId, String accion, String detalle) {
+        Auditoria a = crear(accion, detalle, userId);
+        return a.getIdAuditoria();
+    }
 }
