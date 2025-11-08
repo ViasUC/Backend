@@ -104,42 +104,6 @@ query listarOportunidades {
 }
 ```
 
-### Listar Alumnos
-```graphql
-query verAlumnos {
-  alumnos {
-    carrera
-    semestre
-    usuario {
-      nombre
-      apellido
-      email
-    }
-  }
-}
-```
-
-### Crear Alumnos
-```graphql
-mutation crearAlumno {
-  crearAlumno(
-    nombre: "Jose"
-    apellido: "Pereira"
-    email: "jpereira@example.com"
-    carrera: "Ingeniería Informática"
-    semestre: 6
-  ) {
-    usuario {
-      nombre
-      apellido
-      email
-    }
-    carrera
-    semestre
-  }
-}
-```
-
 ### Crear Oportunidad
 ```graphql
 mutation crearOportunidadDocente{
