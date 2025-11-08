@@ -126,3 +126,61 @@ mutation crearOportunidadDocente{
   }
 }
 ```
+
+## F3: Endorsements
+
+### Crear Endorsement
+```graphql
+mutation createEndorsement{
+  createEndorsement(
+    input: { toUserId: 13, skill: "GraphQL", message: "Excelente trabajo en F1" }
+  ) {
+    idEndorsement
+    status
+    fromUserId
+    toUserId
+    skill
+    message
+    createdAt
+  }
+}
+```
+
+### Consultar Endorsement
+```graphql
+query endorsements {
+  endorsementsReceived(status: PENDING) {
+    idEndorsement
+    fromUserId
+    toUserId
+    skill
+    message
+    status
+    createdAt
+  }
+}
+```
+
+### Consultar Endorsement Dados
+```graphql
+query endorsementsGiven{
+  endorsementsGiven {
+    idEndorsement
+    toUserId
+    skill
+    message
+    status
+  }
+}
+```
+
+### Aceptar/Rechazar Endorsement
+```graphql
+mutation endorsementDecision {
+  decideEndorsement(id: 6, accept: false) {
+    idEndorsement
+    status
+    decidedAt
+  }
+}
+```
