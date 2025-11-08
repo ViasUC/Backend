@@ -44,7 +44,7 @@ public class AlumnoService {
 
     @Transactional(readOnly = true)
     public Optional<Alumno> obtenerAlumnoPorId(Long id) {
-        return alumnoRepository.findById(Math.toIntExact(id));
+        return alumnoRepository.findById(id);
     }
 
     /* =========================
@@ -109,7 +109,7 @@ public class AlumnoService {
 
         // Evitar duplicado por PK compartida (id_alumno = id_usuario)
         Integer idUsuario = usuario.getIdUsuario();
-        if (idUsuario != null && alumnoRepository.existsById(idUsuario)) {
+        if (idUsuario != null && alumnoRepository.existsById(Long.valueOf(idUsuario))) {
             throw new IllegalStateException(
                     "El usuario " + email + " ya posee un Alumno con id=" + idUsuario
             );

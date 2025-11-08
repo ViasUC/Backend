@@ -12,19 +12,18 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.List;
 
-public interface PostulacionRepository extends JpaRepository<Postulacion, Long>, JpaSpecificationExecutor<Postulacion> {
+public interface PostulacionRepository extends JpaRepository<Postulacion, Integer>, JpaSpecificationExecutor<Postulacion> {
 
-    // Para listas simples (evita LazyInitialization al leer campos del postulante y de la oportunidad)
-    @EntityGraph(attributePaths = { "postulante", "oportunidad" })
+    @EntityGraph(value = "Postulacion.graph", type = EntityGraph.EntityGraphType.LOAD)
     List<Postulacion> findByAlumno(Alumno alumno);
 
-    @EntityGraph(attributePaths = { "postulante", "oportunidad" })
+    @EntityGraph(value = "Postulacion.graph", type = EntityGraph.EntityGraphType.LOAD)
     List<Postulacion> findByOportunidad(Oportunidad oportunidad);
 
-    boolean existsByAlumno_IdAlumnoAndOportunidad_IdOportunidad(Integer idAlumno, Integer idOportunidad);
+    // Alumno tiene PK = idUsuario (Long). Oportunidad usa Integer.
+    boolean existsByAlumno_IdUsuarioAndOportunidad_IdOportunidad(Long idUsuario, Integer idOportunidad);
 
-    // Sobrescribe el findAll con Specification para que traiga las relaciones necesarias en la paginación
     @Override
-    @EntityGraph(attributePaths = { "postulante", "oportunidad" })
+    @EntityGraph(value = "Postulacion.graph", type = EntityGraph.EntityGraphType.LOAD)
     Page<Postulacion> findAll(Specification<Postulacion> spec, Pageable pageable);
 }

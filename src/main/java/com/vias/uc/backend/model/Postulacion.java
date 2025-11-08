@@ -5,6 +5,22 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "postulaciones")
+@NamedEntityGraph(
+        name = "Postulacion.graph",
+        attributeNodes = {
+                @NamedAttributeNode(value = "alumno", subgraph = "alumno.usuario"),
+                @NamedAttributeNode("postulante"),
+                @NamedAttributeNode("ofertante"),
+                @NamedAttributeNode("oportunidad"),
+                @NamedAttributeNode("auditoria")
+        },
+        subgraphs = {
+                @NamedSubgraph(
+                        name = "alumno.usuario",
+                        attributeNodes = { @NamedAttributeNode("usuario") }
+                )
+        }
+)
 public class Postulacion {
 
     @Id

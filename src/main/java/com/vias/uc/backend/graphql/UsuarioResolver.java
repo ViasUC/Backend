@@ -22,6 +22,6 @@ public class UsuarioResolver {
 
     @QueryMapping
     public Usuario usuario(@Argument Long id) {
-        return usuarioRepository.findById(Math.toIntExact(id)).orElse(null);
+        return usuarioRepository.findById(id).orElse(null);
     }
 }

@@ -6,10 +6,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface AlumnoRepository extends JpaRepository<Alumno, Integer> {
+public interface AlumnoRepository extends JpaRepository<Alumno, Long> {
 
+    // Usa la firma estándar de JpaRepository (Long). No redefinas con Integer.
     @EntityGraph(attributePaths = {"usuario"})
-    Optional<Alumno> findById(Integer id);
+    Optional<Alumno> findById(Long id);
 
-    boolean existsById(Integer id);
+    boolean existsById(Long id);
+
+    // Opcional: atajos útiles si querés buscar por el id del usuario
+    // Optional<Alumno> findByUsuario_IdUsuario(Long idUsuario);
+    // boolean existsByUsuario_IdUsuario(Long idUsuario);
 }

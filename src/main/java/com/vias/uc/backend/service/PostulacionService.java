@@ -37,23 +37,25 @@ public class PostulacionService {
         this.auditoriaRepository = auditoriaRepository;
     }
 
-    @Transactional(readOnly = false)
+    @Transactional
     public Postulacion crearPostulacion(Long idAlumno, Long idOportunidad) {
-        Alumno alumno = alumnoRepository.findById(Math.toIntExact(idAlumno))
+        // Alumno: PK Long
+        Alumno alumno = alumnoRepository.findById(idAlumno)
                 .orElseThrow(() -> new RuntimeException("Alumno no encontrado: " + idAlumno));
 
+        // Oportunidad: PK Integer
         Oportunidad oportunidad = oportunidadRepository.findById(Math.toIntExact(idOportunidad))
                 .orElseThrow(() -> new RuntimeException("Oportunidad no encontrada: " + idOportunidad));
 
         Usuario postulante = Optional.ofNullable(alumno.getUsuario())
                 .orElseThrow(() -> new RuntimeException("El Alumno " + idAlumno + " no tiene Usuario asociado."));
 
-        // Resolver ofertante desde id_creador de la oportunidad
+        // Resolver ofertante desde id_creador de la oportunidad (Integer -> Long para repo de Usuario)
         Integer idCreador = oportunidad.getIdCreador();
         if (idCreador == null) {
             throw new RuntimeException("La oportunidad " + idOportunidad + " no tiene id_creador (ofertante).");
         }
-        Usuario ofertante = usuarioRepository.findById(idCreador)
+        Usuario ofertante = usuarioRepository.findById(idCreador.longValue())
                 .orElseThrow(() -> new RuntimeException("Ofertante inexistente: " + idCreador));
 
         // Auditoría obligatoria
@@ -88,16 +90,19 @@ public class PostulacionService {
     }
 
     // ===== Listados simples =====
+    @Transactional(readOnly = true)
     public List<Postulacion> listarTodas() {
         return postulacionRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public List<Postulacion> listarPorAlumno(Long idAlumno) {
-        Alumno alumno = alumnoRepository.findById(Math.toIntExact(idAlumno))
+        Alumno alumno = alumnoRepository.findById(idAlumno)
                 .orElseThrow(() -> new RuntimeException("Alumno no encontrado: " + idAlumno));
         return postulacionRepository.findByAlumno(alumno);
     }
 
+    @Transactional(readOnly = true)
     public List<Postulacion> listarPorOportunidad(Long idOportunidad) {
         Oportunidad oportunidad = oportunidadRepository.findById(Math.toIntExact(idOportunidad))
                 .orElseThrow(() -> new RuntimeException("Oportunidad no encontrada: " + idOportunidad));
@@ -105,6 +110,7 @@ public class PostulacionService {
     }
 
     // ===== Búsqueda con filtros =====
+    @Transactional(readOnly = true)
     public Page<Postulacion> buscarConFiltros(Long idOportunidad, Long idAlumno,
                                               List<EstadoPostulacion> estados,
                                               String fechaDesdeStr, String fechaHastaStr,
@@ -118,7 +124,7 @@ public class PostulacionService {
 
         Alumno alumno = null;
         if (idAlumno != null) {
-            alumno = alumnoRepository.findById(Math.toIntExact(idAlumno))
+            alumno = alumnoRepository.findById(idAlumno)
                     .orElseThrow(() -> new RuntimeException("Alumno no encontrado: " + idAlumno));
         }
 
@@ -155,7 +161,7 @@ public class PostulacionService {
 
     @Transactional
     public Postulacion actualizarEstado(Long idPostulacion, EstadoPostulacion nuevo, String motivo, Long idActor) {
-        Postulacion p = postulacionRepository.findById(idPostulacion)
+        Postulacion p = postulacionRepository.findById(Math.toIntExact(idPostulacion))
                 .orElseThrow(() -> new RuntimeException("Postulación no encontrada: " + idPostulacion));
 
         EstadoPostulacion anterior = p.getEstado();
@@ -176,15 +182,16 @@ public class PostulacionService {
         h.setMotivo(motivo);
 
         if (idActor != null) {
-            usuarioRepository.findById(Math.toIntExact(idActor)).ifPresent(h::setActor);
+            usuarioRepository.findById(idActor).ifPresent(h::setActor);
         }
         historialRepository.save(h);
 
         return p;
     }
 
+    @Transactional(readOnly = true)
     public List<HistorialPostulacion> historial(Long idPostulacion) {
-        Postulacion p = postulacionRepository.findById(idPostulacion)
+        Postulacion p = postulacionRepository.findById(Math.toIntExact(idPostulacion))
                 .orElseThrow(() -> new RuntimeException("Postulación no encontrada: " + idPostulacion));
         return historialRepository.findByPostulacionOrderByFechaCambioDesc(p);
     }
