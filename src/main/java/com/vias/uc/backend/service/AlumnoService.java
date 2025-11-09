@@ -8,16 +8,11 @@ import com.vias.uc.backend.repository.AlumnoRepository;
 import com.vias.uc.backend.repository.AuditoriaRepository;
 import com.vias.uc.backend.repository.UsuarioRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-import com.vias.uc.backend.model.dto.RegistroAlumnoInput;
+
 import com.vias.uc.backend.model.dto.UsuarioRegistroInput;
 import com.vias.uc.backend.model.enums.RolUsuario;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 

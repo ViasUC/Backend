@@ -5,11 +5,10 @@ import lombok.Data;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
 @Data
 @Entity
-@Table(name = "alumnos")
-public class Alumno {           // (opcional) implements Persistable<Integer> ver abajo
+@Table(name = "alumnos", schema = "public")
+public class Alumno {
 
     @Id
     @Column(name = "id_usuario")

@@ -16,6 +16,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+      
     open-in-view: false
     show-sql: true
     properties:

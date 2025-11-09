@@ -1,6 +1,5 @@
 package com.vias.uc.backend.model.dto;
 
-import com.vias.uc.backend.codegen.types.UsuarioInput;
 
 public record AlumnoInput(
         UsuarioInput usuario,
