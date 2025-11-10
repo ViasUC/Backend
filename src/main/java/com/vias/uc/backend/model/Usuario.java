@@ -9,9 +9,11 @@ import lombok.Data;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
-@Table(name = "usuarios")
+@Table(name = "usuarios", schema = "public")
 public class Usuario {
 
     @Id
@@ -42,4 +44,13 @@ public class Usuario {
 
     @Column(name = "id_auditoria")
     private Integer idAuditoria;
+
+    @Column(name = "email_verificado")
+    private Boolean emailVerificado;
+
+    @Column(name = "token_verificacion")
+    private String tokenVerificacion;
+
+    @Column(name = "token_verificacion_expira")
+    private LocalDateTime tokenVerificacionExpira;
 }

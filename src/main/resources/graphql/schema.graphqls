@@ -93,3 +93,62 @@ extend type Mutation {
     login(input: LoginInput!): LoginResponse
 }
 
+# ==== F2: Postulaciones ====
+
+# Inputs
+input CrearPostulacionInput {
+  idPostulante: Int!     # usuarios.id_usuario (alumno)
+  idOportunidad: Int!    # oportunidades.id_oportunidad
+  motivo: String         # texto libre (se guarda junto con evidencias en 'motivo')
+}
+
+input VincularEvidenciasInput {
+  idPostulacion: Int!
+  idsEvidencias: [Int!]! # evidencias del portafolio del mismo postulante
+}
+
+# Outputs
+type PostulacionOutput {
+  idPostulacion: Int!
+  estado: String!
+  tituloOportunidad: String
+  fechaPostulacion: String
+  evidencias: [Int!]!     # IDs parseadas desde 'motivo'
+}
+
+type EstadoPostulacionOutput {
+  idPostulacion: Int!
+  estado: String!
+  fechaPostulacion: String
+  tituloOportunidad: String
+  evidencias: [Int!]!
+}
+
+# ==== Evidencias ====
+
+type Evidencia {
+  idEvidencia: Int!
+  idPortafolio: Int!
+  titulo: String
+  descripcion: String
+  tipo: String
+  recurso: String
+}
+
+extend type Query {
+  evidenciasPorPortafolio(idPortafolio: Int!): [Evidencia!]!
+  evidenciasPorUsuario(idUsuario: ID!): [Evidencia!]!
+}
+
+# Query / Mutation
+extend type Query {
+  estadoPostulacion(idPostulacion: Int!, idPostulante: Int!): EstadoPostulacionOutput!
+}
+
+extend type Mutation {
+  crearYEnviarPostulacion(input: CrearPostulacionInput!): PostulacionOutput!
+  vincularEvidenciasPostulacion(input: VincularEvidenciasInput!, idPostulante: Int!): PostulacionOutput!
+}
+
+
+

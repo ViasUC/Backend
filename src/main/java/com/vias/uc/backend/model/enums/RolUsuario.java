@@ -6,5 +6,6 @@ public enum RolUsuario {
     investigador,
     egresado,
     alumno,
-    empresa
+    empresa,
+    EMPLEADOR
 }
