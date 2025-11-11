@@ -191,4 +191,18 @@ input CreateEndorsementInput {
   message: String
 }
 
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+type AuthPayload {
+  token: String!
+  usuario: Usuario!
+}
+
+extend type Mutation {
+  loginDocenteInvestigador(input: LoginInput!): AuthPayload!
+}
+
 
