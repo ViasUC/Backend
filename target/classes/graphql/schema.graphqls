@@ -3,6 +3,7 @@ enum RolUsuario {
   administrador
   profesor
   investigador
+  empleador
   egresado
   alumno
   empresa
@@ -17,14 +18,10 @@ type Usuario {
   ubicacion: String
   rolPrincipal: RolUsuario
   completitud: Int
-}
 
-type Alumno {
-  idUsuario: ID!
-  carrera: String!
-  semestre: Int!
-  idAuditoria: Int!
-  usuario: Usuario!
+  adminData: Administrador
+  egresadoData: Egresado
+  alumnoData: Alumno
 }
 
 # --- Queries ---
@@ -32,6 +29,9 @@ type Query {
   alumnos: [Alumno!]!
   alumno(id: ID!): Alumno
   alumnoPorEmail(email: String!): Alumno
+  usuarioById(id: Int!): Usuario
+  usuarios: [Usuario!]!   # <-- ANTES TENÍAS EL EXTEND TYPE, AHORA LO UNIFICO AQUÍ
+  portafolioPorUsuario(idUsuario: Int!): Portafolio   # <-- AQUÍ VA TU NUEVA QUERY
 }
 
 # --- Inputs para actualización parcial ---
@@ -49,7 +49,7 @@ input AlumnoInput {
   semestre: Int
 }
 
-# --- Inputs para registro (alta) ---
+# --- Inputs para registro ---
 input UsuarioRegistroInput {
   nombre: String!
   apellido: String
@@ -79,4 +79,44 @@ type Mutation {
   registrarAlumno(input: RegistroAlumnoInput!): Alumno!
   actualizarAlumno(id: ID!, input: AlumnoInput): Alumno
   login(input: LoginInput!): Usuario
+}
+
+# --- Datos extendidos ---
+type Administrador {
+  idUsuario: Int!
+  titulo: String
+  descripcion: String
+}
+
+type Egresado {
+  idUsuario: Int!
+  anioEgreso: Int!
+}
+
+type Alumno {
+  idUsuario: ID!
+  carrera: String!
+  semestre: Int!
+  idAuditoria: Int!
+  usuario: Usuario!
+}
+
+# --- Portafolio ---
+type Portafolio {
+  idPortafolio: Int!
+  idUsuario: Int!
+  descripcion: String
+  skills: String
+  visibilidad: String
+  ultimaActualizacion: String
+  evidencias: [Evidencia!]!
+}
+
+type Evidencia {
+  idEvidencia: Int!
+  idPortafolio: Int!
+  titulo: String
+  descripcion: String
+  tipo: String
+  recurso: String
 }
