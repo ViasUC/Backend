@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "auditoria")
+@Table(name = "auditoria", schema = "public")
 public class Auditoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,9 +14,9 @@ public class Auditoria {
     private Integer idAuditoria;
 
     @Column(name = "actor_id")
-    private Integer actorId;            // null en el alta
+    private Integer actorId;
 
-    private String accion;              // "create"
+    private String accion;
     private String detalle;
 
     @Column(name = "fecha_evento", nullable = false)
