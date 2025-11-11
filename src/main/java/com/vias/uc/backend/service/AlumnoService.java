@@ -15,6 +15,10 @@ import com.vias.uc.backend.model.dto.UsuarioRegistroInput;
 import com.vias.uc.backend.model.enums.RolUsuario;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
+import com.vias.uc.backend.model.dto.UsuarioInput;
 
 @Service
 public class AlumnoService {
@@ -96,4 +100,39 @@ public class AlumnoService {
         return alumnoRepository.findByIdUsuario(id)
                 .orElse(null);
     }
+
+    @Transactional
+    public Alumno actualizarAlumno(Integer id, com.vias.uc.backend.model.dto.AlumnoInput input) {
+        // 1️⃣ Buscar al alumno
+        Alumno alumno = alumnoRepository.findByIdUsuario(id)
+                .orElseThrow(() -> new RuntimeException("Alumno no encontrado con id_usuario: " + id));
+
+        Usuario usuario = alumno.getUsuario();
+        if (usuario == null) {
+            throw new RuntimeException("El alumno no tiene un usuario asociado (id_usuario=" + id + ")");
+        }
+
+        System.out.println("=== [DEBUG] Actualizando alumno con ID " + id + " ===");
+
+        // 2️⃣ Actualizar datos del usuario (nombre, apellido, etc.)
+        if (input.usuario() != null) {
+            var ui = input.usuario();
+            if (ui.nombre() != null) usuario.setNombre(ui.nombre());
+            if (ui.apellido() != null) usuario.setApellido(ui.apellido());
+            if (ui.email() != null) usuario.setEmail(ui.email());
+            if (ui.telefono() != null) usuario.setTelefono(ui.telefono());
+            if (ui.ubicacion() != null) usuario.setUbicacion(ui.ubicacion());
+        }
+
+        // 3️⃣ Actualizar datos del alumno (carrera, semestre)
+        if (input.carrera() != null) alumno.setCarrera(input.carrera());
+        if (input.semestre() != null) alumno.setSemestre(input.semestre());
+
+        usuarioRepository.save(usuario);
+        Alumno actualizado = alumnoRepository.save(alumno);
+
+        System.out.println("=== [DEBUG] Alumno actualizado correctamente ===");
+        return actualizado;
+    }
+
 }

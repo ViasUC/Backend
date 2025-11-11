@@ -9,7 +9,11 @@
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
-
+/target
+/target/generated-sources
+target/generated-examples
+target/graphqlcodegen
+target
 # Package Files #
 *.jar
 *.war

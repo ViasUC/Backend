@@ -79,8 +79,16 @@ type Mutation {
   registrarAlumno(input: RegistroAlumnoInput!): Alumno!
   actualizarAlumno(id: ID!, input: AlumnoInput): Alumno
   login(input: LoginInput!): Usuario
+    # Alta (crea usuario + alumno + auditoría)
+    registrarAlumno(input: RegistroAlumnoInput!): Alumno!
+
+    # Tu mutación existente para actualizar datos parcialmente
+    actualizarAlumno(id: ID!, input: AlumnoInput): Alumno
+
+    #login(input: LoginInput!): LoginResponse
 }
 
+<<<<<<< HEAD
 # --- Datos extendidos ---
 type Administrador {
   idUsuario: Int!
@@ -120,3 +128,21 @@ type Evidencia {
   tipo: String
   recurso: String
 }
+=======
+input LoginInput {
+    email: String!
+    password: String!
+}
+
+type LoginResponse {
+    idUsuario: ID!
+    nombre: String
+    apellido: String
+    rolPrincipal: RolUsuario
+}
+
+extend type Mutation {
+    login(input: LoginInput!): LoginResponse
+}
+
+>>>>>>> a171c1a5c3c48d39f86ff3841eb199c89853b049
