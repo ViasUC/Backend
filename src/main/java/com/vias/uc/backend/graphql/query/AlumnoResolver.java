@@ -36,7 +36,7 @@ public class AlumnoResolver {
 
     @MutationMapping
     public Alumno registrarAlumno(@Argument RegistroAlumnoInput input) {
-        return alumnoService.registrarAlumno(input);
+        return alumnoService.registrarAlumnoMutationFede(input);
     }
 
     @QueryMapping

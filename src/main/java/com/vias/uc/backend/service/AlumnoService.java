@@ -42,7 +42,7 @@ public class AlumnoService {
 
 
     @Transactional
-    public Alumno registrarAlumno(RegistroAlumnoInput input) {
+    public Alumno registrarAlumnoMutationFede(RegistroAlumnoInput input) {
         if (input == null || input.usuario() == null) {
             throw new IllegalArgumentException("El objeto 'usuario' es obligatorio.");
         }

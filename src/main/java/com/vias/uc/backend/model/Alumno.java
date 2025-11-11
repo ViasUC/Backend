@@ -5,6 +5,7 @@ import lombok.Data;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
 @Data
 @Entity
 @Table(name = "alumnos", schema = "public")
