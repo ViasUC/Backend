@@ -1,34 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.5.6</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
+
 	<groupId>com.vias.uc</groupId>
 	<artifactId>backend</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.0-SNAPSHOT</version>
 	<name>backend</name>
 	<description>Demo project for Spring Boot</description>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
+
 	<properties>
 		<java.version>21</java.version>
+		<!-- Centralizá versiones usadas abajo -->
+		<lombok.version>1.18.34</lombok.version>
+		<!-- Usa la misma que el parent de Spring Boot -->
+		<boot.config.processor.version>${project.parent.version}</boot.config.processor.version>
+		<maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+		<build.helper.plugin.version>3.5.0</build.helper.plugin.version>
 	</properties>
+
 	<dependencies>
 		<!-- Web + GraphQL + JPA -->
 		<dependency>
@@ -46,23 +43,29 @@
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 
-		<!-- Driver PostgreSQL (Boot maneja la versión). En runtime basta. -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
+		<!-- Driver PostgreSQL (runtime) -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- BCrypt sin activar seguridad web -->
+		<!-- BCrypt (puede mantenerse aunque el starter ya trae crypto) -->
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-crypto</artifactId>
 		</dependency>
 
-		<!-- Lombok (una sola vez) -->
+		<!-- Lombok -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
 			<optional>true</optional>
 		</dependency>
 
@@ -82,15 +85,11 @@
 			<optional>true</optional>
 		</dependency>
 
-			<dependency>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-security</artifactId>
-	</dependency>
-
-		<!-- Configuration Processor (para metadata de @ConfigurationProperties) -->
+		<!-- Configuration Processor (@ConfigurationProperties) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-configuration-processor</artifactId>
+			<version>${boot.config.processor.version}</version>
 			<optional>true</optional>
 		</dependency>
 
@@ -111,37 +110,49 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- SOLO si vas a usar Cloud SQL Connector (GCP). Si no, quitá esta dependencia. -->
-		<!--
-        <dependency>
-          <groupId>com.google.cloud.sql</groupId>
-          <artifactId>postgres-socket-factory</artifactId>
-          <version>1.18.1</version>
-        </dependency>
-        -->
+		<!-- Mantengo tu dependencia explícita a spring-security-web (aunque el starter ya la trae) -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-web</artifactId>
+		</dependency>
+
+		<!-- SOLO si vas a usar Cloud SQL Connector (GCP). Si no, dejalo comentado.
+		<dependency>
+			<groupId>com.google.cloud.sql</groupId>
+			<artifactId>postgres-socket-factory</artifactId>
+			<version>1.18.1</version>
+		</dependency>
+		-->
 	</dependencies>
 
-
-    <build>
+	<build>
 		<plugins>
+			<!-- Compilador -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven.compiler.plugin.version}</version>
 				<configuration>
+					<!-- Alinea toolchain con Java 21 -->
+					<release>21</release>
+
+					<!-- Necesario: versiones explícitas en annotationProcessorPaths -->
 					<annotationProcessorPaths>
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
 						</path>
 						<path>
 							<groupId>org.springframework.boot</groupId>
 							<artifactId>spring-boot-configuration-processor</artifactId>
+							<version>${boot.config.processor.version}</version>
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
 
-			
+			<!-- GraphQL codegen -->
 			<plugin>
 				<groupId>io.github.deweyjose</groupId>
 				<artifactId>graphqlcodegen-maven-plugin</artifactId>
@@ -154,18 +165,21 @@
 						</goals>
 						<configuration>
 							<schemaPaths>
-    							<schemaPath>src/main/resources/graphql-client/schema.graphqls</schemaPath>
+								<param>src/main/resources/graphql</param>
 							</schemaPaths>
-							<packageName>com.vias.uc.backend.codegen</packageName>
+							<packageName>com.vias.uc.backend.client.codegen</packageName>
 							<addGeneratedAnnotation>true</addGeneratedAnnotation>
 							<disableDatesInGeneratedAnnotation>true</disableDatesInGeneratedAnnotation>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
+
+			<!-- Build helper (agrega carpeta de código generado) -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>${build.helper.plugin.version}</version>
 				<executions>
 					<execution>
 						<id>add-dgs-source</id>
@@ -181,6 +195,8 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<!-- Spring Boot plugin -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -195,5 +211,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>
