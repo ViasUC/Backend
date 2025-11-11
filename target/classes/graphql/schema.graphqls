@@ -62,7 +62,6 @@ type HistorialPostulacion {
 
 type Postulacion {
   idPostulacion: ID!
-  alumno: Alumno!
   oportunidad: Oportunidad!
   postulante: Usuario!
   estado: PostulacionEstado!

@@ -3,6 +3,7 @@ package com.vias.uc.backend.repository;
 import com.vias.uc.backend.model.Alumno;
 import com.vias.uc.backend.model.Oportunidad;
 import com.vias.uc.backend.model.Postulacion;
+import com.vias.uc.backend.model.Usuario;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -15,13 +16,13 @@ import java.util.List;
 public interface PostulacionRepository extends JpaRepository<Postulacion, Integer>, JpaSpecificationExecutor<Postulacion> {
 
     @EntityGraph(value = "Postulacion.graph", type = EntityGraph.EntityGraphType.LOAD)
-    List<Postulacion> findByAlumno(Alumno alumno);
+    List<Postulacion> findByPostulante(Usuario postulante);
 
     @EntityGraph(value = "Postulacion.graph", type = EntityGraph.EntityGraphType.LOAD)
     List<Postulacion> findByOportunidad(Oportunidad oportunidad);
 
     // Alumno tiene PK = idUsuario (Long). Oportunidad usa Integer.
-    boolean existsByAlumno_IdUsuarioAndOportunidad_IdOportunidad(Long idUsuario, Integer idOportunidad);
+    boolean existsByPostulante_IdUsuarioAndOportunidad_IdOportunidad(Integer idUsuario, Integer idOportunidad);
 
     @Override
     @EntityGraph(value = "Postulacion.graph", type = EntityGraph.EntityGraphType.LOAD)

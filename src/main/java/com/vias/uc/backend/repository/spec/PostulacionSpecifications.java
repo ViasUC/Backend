@@ -8,38 +8,39 @@ import java.util.List;
 
 public class PostulacionSpecifications {
 
-    public static Specification<Postulacion> porOportunidad(Oportunidad op) {
-        return (root, q, cb) -> op == null ? null : cb.equal(root.get("oportunidad"), op);
+    public static Specification<Postulacion> porOportunidad(Oportunidad oportunidad) {
+        return (root, query, cb) ->
+                oportunidad == null ? null : cb.equal(root.get("oportunidad"), oportunidad);
     }
 
-    public static Specification<Postulacion> porAlumno(Alumno alumno) {
-        return (root, q, cb) -> alumno == null ? null : cb.equal(root.get("alumno"), alumno);
+    // REEMPLAZA porAlumno(...) por este:
+    public static Specification<Postulacion> porPostulante(Usuario postulante) {
+        return (root, query, cb) ->
+                postulante == null ? null : cb.equal(root.get("postulante"), postulante);
     }
 
     public static Specification<Postulacion> porEstados(List<EstadoPostulacion> estados) {
-        return (root, q, cb) ->
+        return (root, query, cb) ->
                 (estados == null || estados.isEmpty()) ? null : root.get("estado").in(estados);
     }
 
     public static Specification<Postulacion> desde(LocalDateTime desde) {
-        return (root, q, cb) ->
+        return (root, query, cb) ->
                 desde == null ? null : cb.greaterThanOrEqualTo(root.get("fechaPostulacion"), desde);
     }
 
     public static Specification<Postulacion> hasta(LocalDateTime hasta) {
-        return (root, q, cb) ->
+        return (root, query, cb) ->
                 hasta == null ? null : cb.lessThanOrEqualTo(root.get("fechaPostulacion"), hasta);
     }
 
-    // busca en titulo de la oportunidad o nombre del postulante
+    // Búsqueda textual simple (en campos típicos; ajusta si tenés otros)
     public static Specification<Postulacion> texto(String texto) {
-        return (root, q, cb) -> {
+        return (root, query, cb) -> {
             if (texto == null || texto.isBlank()) return null;
-            String like = "%" + texto.toLowerCase() + "%";
-            return cb.or(
-                    cb.like(cb.lower(root.get("oportunidad").get("titulo")), like),
-                    cb.like(cb.lower(root.get("postulante").get("nombre")), like)
-            );
+            String like = "%" + texto.trim().toLowerCase() + "%";
+            // ejemplo sobre motivo; agrega más joins/fields si querés
+            return cb.like(cb.lower(root.get("motivo")), like);
         };
     }
 }

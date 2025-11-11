@@ -8,19 +8,13 @@ import java.time.LocalDateTime;
 @NamedEntityGraph(
         name = "Postulacion.graph",
         attributeNodes = {
-                @NamedAttributeNode(value = "alumno", subgraph = "alumno.usuario"),
                 @NamedAttributeNode("postulante"),
                 @NamedAttributeNode("ofertante"),
                 @NamedAttributeNode("oportunidad"),
                 @NamedAttributeNode("auditoria")
-        },
-        subgraphs = {
-                @NamedSubgraph(
-                        name = "alumno.usuario",
-                        attributeNodes = { @NamedAttributeNode("usuario") }
-                )
         }
 )
+
 public class Postulacion {
 
     @Id
@@ -29,16 +23,12 @@ public class Postulacion {
     private Integer idPostulacion;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_alumno", nullable = false)
-    private Alumno alumno;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_oportunidad", nullable = false)
     private Oportunidad oportunidad;
 
     // Usuario que postula (obligatorio)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_postulante", nullable = false)
+    @JoinColumn(name = "id_postulante", referencedColumnName = "id_usuario", nullable = false)
     private Usuario postulante;
 
     // Usuario ofertante (creador de la oportunidad, obligatorio)
@@ -64,26 +54,23 @@ public class Postulacion {
 
     public Postulacion() { }
 
-    public Postulacion(Alumno alumno, Oportunidad oportunidad, Usuario postulante, EstadoPostulacion estado) {
-        this.alumno = alumno;
+    public Postulacion(Oportunidad oportunidad, Usuario postulante, EstadoPostulacion estado) {
         this.oportunidad = oportunidad;
         this.postulante = postulante;
         this.estado = estado;
         this.fechaPostulacion = LocalDateTime.now();
     }
 
+
     @PrePersist
     protected void onCreate() {
         if (this.fechaPostulacion == null) this.fechaPostulacion = LocalDateTime.now();
-        if (this.postulante == null && this.alumno != null) this.postulante = this.alumno.getUsuario();
         // La auditoría se setea desde el service (obligatoria)
     }
 
+
     // ===== Getters & Setters =====
     public Integer getIdPostulacion() { return idPostulacion; }
-
-    public Alumno getAlumno() { return alumno; }
-    public void setAlumno(Alumno alumno) { this.alumno = alumno; }
 
     public Oportunidad getOportunidad() { return oportunidad; }
     public void setOportunidad(Oportunidad oportunidad) { this.oportunidad = oportunidad; }
