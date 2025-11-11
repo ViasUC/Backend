@@ -95,7 +95,7 @@ public class PostulacionAplicacionService {
         p.setIdPostulante(in.idPostulante());
         p.setIdOfertante(op.getIdCreador());
         p.setFechaPostulacion(LocalDateTime.now());
-        p.setEstado("pendiente");
+        p.setEstado("PENDIENTE");
         p.setMotivo(buildMotivo(in.motivo(), List.of()));
         p.setIdAuditoria(Math.toIntExact(idAud)); // BIGINT -> INTEGER
 
@@ -162,7 +162,7 @@ public class PostulacionAplicacionService {
         }
 
         // 1.1) Estado editable
-        if (!"pendiente".equalsIgnoreCase(p.getEstado())) {
+        if (!"PENDIENTE".equalsIgnoreCase(p.getEstado())) {
             throw new IllegalStateException("No podés modificar evidencias en una postulación no pendiente");
         }
 
