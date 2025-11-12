@@ -6,8 +6,9 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.5.6</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
+
 	<groupId>com.vias.uc</groupId>
 	<artifactId>backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
@@ -28,6 +29,11 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<lombok.version>1.18.34</lombok.version>
+		<!-- Usa la misma que el parent de Spring Boot -->
+		<boot.config.processor.version>${project.parent.version}</boot.config.processor.version>
+		<maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+		<build.helper.plugin.version>3.5.0</build.helper.plugin.version>
 	</properties>
     <dependencies>
         <!-- GraphQL -->
@@ -54,6 +60,26 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
+		<!-- Driver PostgreSQL (runtime) -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- BCrypt (puede mantenerse aunque el starter ya trae crypto) -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-crypto</artifactId>
+		</dependency>
+
+		<!-- Lombok -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
+			<optional>true</optional>
+		</dependency>
         <!-- Validaciones (Bean Validation para anotaciones @NotNull, @Email, etc.) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -83,12 +109,13 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Config Processor -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
-        </dependency>
+		<!-- Configuration Processor (@ConfigurationProperties) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<version>${boot.config.processor.version}</version>
+			<optional>true</optional>
+		</dependency>
 
         <!-- Lombok -->
         <dependency>
@@ -162,22 +189,32 @@
 
     <build>
 		<plugins>
+			<!-- Compilador -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven.compiler.plugin.version}</version>
 				<configuration>
+					<!-- Alinea toolchain con Java 21 -->
+					<release>21</release>
+
+					<!-- Necesario: versiones explícitas en annotationProcessorPaths -->
 					<annotationProcessorPaths>
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
 						</path>
 						<path>
 							<groupId>org.springframework.boot</groupId>
 							<artifactId>spring-boot-configuration-processor</artifactId>
+							<version>${boot.config.processor.version}</version>
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
+
+			<!-- GraphQL codegen -->
 			<plugin>
 				<groupId>io.github.deweyjose</groupId>
 				<artifactId>graphqlcodegen-maven-plugin</artifactId>
@@ -189,19 +226,22 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-                            <schemaPaths>
-                                <param>src/main/resources/graphql</param>
-                            </schemaPaths>
-                            <packageName>com.vias.uc.backend.codegen</packageName>
+							<schemaPaths>
+								<param>src/main/resources/graphql</param>
+							</schemaPaths>
+							<packageName>com.vias.uc.backend.client.codegen</packageName>
 							<addGeneratedAnnotation>true</addGeneratedAnnotation>
 							<disableDatesInGeneratedAnnotation>true</disableDatesInGeneratedAnnotation>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
+
+			<!-- Build helper (agrega carpeta de código generado) -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>${build.helper.plugin.version}</version>
 				<executions>
 					<execution>
 						<id>add-dgs-source</id>
@@ -217,6 +257,8 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<!-- Spring Boot plugin -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

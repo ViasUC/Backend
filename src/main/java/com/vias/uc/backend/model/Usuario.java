@@ -1,10 +1,9 @@
 package com.vias.uc.backend.model;
 
-import com.vias.uc.backend.model.enums.RolUsuario;
-import org.hibernate.annotations.JdbcType;
-import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 import jakarta.persistence.*;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "usuarios",
         uniqueConstraints = @UniqueConstraint(name = "uk_usuarios_email", columnNames = "email"))
@@ -19,6 +18,10 @@ public class Usuario {
     private String nombre;
 
     private String apellido;
+
+    private String ubicacion;
+
+    private String telefono;
 
     @Column(nullable = false, unique = true)
     private String email;

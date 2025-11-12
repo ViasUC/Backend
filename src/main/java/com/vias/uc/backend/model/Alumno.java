@@ -1,19 +1,20 @@
 package com.vias.uc.backend.model;
 
-import jakarta.persistence.*;
-import java.io.Serializable;
+import java.math.BigInteger;
 
-// Hibernate 6
+import jakarta.persistence.*;
+import lombok.Data;
+
+import jakarta.persistence.*;
+import lombok.Data;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+@Data
 @Entity
-@Table(name = "alumnos")
-public class Alumno implements Serializable {
+@Table(name = "alumnos", schema = "public")
+public class Alumno {
 
-    // La PK de alumnos es la MISMA que la de Usuario (compartida)
-    // En BD la columna es INT4, pero Usuario usa BIGINT.
-    // Forzamos la validación a INTEGER con @JdbcTypeCode para que no falle.
     @Id
     @JdbcTypeCode(SqlTypes.INTEGER)                 // <- valida contra int4 de la tabla
     @Column(name = "id_usuario", nullable = false)  // <- columna REAL en la BD
@@ -36,19 +37,4 @@ public class Alumno implements Serializable {
             foreignKey = @ForeignKey(name = "fk_alumnos_auditoria"))
     private Auditoria auditoria;
 
-    // ===== getters/setters =====
-    public Long getIdUsuario() { return idUsuario; }
-    public void setIdUsuario(Long idUsuario) { this.idUsuario = idUsuario; }
-
-    public Usuario getUsuario() { return usuario; }
-    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
-
-    public String getCarrera() { return carrera; }
-    public void setCarrera(String carrera) { this.carrera = carrera; }
-
-    public Integer getSemestre() { return semestre; }
-    public void setSemestre(Integer semestre) { this.semestre = semestre; }
-
-    public Auditoria getAuditoria() { return auditoria; }
-    public void setAuditoria(Auditoria auditoria) { this.auditoria = auditoria; }
 }

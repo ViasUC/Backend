@@ -3,137 +3,136 @@ package com.vias.uc.backend.service;
 import com.vias.uc.backend.model.Alumno;
 import com.vias.uc.backend.model.Auditoria;
 import com.vias.uc.backend.model.Usuario;
-import com.vias.uc.backend.model.enums.RolUsuario;
+import com.vias.uc.backend.model.dto.RegistroAlumnoInput;
 import com.vias.uc.backend.repository.AlumnoRepository;
 import com.vias.uc.backend.repository.AuditoriaRepository;
 import com.vias.uc.backend.repository.UsuarioRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import org.springframework.stereotype.Service;
+
+
+import com.vias.uc.backend.model.dto.UsuarioRegistroInput;
+import com.vias.uc.backend.model.enums.RolUsuario;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
+import com.vias.uc.backend.model.dto.UsuarioInput;
 
 @Service
 public class AlumnoService {
 
-    private final UsuarioRepository usuarioRepository;
     private final AlumnoRepository alumnoRepository;
+    private final UsuarioRepository usuarioRepository;
     private final AuditoriaRepository auditoriaRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public AlumnoService(UsuarioRepository usuarioRepository,
-                         AlumnoRepository alumnoRepository,
-                         AuditoriaRepository auditoriaRepository,
-                         BCryptPasswordEncoder passwordEncoder) {
-        this.usuarioRepository = usuarioRepository;
+    public AlumnoService(AlumnoRepository alumnoRepository,
+                         UsuarioRepository usuarioRepository,
+                         AuditoriaRepository auditoriaRepository) {
         this.alumnoRepository = alumnoRepository;
+        this.usuarioRepository = usuarioRepository;
         this.auditoriaRepository = auditoriaRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
-    /* =========================
-       Lecturas
-       ========================= */
-    @Transactional(readOnly = true)
-    public List<Alumno> listarAlumnos() {
-        return alumnoRepository.findAll();
-    }
 
-    @Transactional(readOnly = true)
-    public Optional<Alumno> obtenerAlumnoPorId(Long id) {
-        return alumnoRepository.findById(id);
-    }
 
-    /* =========================
-       Escrituras
-       ========================= */
-    /**
-     * Crea un alumno y, si no existe, también su Usuario asociado.
-     * - Rol: RolUsuario.alumno
-     * - Password: se genera temporal y se cifra SOLO si el usuario es nuevo
-     */
+// ...
+
+
     @Transactional
-    public Alumno crearAlumno(String nombre,
-                              String apellido,
-                              String email,
-                              String carrera,
-                              Integer semestre) {
+    public Alumno registrarAlumnoMutationFede(RegistroAlumnoInput input) {
+        if (input == null || input.usuario() == null) {
+            throw new IllegalArgumentException("El objeto 'usuario' es obligatorio.");
+        }
+        UsuarioRegistroInput ui = input.usuario();
 
-        // Auditoría para la operación de crear alumno (se usará en Alumno)
-        Auditoria auAlumno = auditoriaRepository.save(
-                Auditoria.builder()
-                        .accion("CREAR_ALUMNO")
-                        .detalle("Creación de alumno para " + email)
-                        .actorId(null) // setear si hay usuario autenticado
-                        .fechaEvento(LocalDateTime.now())
-                        .build()
+        if (ui.email() == null || ui.email().isBlank()) {
+            throw new IllegalArgumentException("El email es obligatorio.");
+        }
+        if (ui.password() == null || ui.password().isBlank()) {
+            throw new IllegalArgumentException("El password es obligatorio.");
+        }
+
+        if (usuarioRepository.existsByEmail(ui.email())) {
+            throw new IllegalArgumentException("El email ya está registrado: " + ui.email());
+        }
+
+        // Auditoría
+        Auditoria audit = new Auditoria();
+        audit.setAccion("create");
+        audit.setDetalle(
+                (input.detalleAuditoria() != null && !input.detalleAuditoria().isBlank())
+                        ? input.detalleAuditoria() : "registro alumno"
         );
+        audit = auditoriaRepository.save(audit);
 
-        // Buscar o crear Usuario (managed)
-        Usuario usuario = usuarioRepository.findByEmail(email).orElseGet(() -> {
-            Auditoria auUsuario = auditoriaRepository.save(
-                    Auditoria.builder()
-                            .accion("CREAR_USUARIO")
-                            .detalle("Alta de usuario desde creación de alumno: " + email)
-                            .actorId(null)
-                            .fechaEvento(LocalDateTime.now())
-                            .build()
-            );
+        // Usuario
+        Usuario u = new Usuario();
+        u.setNombre(ui.nombre());
+        u.setApellido(ui.apellido());
+        u.setUbicacion(ui.ubicacion());
+        u.setTelefono(ui.telefono());
+        u.setEmail(ui.email());
+        u.setPassword(passwordEncoder.encode(ui.password()));
+        u.setCompletitud(ui.completitud() != null ? ui.completitud() : 0);
+        // mapear enum -> String (BD sigue siendo VARCHAR/ENUM PG)
+        RolUsuario rol = ui.rolPrincipal() != null ? ui.rolPrincipal() : RolUsuario.alumno;
+        u.setRolPrincipal(rol);
+        u.setIdAuditoria(audit.getIdAuditoria());
+        u = usuarioRepository.save(u);
 
-            Usuario u = new Usuario();
-            u.setNombre(nombre);
-            u.setApellido(apellido);
-            u.setEmail(email);
-            u.setRolPrincipal(RolUsuario.alumno);
-            u.setCompletitud(0);
-            u.setAuditoria(auUsuario);
+        // Alumno (PK compartida con Usuario)
+        Alumno a = new Alumno();
+        a.setUsuario(u);                  // @MapsId
+        a.setCarrera(input.carrera());
+        a.setSemestre(input.semestre());
+        a.setIdAuditoria(audit.getIdAuditoria().longValue());
 
-            String temporal = generarPasswordTemporal(12);
-            u.setPassword(passwordEncoder.encode(temporal));
 
-            return usuarioRepository.save(u);
-        });
-
-        // Si el usuario existía sin password/rol, completar
-        if (usuario.getPassword() == null || usuario.getPassword().isBlank()) {
-            String temporal = generarPasswordTemporal(12);
-            usuario.setPassword(passwordEncoder.encode(temporal));
-            if (usuario.getRolPrincipal() == null) {
-                usuario.setRolPrincipal(RolUsuario.alumno);
-            }
-            usuarioRepository.save(usuario);
-        }
-
-        // Evitar duplicado por PK compartida (id_alumno = id_usuario)
-        Integer idUsuario = usuario.getIdUsuario();
-        if (idUsuario != null && alumnoRepository.existsById(Long.valueOf(idUsuario))) {
-            throw new IllegalStateException(
-                    "El usuario " + email + " ya posee un Alumno con id=" + idUsuario
-            );
-        }
-
-        // Crear Alumno asociado (idAlumno debe quedar NULL aquí; @MapsId la copiará)
-        Alumno alumno = new Alumno();
-        alumno.setUsuario(usuario);
-        alumno.setCarrera(carrera);
-        alumno.setSemestre(semestre);
-        alumno.setAuditoria(auAlumno);
-
-        return alumnoRepository.save(alumno);
+        return alumnoRepository.save(a);
     }
 
-    /* =========================
-       Helpers
-       ========================= */
-    private static final String ABC = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-    private static final SecureRandom RNG = new SecureRandom();
 
-    private String generarPasswordTemporal(int len) {
-        StringBuilder sb = new StringBuilder(len);
-        for (int i = 0; i < len; i++) sb.append(ABC.charAt(RNG.nextInt(ABC.length())));
-        return sb.toString();
+    @Transactional(readOnly = true)
+    public Alumno getAlumno(Integer id) {
+        return alumnoRepository.findByIdUsuario(id)
+                .orElse(null);
     }
+
+    @Transactional
+    public Alumno actualizarAlumno(Integer id, com.vias.uc.backend.model.dto.AlumnoInput input) {
+        // 1️⃣ Buscar al alumno
+        Alumno alumno = alumnoRepository.findByIdUsuario(id)
+                .orElseThrow(() -> new RuntimeException("Alumno no encontrado con id_usuario: " + id));
+
+        Usuario usuario = alumno.getUsuario();
+        if (usuario == null) {
+            throw new RuntimeException("El alumno no tiene un usuario asociado (id_usuario=" + id + ")");
+        }
+
+        System.out.println("=== [DEBUG] Actualizando alumno con ID " + id + " ===");
+
+        // 2️⃣ Actualizar datos del usuario (nombre, apellido, etc.)
+        if (input.usuario() != null) {
+            var ui = input.usuario();
+            if (ui.nombre() != null) usuario.setNombre(ui.nombre());
+            if (ui.apellido() != null) usuario.setApellido(ui.apellido());
+            if (ui.email() != null) usuario.setEmail(ui.email());
+            if (ui.telefono() != null) usuario.setTelefono(ui.telefono());
+            if (ui.ubicacion() != null) usuario.setUbicacion(ui.ubicacion());
+        }
+
+        // 3️⃣ Actualizar datos del alumno (carrera, semestre)
+        if (input.carrera() != null) alumno.setCarrera(input.carrera());
+        if (input.semestre() != null) alumno.setSemestre(input.semestre());
+
+        usuarioRepository.save(usuario);
+        Alumno actualizado = alumnoRepository.save(alumno);
+
+        System.out.println("=== [DEBUG] Alumno actualizado correctamente ===");
+        return actualizado;
+    }
+
 }

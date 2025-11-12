@@ -2,13 +2,14 @@ package com.vias.uc.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.Data;
 import java.time.LocalDateTime;
 
+@Data
 @Entity
-@Table(name = "auditoria")
+@Table(name = "auditoria", schema = "public")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Auditoria {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_auditoria")

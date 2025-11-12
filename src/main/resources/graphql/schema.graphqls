@@ -1,3 +1,15 @@
+# --- Tipos base ---
+enum RolUsuario {
+    administrador
+    profesor
+    investigador
+    empleador
+    egresado
+    alumno
+    empresa
+}
+
+
 # =========================
 # Usuario / Alumno
 # =========================
@@ -7,8 +19,13 @@ type Usuario {
   nombre: String!
   apellido: String
   email: String!
+    telefono: String
+    ubicacion: String
   rolPrincipal: String
   completitud: Int!
+    adminData: Administrador
+    egresadoData: Egresado
+    alumnoData: Alumno
 }
 
 type Alumno {
@@ -141,6 +158,7 @@ type Query {
   publicEndorsementsOf(userId: Int!): [Endorsement!]!
 }
 
+
 # =========================
 # Mutation
 # =========================
@@ -255,14 +273,60 @@ input InvestigadorInput {
 
 # --- Mutations ---
 extend type Mutation {
+    registrarAlumno(input: RegistroAlumnoInput!): Alumno
+    actualizarAlumno(input: AlumnoInput!): Alumno
+    login(input: LoginInput!): LoginResponse
   registrarProfesor(input: ProfesorInput!): Profesor
   registrarInvestigador(input: InvestigadorInput!): Investigador
 }
 
 
+type LoginResponse {
+    idUsuario: ID!
+    nombre: String
+    apellido: String
+    rolPrincipal: RolUsuario
+}
 
 
+# --- Datos extendidos ---
+type Administrador {
+    idUsuario: Int!
+    titulo: String
+    descripcion: String
+}
 
+type Egresado {
+    idUsuario: Int!
+    anioEgreso: Int!
+}
 
+type Alumno {
+    idUsuario: ID!
+    carrera: String!
+    semestre: Int!
+    idAuditoria: Int!
+    usuario: Usuario!
+}
+
+# --- Portafolio ---
+type Portafolio {
+    idPortafolio: Int!
+    idUsuario: Int!
+    descripcion: String
+    skills: String
+    visibilidad: String
+    ultimaActualizacion: String
+    evidencias: [Evidencia!]!
+}
+
+type Evidencia {
+    idEvidencia: Int!
+    idPortafolio: Int!
+    titulo: String
+    descripcion: String
+    tipo: String
+    recurso: String
+}
 
 
