@@ -11,6 +11,9 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
+import org.springframework.security.access.AccessDeniedException;
+import java.util.Set;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -47,22 +50,28 @@ public class OportunidadResolver {
     // =========================
     // Mutation: crear oportunidad (docente)
     // =========================
+
     @MutationMapping
     public Oportunidad crearOportunidadDocente(@Argument CrearOportunidadInput input) {
         validarInput(input);
 
-        // 1) Crear registro de auditoría (evita NOT NULL en oportunidades.id_auditoria)
+        // 0) Resolver y validar el creador por rol (chequeo manual)
+        int creadorId = safeParseInt(input.idCreador());
+        Usuario creador = usuarioRepository.findById((long) creadorId)
+                .orElseThrow(() -> new RuntimeException("Creador no encontrado: " + creadorId));
+        assertRolHabilitado(creador);
+
+        // 1) Crear registro de auditoría
         Auditoria audit = Auditoria.builder()
-                .actorId(safeParseInt(input.idCreador()))
+                .actorId(creadorId)
                 .accion("CREAR_OPORTUNIDAD")
                 .detalle(buildDetalleAuditoria(input))
-                // fechaEvento se setea en @PrePersist si viene null
                 .build();
         audit = auditoriaRepository.save(audit);
 
-        // 2) Crear oportunidad
+        // 2) Crear oportunidad (forzamos el id del creador validado)
         Oportunidad op = new Oportunidad();
-        op.setIdCreador(safeParseInt(input.idCreador()));
+        op.setIdCreador(creadorId);
         op.setTitulo(trimOrNull(input.titulo()));
         op.setDescripcion(trimOrNull(input.descripcion()));
         op.setRequisitos(trimOrNull(input.requisitos()));
@@ -72,17 +81,16 @@ public class OportunidadResolver {
         op.setFechaPublicacion(LocalDateTime.now());
         op.setFechaCierre(parseFechaCierre(input.fechaCierre()));
 
-        String estado = (input.estado() == null || input.estado().isBlank())
-                ? "activo"
-                : input.estado().trim();
+        String estado = (input.estado() == null || input.estado().isBlank()) ? "activo" : input.estado().trim();
         op.setEstado(estado);
 
-        // Importante: setear id_auditoria (BD lo requiere NOT NULL)
-        // Auditoria.id es Long (bigserial) y oportunidades.id_auditoria es int4 -> cast seguro si cabe
         op.setIdAuditoria(audit.getIdAuditoria().intValue());
 
         return oportunidadRepository.save(op);
     }
+
+
+
 
     // =========================
     // Field Resolver: Oportunidad.creador
@@ -147,5 +155,25 @@ public class OportunidadResolver {
     public List<Oportunidad> oportunidadesPorCreador(@Argument Long creadorId) {
         return oportunidadRepository.findAllByCreadorId(creadorId);
     }
+
+    private static final Set<String> ROLES_HABILITADOS = Set.of(
+            "administrador", "profesor", "investigador", "empresa"
+    );
+
+    private void assertRolHabilitado(Usuario usuario) {
+        if (usuario == null) throw new AccessDeniedException("Usuario no encontrado");
+        if (usuario.getRolPrincipal() == null) throw new AccessDeniedException("Rol no definido");
+
+        // Enum -> String usando name(), no trim()
+        String rol = usuario.getRolPrincipal().name().toLowerCase();
+
+        if (!ROLES_HABILITADOS.contains(rol)) {
+            throw new AccessDeniedException(
+                    "No autorizado: solo administrador/profesor/investigador/empresa pueden publicar oportunidades"
+            );
+        }
+    }
+
+
 }
 
