@@ -242,6 +242,22 @@ query listarOportunidades {
 }
 ```
 
+### Listar Oportunidades por Creador
+```graphql
+query oportunidadesPorCreador{
+  oportunidadesPorCreador(creadorId: 1020) {
+    idOportunidad
+    titulo
+    estado
+    creador {
+      idUsuario
+      apellido
+      rolPrincipal
+    }
+  }
+}
+```
+
 ### Crear Oportunidad
 ```graphql
 mutation crearOportunidadDocente{
