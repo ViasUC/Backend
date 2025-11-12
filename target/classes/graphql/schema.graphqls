@@ -169,6 +169,9 @@ type Mutation {
         idActor: ID
     ): Postulacion!
 
+    # Docentes - Oportunidades
+    crearOportunidadDocente(input: CrearOportunidadInput!): Oportunidad!
+
     # Endorsements
     createEndorsement(input: CreateEndorsementInput!): Endorsement!
     decideEndorsement(id: ID!, accept: Boolean!): Endorsement!
