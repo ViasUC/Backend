@@ -21,6 +21,102 @@ Readme para el backend que todos van a usar en sus frontend
 
 # DOCENTES
 
+## F0: Gestión de perfiles
+
+### Registro al sistema: Docente
+```graphql
+mutation registrarProfesor{
+  registrarProfesor(
+    input: {
+      usuario: {
+        nombre: "Lucía"
+        apellido: "González"
+        email: "lucia@uca.edu.py"
+        telefono: "0981999999"
+        ubicacion: "Asunción"
+        password: "1234"
+      }
+      departamento: "Informática"
+      categoriaDocente: "Titular"
+      areasDocentes: "SE1, Arquitectura"
+    }
+  ) {
+    idUsuario
+    departamento
+    categoriaDocente
+    usuario {
+      nombre
+      email
+    }
+  }
+}
+```
+
+### Registro al sistema: Investigador
+```graphql
+mutation registrarInvestigador{
+  registrarInvestigador(
+    input: {
+      usuario: {
+        nombre: "Diego"
+        apellido: "Medina"
+        email: "diego@uca.edu.py"
+        telefono: "0981222333"
+        ubicacion: "Encarnación"
+        password: "abcd"
+      }
+      areasInvestigacion: "Inteligencia Artificial, Deep Learning"
+      afiliaciones: "UCA, Laboratorio de IA"
+      hindex: 5
+    }
+  ) {
+    idUsuario
+    areasInvestigacion
+    afiliaciones
+    hindex
+    usuario {
+      nombre
+      email
+      rolPrincipal
+    }
+  }
+}
+```
+
+### Inicio de sesión: Docente
+```graphql
+mutation loginDocente {
+  loginDocenteInvestigador(input: {
+    email: "lucia@uca.edu.py",
+    password: "1234"
+  }) {
+    token
+    usuario {
+      idUsuario
+      email
+      rolPrincipal
+    }
+  }
+}
+```
+
+### Inicio de sesión: Investigador
+```graphql
+mutation loginInvestigador {
+  loginDocenteInvestigador(input: {
+    email: "diego@uca.edu.py",
+    password: "abcd"
+  }) {
+    token
+    usuario {
+      idUsuario
+      email
+      rolPrincipal
+    }
+  }
+}
+```
+
 ## F1: Manejo de postulantes + Ejemplos de uso en GraphQL
 
 ### Crear Postulación
