@@ -19,6 +19,21 @@ type Alumno {
   semestre: Int
 }
 
+type Profesor {
+   idUsuario: ID!
+   departamento: String
+   categoriaDocente: String
+   areasDocentes: String
+   usuario: Usuario!
+}
+type Investigador {
+   idUsuario: ID!
+   areasInvestigacion: String
+   afiliaciones: String
+   hindex: Int
+   usuario: Usuario!
+}
+
 # =========================
 # Oportunidades
 # =========================
@@ -204,5 +219,38 @@ type AuthPayload {
 extend type Mutation {
   loginDocenteInvestigador(input: LoginInput!): AuthPayload!
 }
+
+# --- Inputs para alta de profesor/investigador ---
+input UsuarioInput {
+  nombre: String!
+  apellido: String
+  email: String!
+  telefono: String
+  ubicacion: String
+  password: String!
+}
+
+input ProfesorInput {
+  usuario: UsuarioInput!
+  departamento: String
+  categoriaDocente: String
+  areasDocentes: String
+}
+
+input InvestigadorInput {
+  usuario: UsuarioInput!
+  areasInvestigacion: String
+  afiliaciones: String
+  hindex: Int
+}
+
+# --- Mutations ---
+extend type Mutation {
+  registrarProfesor(input: ProfesorInput!): Profesor
+  registrarInvestigador(input: InvestigadorInput!): Investigador
+}
+
+
+
 
 

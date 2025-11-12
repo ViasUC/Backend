@@ -126,4 +126,18 @@ public class Usuario {
     public void setAuditoria(Auditoria auditoria) {
         this.auditoria = auditoria;
     }
+
+    @Column(name = "telefono")
+    private String telefono;
+
+    @Column(name = "ubicacion")
+    private String ubicacion;
+
+    // --- getters/setters ---
+    public String getTelefono() { return telefono; }
+    public void setTelefono(String telefono) { this.telefono = telefono; }
+
+    public String getUbicacion() { return ubicacion; }
+    public void setUbicacion(String ubicacion) { this.ubicacion = ubicacion; }
+
 }
