@@ -88,7 +88,8 @@ public class AlumnoService {
         a.setUsuario(u);                  // @MapsId
         a.setCarrera(input.carrera());
         a.setSemestre(input.semestre());
-        a.setIdAuditoria(audit.getIdAuditoria());
+        a.setIdAuditoria(audit.getIdAuditoria().longValue());
+
 
         return alumnoRepository.save(a);
     }
