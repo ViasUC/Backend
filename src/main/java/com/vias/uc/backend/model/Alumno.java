@@ -7,6 +7,8 @@ import lombok.Data;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Data
 @Entity
@@ -14,20 +16,25 @@ import lombok.Data;
 public class Alumno {
 
     @Id
-    @Column(name = "id_usuario")
-    private Integer idUsuario;
+    @JdbcTypeCode(SqlTypes.INTEGER)                 // <- valida contra int4 de la tabla
+    @Column(name = "id_usuario", nullable = false)  // <- columna REAL en la BD
+    private Long idUsuario;                         // <- tipo Java Long para alinear con Usuario
 
-    @OneToOne(optional = false)
-    @MapsId
-    @JoinColumn(name = "id_usuario")
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @MapsId                                         // <- comparte la PK con Usuario
+    @JoinColumn(name = "id_usuario", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_alumnos_usuarios"))
     private Usuario usuario;
 
-    @Column(nullable = false)
+    @Column(name = "carrera", length = 255)
     private String carrera;
 
-    @Column(nullable = false)
+    @Column(name = "semestre")
     private Integer semestre;
 
-    @Column(name = "id_auditoria", nullable = false)
-    private Long idAuditoria;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "id_auditoria", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_alumnos_auditoria"))
+    private Auditoria auditoria;
+
 }

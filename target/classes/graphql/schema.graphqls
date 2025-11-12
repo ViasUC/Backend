@@ -1,122 +1,314 @@
-# --- Tipos base ---
-enum RolUsuario {
-  administrador
-  profesor
-  investigador
-  empleador
-  egresado
-  alumno
-  empresa
-}
+enum RolUsuario { administrador profesor investigador empleador egresado alumno empresa }
 
 type Usuario {
-  idUsuario: ID!
-  nombre: String!
-  apellido: String
-  email: String!
-  telefono: String
+    idUsuario: ID!
+    nombre: String!
+    apellido: String
+    email: String!
+    telefono: String
+    ubicacion: String
+    rolPrincipal: RolUsuario        # ← NO String, usa el enum
+    completitud: Int!
+    adminData: Administrador
+    egresadoData: Egresado
+    alumnoData: Alumno
+}
+
+type Alumno {
+    idUsuario: ID!                  # PK=FK
+    usuario: Usuario!               # si realmente es obligatorio, pon !
+    carrera: String!
+    semestre: Int!
+    idAuditoria: Int
+}
+
+type Profesor {
+    idUsuario: ID!
+    departamento: String
+    categoriaDocente: String
+    areasDocentes: String
+    usuario: Usuario!
+}
+
+type Investigador {
+    idUsuario: ID!
+    areasInvestigacion: String
+    afiliaciones: String
+    hindex: Int
+    usuario: Usuario!
+}
+# =========================
+# Oportunidades
+# =========================
+
+type Oportunidad {
+  idOportunidad: ID!
+  titulo: String
+  descripcion: String
+  requisitos: String
   ubicacion: String
-  rolPrincipal: RolUsuario
-  completitud: Int
-
-  adminData: Administrador
-  egresadoData: Egresado
-  alumnoData: Alumno
+  modalidad: String
+  tipo: String
+  fechaPublicacion: String
+  fechaCierre: String
+  estado: String        # en BD: activo/borrador/pausada/cerrado
+  creador: Usuario!     # <-- reemplaza a idCreador
 }
 
-# --- Queries ---
+# =========================
+# Postulaciones
+# =========================
+
+"""
+Estados posibles de la postulación (coinciden con el enum Java EstadoPostulacion).
+"""
+enum PostulacionEstado {
+  PENDIENTE
+  ACEPTADA
+  RECHAZADA
+  CANCELADA
+}
+
+type HistorialPostulacion {
+  idHistorial: ID!
+  estadoAnterior: PostulacionEstado
+  estadoNuevo: PostulacionEstado!
+  fechaCambio: String!
+  motivo: String
+  actor: Usuario
+}
+
+type Postulacion {
+  idPostulacion: ID!
+  oportunidad: Oportunidad!
+  postulante: Usuario!
+  estado: PostulacionEstado!
+  fechaPostulacion: String
+}
+
+input PostulacionFiltro {
+  idOportunidad: ID
+  idAlumno: ID
+  estados: [PostulacionEstado!]
+  fechaDesde: String
+  fechaHasta: String
+  texto: String
+}
+
+type PostulacionPage {
+  items: [Postulacion!]!
+  total: Int!
+  page: Int!
+  size: Int!
+}
+# ===== Root types =====
 type Query {
-  alumnos: [Alumno!]!
-  alumno(id: ID!): Alumno
-  alumnoPorEmail(email: String!): Alumno
-  usuarioById(id: Int!): Usuario
-  usuarios: [Usuario!]!   # <-- ANTES TENÍAS EL EXTEND TYPE, AHORA LO UNIFICO AQUÍ
-  portafolioPorUsuario(idUsuario: Int!): Portafolio   # <-- AQUÍ VA TU NUEVA QUERY
+    # Usuarios
+    usuarios: [Usuario!]!
+    usuario(id: ID!): Usuario
+
+    # Alumnos
+    alumnos: [Alumno!]!
+    alumno(id: ID!): Alumno
+    alumnoPorId(id: ID!): Alumno
+
+    # Oportunidades
+    oportunidades: [Oportunidad!]!
+    oportunidadesPorEstado(estado: String!): [Oportunidad!]!
+    oportunidad(id: ID!): Oportunidad
+    oportunidadesPorCreador(creadorId: ID!): [Oportunidad!]!
+
+    # Postulaciones
+    postulaciones: [Postulacion]
+    postulacionesPorAlumno(idAlumno: ID!): [Postulacion]
+    postulacionesPorOportunidad(idOportunidad: ID!): [Postulacion]
+    postulacionesPage(
+        filtro: PostulacionFiltro
+        page: Int = 0
+        size: Int = 10
+        sort: String = "fechaPostulacion,desc"
+    ): PostulacionPage!
+
+    historialPostulacion(idPostulacion: ID!): [HistorialPostulacion!]!
+
+    # Endorsements
+    endorsementsReceived(status: EndorsementStatus): [Endorsement!]!
+    endorsementsGiven: [Endorsement!]!
+    publicEndorsementsOf(userId: Int!): [Endorsement!]!
 }
 
-# --- Inputs para actualización parcial ---
+
+type Mutation {
+    # Alumnos
+    registrarAlumno(input: RegistroAlumnoInput!): Alumno
+    actualizarAlumno(input: AlumnoInput!): Alumno
+    crearAlumno(
+        nombre: String!
+        apellido: String!
+        email: String!
+        carrera: String!
+        semestre: Int!
+    ): Alumno
+
+    # Auth
+    login(input: LoginInput!): LoginResponse
+    loginDocenteInvestigador(input: LoginInput!): AuthPayload!
+
+    # Perfiles
+    registrarProfesor(input: ProfesorInput!): Profesor
+    registrarInvestigador(input: InvestigadorInput!): Investigador
+    actualizarProfesor(id: ID!, input: ProfesorInput): Profesor
+    actualizarInvestigador(id: ID!, input: InvestigadorInput): Investigador
+
+    # Postulaciones
+    crearPostulacion(idAlumno: ID!, idOportunidad: ID!): Postulacion
+    actualizarEstadoPostulacion(
+        idPostulacion: ID!
+        estado: PostulacionEstado!
+        motivo: String
+        idActor: ID
+    ): Postulacion!
+
+    # Endorsements
+    createEndorsement(input: CreateEndorsementInput!): Endorsement!
+    decideEndorsement(id: ID!, accept: Boolean!): Endorsement!
+}
+
+# =========================
+# Inputs
+# =========================
+
+input AlumnoInput {
+    usuario: UsuarioInput
+    carrera: String
+    semestre: Int
+}
+
+# --- Inputs para registro (alta) ---
+input UsuarioRegistroInput {
+    nombre: String!
+    apellido: String
+    email: String!
+    telefono: String
+    ubicacion: String
+    password: String!
+    rolPrincipal: RolUsuario = alumno
+    completitud: Int = 0
+}
+
+input RegistroAlumnoInput {
+    usuario: UsuarioRegistroInput!
+    carrera: String!
+    semestre: Int!
+    detalleAuditoria: String = "registro alumno"
+}
+input CrearOportunidadInput {
+  idCreador: ID!          # temporal hasta tomarlo del token en backend
+  titulo: String!
+  descripcion: String
+  requisitos: String
+  ubicacion: String
+  modalidad: String!      # "presencial" | "remoto" | "híbrido"
+  tipo: String!           # "pasantía" | "empleo" | ...
+  fechaCierre: String
+  estado: String          # default backend: "activo"
+}
+
+enum EndorsementStatus { PENDING ACCEPTED REJECTED }
+
+type Endorsement {
+  idEndorsement: ID!
+  fromUserId: Int!
+  toUserId: Int!
+  skill: String
+  message: String
+  status: EndorsementStatus!
+  createdAt: String
+  decidedAt: String
+}
+
+input CreateEndorsementInput {
+  toUserId: Int!
+  skill: String
+  message: String
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+type LoginResponse {
+    idUsuario: ID!
+    nombre: String
+    apellido: String
+    rolPrincipal: RolUsuario
+}
+
+
+type AuthPayload {
+  token: String!
+  usuario: Usuario!
+}
+
+
+# --- Inputs para alta de profesor/investigador ---
 input UsuarioInput {
   nombre: String
   apellido: String
   email: String
   telefono: String
   ubicacion: String
+  password: String
 }
 
-input AlumnoInput {
-  usuario: UsuarioInput
-  carrera: String
-  semestre: Int
+input ProfesorInput {
+  usuario: UsuarioInput!
+  departamento: String
+  categoriaDocente: String
+  areasDocentes: String
 }
 
-# --- Inputs para registro ---
-input UsuarioRegistroInput {
-  nombre: String!
-  apellido: String
-  email: String!
-  telefono: String
-  ubicacion: String
-  password: String!
-  rolPrincipal: RolUsuario = alumno
-  completitud: Int = 0
+input InvestigadorInput {
+  usuario: UsuarioInput!
+  areasInvestigacion: String
+  afiliaciones: String
+  hindex: Int
 }
 
-input RegistroAlumnoInput {
-  usuario: UsuarioRegistroInput!
-  carrera: String!
-  semestre: Int!
-  detalleAuditoria: String = "registro alumno"
-}
 
-# --- Input para login ---
-input LoginInput {
-  email: String!
-  password: String!
-}
 
-# --- Mutations ---
-type Mutation {
-  registrarAlumno(input: RegistroAlumnoInput!): Alumno!
-  actualizarAlumno(id: ID!, input: AlumnoInput): Alumno
-  login(input: LoginInput!): Usuario
-}
 
 # --- Datos extendidos ---
 type Administrador {
-  idUsuario: Int!
-  titulo: String
-  descripcion: String
+    idUsuario: Int!
+    titulo: String
+    descripcion: String
 }
 
 type Egresado {
-  idUsuario: Int!
-  anioEgreso: Int!
+    idUsuario: Int!
+    anioEgreso: Int!
 }
 
-type Alumno {
-  idUsuario: ID!
-  carrera: String!
-  semestre: Int!
-  idAuditoria: Int!
-  usuario: Usuario!
-}
 
 # --- Portafolio ---
 type Portafolio {
-  idPortafolio: Int!
-  idUsuario: Int!
-  descripcion: String
-  skills: String
-  visibilidad: String
-  ultimaActualizacion: String
-  evidencias: [Evidencia!]!
+    idPortafolio: Int!
+    idUsuario: Int!
+    descripcion: String
+    skills: String
+    visibilidad: String
+    ultimaActualizacion: String
+    evidencias: [Evidencia!]!
 }
 
 type Evidencia {
-  idEvidencia: Int!
-  idPortafolio: Int!
-  titulo: String
-  descripcion: String
-  tipo: String
-  recurso: String
+    idEvidencia: Int!
+    idPortafolio: Int!
+    titulo: String
+    descripcion: String
+    tipo: String
+    recurso: String
 }
+
+
