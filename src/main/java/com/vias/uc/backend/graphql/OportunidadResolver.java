@@ -142,4 +142,10 @@ public class OportunidadResolver {
             String fechaCierre,
             String estado
     ) {}
+
+    @QueryMapping
+    public List<Oportunidad> oportunidadesPorCreador(@Argument Long creadorId) {
+        return oportunidadRepository.findAllByCreadorId(creadorId);
+    }
 }
+

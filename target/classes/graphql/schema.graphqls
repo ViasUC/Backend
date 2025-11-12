@@ -117,6 +117,8 @@ type Query {
   oportunidades: [Oportunidad!]!
   oportunidadesPorEstado(estado: String!): [Oportunidad!]!
   oportunidad(id: ID!): Oportunidad
+  oportunidadesPorCreador(creadorId: ID!): [Oportunidad!]!
+
 
   # Postulaciones (existentes)
   postulaciones: [Postulacion]
