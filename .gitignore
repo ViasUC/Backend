@@ -1,20 +1,28 @@
-# Compiled class file
-*.class
+# =========================
+# SO / Misceláneos
+# =========================
+.DS_Store
+Thumbs.db
 
-# Log file
+# Logs / temporales
 *.log
+logs/
+tmp/
+*.tmp
 
-# BlueJ files
-*.ctxt
+# Crash / heap dumps
+hs_err_pid*
+replay_pid*
+*.hprof
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-/target
-/target/generated-sources
-target/generated-examples
-target/graphqlcodegen
-target
-# Package Files #
+# =========================
+# Java / Maven / Spring
+# =========================
+# Compilados y artefactos de build
+target/
+target/**
+
+# Paquetes (si no publicás binarios en el repo)
 *.jar
 *.war
 *.nar
@@ -23,6 +31,42 @@ target
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
+# Mantener el wrapper de Maven aunque se ignore *.jar
+!/.mvn/wrapper/maven-wrapper.jar
+
+# =========================
+# Codegen (por si algún plugin escribe fuera de target)
+# =========================
+# Normalmente target/ ya cubre todo, pero lo dejamos explícito:
+target/generated-sources/
+target/generated-examples/
+target/graphqlcodegen/
+
+# =========================
+# IDEs
+# =========================
+# IntelliJ
+.idea/
+*.iml
+*.iws
+out/
+
+# Eclipse / STS
+.project
+.classpath
+.settings/
+.factorypath
+.springBeans
+.apt_generated/
+.sts4-cache/
+
+# VS Code
+.vscode/
+
+# =========================
+# Configs locales / secretos
+# =========================
+.env
+.env.*
+*.local.properties
+*.private.*

@@ -15,10 +15,6 @@ public class AuthResolver {
         this.authService = authService;
     }
 
-    @MutationMapping
-    public Usuario login(@Argument("input") LoginInput input) {
-        return authService.login(input.email(), input.password());
-    }
 
     // Clase interna o registro (puede ir también en su propio archivo)
     public record LoginInput(String email, String password) {}
