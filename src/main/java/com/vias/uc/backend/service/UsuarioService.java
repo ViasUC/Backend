@@ -12,6 +12,11 @@ public interface UsuarioService {
     Profesor registrarProfesor(UsuarioService.ProfesorInput input);
     Investigador registrarInvestigador(UsuarioService.InvestigadorInput input);
 
+    // Actualizaciones
+    Profesor actualizarProfesor(Integer id, UsuarioService.ProfesorInput input);
+    Investigador actualizarInvestigador(Integer id, UsuarioService.InvestigadorInput input);
+
+
     // ===== DTOs anidados (públicos) =====
     class UsuarioInput {
         private String nombre;

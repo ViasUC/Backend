@@ -127,6 +127,78 @@ public class UsuarioServiceImpl implements UsuarioService {
         return i;
     }
 
+
+    @Override
+    public Profesor actualizarProfesor(Integer id, UsuarioService.ProfesorInput input) {
+        Profesor p = profesorRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Profesor no encontrado: " + id));
+        Usuario u = usuarioRepository.findById(Long.valueOf(id))
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + id));
+
+        if (input.getUsuario() != null) {
+            var ui = input.getUsuario();
+            if (ui.getNombre() != null) u.setNombre(ui.getNombre());
+            if (ui.getApellido() != null) u.setApellido(ui.getApellido());
+
+            if (ui.getPassword() != null && !ui.getPassword().isBlank()) {
+                // evita doble-hash si por error te mandan un bcrypt ya hasheado
+                String raw = ui.getPassword();
+                if (!(raw.startsWith("$2a$") || raw.startsWith("$2b$") || raw.startsWith("$2y$"))) {
+                    u.setPassword(passwordEncoder.encode(raw));
+                } else {
+                    u.setPassword(raw);
+                }
+            }
+
+            if (ui.getEmail() != null) u.setEmail(ui.getEmail());
+            if (ui.getTelefono() != null) u.setTelefono(ui.getTelefono());
+            if (ui.getUbicacion() != null) u.setUbicacion(ui.getUbicacion());
+        }
+
+        if (input.getDepartamento() != null) p.setDepartamento(input.getDepartamento());
+        if (input.getCategoriaDocente() != null) p.setCategoriaDocente(input.getCategoriaDocente());
+        if (input.getAreasDocentes() != null) p.setAreasDocentes(input.getAreasDocentes());
+
+        usuarioRepository.save(u);
+        return profesorRepository.save(p);
+    }
+
+    @Override
+    public Investigador actualizarInvestigador(Integer id, UsuarioService.InvestigadorInput input) {
+        Investigador i = investigadorRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Investigador no encontrado: " + id));
+        Usuario u = usuarioRepository.findById(Long.valueOf(id))
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + id));
+
+        if (input.getUsuario() != null) {
+            var ui = input.getUsuario();
+            if (ui.getNombre() != null) u.setNombre(ui.getNombre());
+            if (ui.getApellido() != null) u.setApellido(ui.getApellido());
+
+            if (ui.getPassword() != null && !ui.getPassword().isBlank()) {
+                String raw = ui.getPassword();
+                if (!(raw.startsWith("$2a$") || raw.startsWith("$2b$") || raw.startsWith("$2y$"))) {
+                    u.setPassword(passwordEncoder.encode(raw));
+                } else {
+                    u.setPassword(raw);
+                }
+            }
+
+            if (ui.getEmail() != null) u.setEmail(ui.getEmail());
+            if (ui.getTelefono() != null) u.setTelefono(ui.getTelefono());
+            if (ui.getUbicacion() != null) u.setUbicacion(ui.getUbicacion());
+        }
+
+        if (input.getAreasInvestigacion() != null) i.setAreasInvestigacion(input.getAreasInvestigacion());
+        if (input.getAfiliaciones() != null) i.setAfiliaciones(input.getAfiliaciones());
+        if (input.getHindex() != null) i.setHindex(input.getHindex());
+
+        usuarioRepository.save(u);
+        return investigadorRepository.save(i);
+    }
+
+
+
     // ===== Helpers =====
 
     private Auditoria nuevaAuditoria(String accion, String detalle) {

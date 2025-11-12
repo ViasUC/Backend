@@ -169,6 +169,13 @@ type Mutation {
   #Endorsements
   createEndorsement(input: CreateEndorsementInput!): Endorsement!
   decideEndorsement(id: ID!, accept: Boolean!): Endorsement!
+
+  # actualizar perfiles
+  actualizarProfesor(id: ID!, input: ProfesorInput): Profesor
+  actualizarInvestigador(id: ID!, input: InvestigadorInput): Investigador
+
+
+
 }
 
 # =========================
@@ -222,12 +229,12 @@ extend type Mutation {
 
 # --- Inputs para alta de profesor/investigador ---
 input UsuarioInput {
-  nombre: String!
+  nombre: String
   apellido: String
-  email: String!
+  email: String
   telefono: String
   ubicacion: String
-  password: String!
+  password: String
 }
 
 input ProfesorInput {
@@ -249,6 +256,9 @@ extend type Mutation {
   registrarProfesor(input: ProfesorInput!): Profesor
   registrarInvestigador(input: InvestigadorInput!): Investigador
 }
+
+
+
 
 
 

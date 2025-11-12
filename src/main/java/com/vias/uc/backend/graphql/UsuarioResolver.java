@@ -40,4 +40,15 @@ public class UsuarioResolver {
     public Investigador registrarInvestigador(@Argument("input") UsuarioService.InvestigadorInput input) {
         return usuarioService.registrarInvestigador(input);
     }
+
+    @MutationMapping
+    public Profesor actualizarProfesor(@Argument Integer id, @Argument("input") UsuarioService.ProfesorInput input) {
+        return usuarioService.actualizarProfesor(id, input);
+    }
+
+    @MutationMapping
+    public Investigador actualizarInvestigador(@Argument Integer id, @Argument("input") UsuarioService.InvestigadorInput input) {
+        return usuarioService.actualizarInvestigador(id, input);
+    }
+
 }
