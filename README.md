@@ -117,6 +117,48 @@ mutation loginInvestigador {
 }
 ```
 
+### Actualizar Perfil: Docente
+```graphql
+mutation actualizarProfesor{
+  actualizarProfesor(id: 1020, input: {
+    usuario: { nombre: "Luciana", apellido: "González" email: "luciana@uca.edu.py", password: "luci123" }
+    departamento: "Software"
+    categoriaDocente: "Actualizada"
+  }) {
+    usuario { nombre email }
+    departamento
+  }
+}
+```
+
+### Actualizar Perfil: Investigador
+```graphql
+mutation actualizarInvestigador{
+  actualizarInvestigador(
+    id: 1021
+    input: {
+      usuario: {
+        nombre: "Diego M."
+        email: "diego@uca.edu.py"
+        # opcional para cambiar clave (se hashea con bcrypt):
+        #password: "nueva123"
+        ubicacion: "Luque"
+      }
+      areasInvestigacion: "ChatGPT"
+      afiliaciones: "Lab IA"
+      hindex: 8
+    }
+  ) {
+    idUsuario
+    areasInvestigacion
+    afiliaciones
+    hindex
+    usuario { nombre email }
+  }
+}
+
+```
+
 ## F1: Manejo de postulantes + Ejemplos de uso en GraphQL
 
 ### Crear Postulación
