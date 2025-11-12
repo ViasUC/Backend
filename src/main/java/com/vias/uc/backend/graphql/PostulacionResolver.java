@@ -5,6 +5,11 @@ import com.vias.uc.backend.service.PostulacionService;
 import org.springframework.data.domain.*;
 import org.springframework.graphql.data.method.annotation.*;
 import org.springframework.stereotype.Controller;
+import org.springframework.security.access.AccessDeniedException;
+import com.vias.uc.backend.repository.UsuarioRepository;
+import com.vias.uc.backend.model.Usuario;
+import com.vias.uc.backend.model.enums.RolUsuario;
+
 
 import java.util.List;
 
@@ -12,10 +17,14 @@ import java.util.List;
 public class PostulacionResolver {
 
     private final PostulacionService postulacionService;
+    private final UsuarioRepository usuarioRepository;
 
-    public PostulacionResolver(PostulacionService postulacionService) {
+    public PostulacionResolver(PostulacionService postulacionService,
+                               UsuarioRepository usuarioRepository) {
         this.postulacionService = postulacionService;
+        this.usuarioRepository = usuarioRepository;
     }
+
 
     // ===== Existentes =====
     @QueryMapping
@@ -85,6 +94,37 @@ public class PostulacionResolver {
                                                    @Argument EstadoPostulacion estado,
                                                    @Argument String motivo,
                                                    @Argument Long idActor) {
+        // 🔹 NUEVO: cargar actor y validar permisos por rol (mismo patrón que OportunidadResolver)
+        Usuario actor = usuarioRepository.findById(idActor)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + idActor));
+        assertPermisoActualizar(actor, estado);
+
+        // continuar como ya tenías
         return postulacionService.actualizarEstado(idPostulacion, estado, motivo, idActor);
     }
+
+    private void assertPermisoActualizar(Usuario actor, EstadoPostulacion nuevoEstado) {
+        if (actor == null || actor.getRolPrincipal() == null) {
+            throw new AccessDeniedException("No autorizado");
+        }
+
+        RolUsuario rol = actor.getRolPrincipal();
+
+        if (rol == RolUsuario.alumno) {
+            if (nuevoEstado != EstadoPostulacion.CANCELADA) {
+                throw new AccessDeniedException("Un alumno solo puede cancelar su propia postulación");
+            }
+            return;
+        }
+
+        // Empresa / Profesor / Administrador: permitido (aceptar, rechazar, cancelar)
+        if (rol == RolUsuario.empresa || rol == RolUsuario.profesor || rol == RolUsuario.administrador) {
+            return;
+        }
+
+        // Otros roles (egresado, investigador si no corresponde): bloqueado
+        throw new AccessDeniedException("No autorizado");
+    }
+
+
 }
