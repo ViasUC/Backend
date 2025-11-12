@@ -1,10 +1,11 @@
 package com.vias.uc.backend.service.impl;
 
+import com.vias.uc.backend.service.AuthDocente;
 import com.vias.uc.backend.service.AuthService;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AuthServiceStub implements AuthService {
+public class AuthServiceStub implements AuthDocente {
 
     @Override
     public Integer getUserId() {

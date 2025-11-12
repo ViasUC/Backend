@@ -2,6 +2,7 @@ package com.vias.uc.backend.graphql;
 
 import com.vias.uc.backend.model.Endorsement;
 import com.vias.uc.backend.model.Endorsement.Status;
+import com.vias.uc.backend.service.AuthDocente;
 import com.vias.uc.backend.service.AuthService;
 import com.vias.uc.backend.service.EndorsementService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ import java.util.List;
 public class EndorsementController {
 
     private final EndorsementService service;
-    private final AuthService auth; // reemplaza por tu clase real de auth (de donde sacás el userId)
+    private final AuthDocente auth; // reemplaza por tu clase real de auth (de donde sacás el userId)
 
     // DTO de entrada (record)
     public record CreateEndorsementInput(Integer toUserId, String skill, String message) {}

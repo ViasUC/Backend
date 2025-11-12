@@ -1,7 +1,10 @@
 package com.vias.uc.backend.model;
 
+import com.vias.uc.backend.model.enums.RolUsuario;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 
 @Data
 @Entity
@@ -19,9 +22,12 @@ public class Usuario {
 
     private String apellido;
 
+    @Column(name = "telefono")
+    private String telefono;
+
+    @Column(name = "ubicacion")
     private String ubicacion;
 
-    private String telefono;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -129,12 +135,6 @@ public class Usuario {
     public void setAuditoria(Auditoria auditoria) {
         this.auditoria = auditoria;
     }
-
-    @Column(name = "telefono")
-    private String telefono;
-
-    @Column(name = "ubicacion")
-    private String ubicacion;
 
     // --- getters/setters ---
     public String getTelefono() { return telefono; }

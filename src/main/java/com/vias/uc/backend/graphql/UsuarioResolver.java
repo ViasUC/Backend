@@ -20,7 +20,7 @@ public class UsuarioResolver {
     private final UsuarioRepository usuarioRepository;
     private final UsuarioService usuarioService;
 
-
+    // === Queries ===
     @QueryMapping
     public List<Usuario> usuarios() {
         return usuarioRepository.findAll();
@@ -31,6 +31,7 @@ public class UsuarioResolver {
         return usuarioRepository.findById(id).orElse(null);
     }
 
+    // === Mutations ===
     @MutationMapping
     public Profesor registrarProfesor(@Argument("input") UsuarioService.ProfesorInput input) {
         return usuarioService.registrarProfesor(input);
@@ -50,5 +51,4 @@ public class UsuarioResolver {
     public Investigador actualizarInvestigador(@Argument Integer id, @Argument("input") UsuarioService.InvestigadorInput input) {
         return usuarioService.actualizarInvestigador(id, input);
     }
-
 }

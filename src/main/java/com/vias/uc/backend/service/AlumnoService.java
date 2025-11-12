@@ -3,6 +3,7 @@ package com.vias.uc.backend.service;
 import com.vias.uc.backend.model.Alumno;
 import com.vias.uc.backend.model.Auditoria;
 import com.vias.uc.backend.model.Usuario;
+import com.vias.uc.backend.model.dto.AlumnoInput;
 import com.vias.uc.backend.model.dto.RegistroAlumnoInput;
 import com.vias.uc.backend.repository.AlumnoRepository;
 import com.vias.uc.backend.repository.AuditoriaRepository;
@@ -20,6 +21,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import com.vias.uc.backend.model.dto.UsuarioInput;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+// imports necesarios: List, Optional, LocalDateTime, Transactional, etc.
 @Service
 public class AlumnoService {
 
@@ -36,85 +42,80 @@ public class AlumnoService {
         this.auditoriaRepository = auditoriaRepository;
     }
 
-
-
-// ...
-
-
     @Transactional
-    public Alumno registrarAlumnoMutationFede(RegistroAlumnoInput input) {
+    public Alumno registrarAlumno(RegistroAlumnoInput input) {
         if (input == null || input.usuario() == null) {
-            throw new IllegalArgumentException("El objeto 'usuario' es obligatorio.");
+            throw new IllegalArgumentException("usuario es obligatorio");
         }
-        UsuarioRegistroInput ui = input.usuario();
-
+        var ui = input.usuario();
         if (ui.email() == null || ui.email().isBlank()) {
-            throw new IllegalArgumentException("El email es obligatorio.");
+            throw new IllegalArgumentException("email obligatorio");
         }
         if (ui.password() == null || ui.password().isBlank()) {
-            throw new IllegalArgumentException("El password es obligatorio.");
+            throw new IllegalArgumentException("password obligatorio");
         }
 
+        // Si el correo YA existe: solo crear Alumno (si no existe) y vincular al Usuario
         if (usuarioRepository.existsByEmail(ui.email())) {
-            throw new IllegalArgumentException("El email ya está registrado: " + ui.email());
+            Usuario u = usuarioRepository.findByEmail(ui.email())
+                    .orElseThrow(() -> new IllegalStateException("usuario no encontrado tras existsByEmail"));
+            if (alumnoRepository.existsById(u.getIdUsuario().longValue())) {
+                throw new IllegalStateException("El email ya tiene Alumno");
+            }
+
+            Auditoria auAlumno = new Auditoria();
+            auAlumno.setAccion("CREAR_ALUMNO");
+            auAlumno.setDetalle("Creación de alumno para " + ui.email());
+            auAlumno.setFechaEvento(LocalDateTime.now());
+            auAlumno = auditoriaRepository.save(auAlumno);
+
+            Alumno a = new Alumno();
+            a.setUsuario(u);
+            a.setCarrera(input.carrera());
+            a.setSemestre(input.semestre());
+            a.setAuditoria(auAlumno);
+            return alumnoRepository.save(a);
         }
 
-        // Auditoría
-        Auditoria audit = new Auditoria();
-        audit.setAccion("create");
-        audit.setDetalle(
-                (input.detalleAuditoria() != null && !input.detalleAuditoria().isBlank())
-                        ? input.detalleAuditoria() : "registro alumno"
-        );
-        audit = auditoriaRepository.save(audit);
+        // Si el correo NO existe: crear Usuario (con password del input) + Alumno
+        Auditoria auUsuario = new Auditoria();
+        auUsuario.setAccion("CREAR_USUARIO");
+        auUsuario.setDetalle("Alta de usuario (alumno) " + ui.email());
+        auUsuario.setFechaEvento(LocalDateTime.now());
+        auUsuario = auditoriaRepository.save(auUsuario);
 
-        // Usuario
         Usuario u = new Usuario();
         u.setNombre(ui.nombre());
         u.setApellido(ui.apellido());
-        u.setUbicacion(ui.ubicacion());
-        u.setTelefono(ui.telefono());
         u.setEmail(ui.email());
-        u.setPassword(passwordEncoder.encode(ui.password()));
+        u.setTelefono(ui.telefono());
+        u.setUbicacion(ui.ubicacion());
+        u.setRolPrincipal(RolUsuario.alumno);
         u.setCompletitud(ui.completitud() != null ? ui.completitud() : 0);
-        // mapear enum -> String (BD sigue siendo VARCHAR/ENUM PG)
-        RolUsuario rol = ui.rolPrincipal() != null ? ui.rolPrincipal() : RolUsuario.alumno;
-        u.setRolPrincipal(rol);
-        u.setIdAuditoria(audit.getIdAuditoria());
+        u.setPassword(passwordEncoder.encode(ui.password()));
+        u.setAuditoria(auUsuario);
         u = usuarioRepository.save(u);
 
-        // Alumno (PK compartida con Usuario)
+        Auditoria auAlumno = new Auditoria();
+        auAlumno.setAccion("CREAR_ALUMNO");
+        auAlumno.setDetalle("Creación de alumno para " + ui.email());
+        auAlumno.setFechaEvento(LocalDateTime.now());
+        auAlumno = auditoriaRepository.save(auAlumno);
+
         Alumno a = new Alumno();
-        a.setUsuario(u);                  // @MapsId
+        a.setUsuario(u);
         a.setCarrera(input.carrera());
         a.setSemestre(input.semestre());
-        a.setIdAuditoria(audit.getIdAuditoria().longValue());
-
-
+        a.setAuditoria(auAlumno);
         return alumnoRepository.save(a);
     }
 
-
-    @Transactional(readOnly = true)
-    public Alumno getAlumno(Integer id) {
-        return alumnoRepository.findByIdUsuario(id)
-                .orElse(null);
-    }
-
     @Transactional
-    public Alumno actualizarAlumno(Integer id, com.vias.uc.backend.model.dto.AlumnoInput input) {
-        // 1️⃣ Buscar al alumno
-        Alumno alumno = alumnoRepository.findByIdUsuario(id)
-                .orElseThrow(() -> new RuntimeException("Alumno no encontrado con id_usuario: " + id));
-
+    public Alumno actualizarAlumno(Long id, AlumnoInput input) {
+        Alumno alumno = alumnoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Alumno no encontrado id=" + id));
         Usuario usuario = alumno.getUsuario();
-        if (usuario == null) {
-            throw new RuntimeException("El alumno no tiene un usuario asociado (id_usuario=" + id + ")");
-        }
 
-        System.out.println("=== [DEBUG] Actualizando alumno con ID " + id + " ===");
-
-        // 2️⃣ Actualizar datos del usuario (nombre, apellido, etc.)
         if (input.usuario() != null) {
             var ui = input.usuario();
             if (ui.nombre() != null) usuario.setNombre(ui.nombre());
@@ -122,17 +123,20 @@ public class AlumnoService {
             if (ui.email() != null) usuario.setEmail(ui.email());
             if (ui.telefono() != null) usuario.setTelefono(ui.telefono());
             if (ui.ubicacion() != null) usuario.setUbicacion(ui.ubicacion());
+            usuarioRepository.save(usuario);
         }
-
-        // 3️⃣ Actualizar datos del alumno (carrera, semestre)
         if (input.carrera() != null) alumno.setCarrera(input.carrera());
         if (input.semestre() != null) alumno.setSemestre(input.semestre());
-
-        usuarioRepository.save(usuario);
-        Alumno actualizado = alumnoRepository.save(alumno);
-
-        System.out.println("=== [DEBUG] Alumno actualizado correctamente ===");
-        return actualizado;
+        return alumnoRepository.save(alumno);
     }
 
+    @Transactional(readOnly = true)
+    public List<Alumno> listarAlumnos() {
+        return alumnoRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Alumno> obtenerAlumnoPorId(Long id) {
+        return alumnoRepository.findById(id);
+    }
 }

@@ -27,32 +27,36 @@ import java.util.List;
 public class AlumnoResolver {
 
     private final AlumnoService alumnoService;
-    private final AlumnoRepository alumnoRepository;
 
-    public AlumnoResolver(AlumnoService alumnoService, AlumnoRepository alumnoRepository) {
+    public AlumnoResolver(AlumnoService alumnoService) {
         this.alumnoService = alumnoService;
-        this.alumnoRepository = alumnoRepository;
     }
 
-    @MutationMapping
-    public Alumno registrarAlumno(@Argument RegistroAlumnoInput input) {
-        return alumnoService.registrarAlumnoMutationFede(input);
-    }
-
-    @QueryMapping
-    public Alumno alumno(@Argument Integer id) {
-        return alumnoService.getAlumno(id);
-    }
-
+    // ===== Query =====
     @QueryMapping
     public List<Alumno> alumnos() {
-        return alumnoRepository.findAll();
+        return alumnoService.listarAlumnos();
+    }
+
+    // Tenés ambas en el schema: usuario decide si deja una o las dos
+    @QueryMapping
+    public Alumno alumno(@Argument Long id) {
+        return alumnoService.obtenerAlumnoPorId(id).orElse(null);
+    }
+
+    @QueryMapping
+    public Alumno alumnoPorId(@Argument Long id) {
+        return alumnoService.obtenerAlumnoPorId(id).orElse(null);
+    }
+
+    // ===== Mutation =====
+    @MutationMapping
+    public Alumno registrarAlumno(@Argument RegistroAlumnoInput input) {
+        return alumnoService.registrarAlumno(input);
     }
 
     @MutationMapping
-    public Alumno actualizarAlumno(@Argument Integer id, @Argument com.vias.uc.backend.model.dto.AlumnoInput input) {
-        System.out.println("=== [DEBUG] Entrando a Mutation actualizarAlumno ===");
+    public Alumno actualizarAlumno(@Argument Long id, @Argument AlumnoInput input) {
         return alumnoService.actualizarAlumno(id, input);
     }
-
 }
