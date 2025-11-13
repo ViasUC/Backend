@@ -16,11 +16,28 @@ public class AuthService {
     }
 
     public Usuario login(String email, String password) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + email));
 
-        if (!passwordEncoder.matches(password, usuario.getPassword())) {
-            throw new RuntimeException("Contraseña incorrecta");
+        System.out.println(">>> LOGIN llamado con email = " + email);
+
+        // TEST DEFINITIVO
+        System.out.println(">>> PROBANDO QUERY findAll()");
+        usuarioRepository.findAll().forEach(u ->
+            System.out.println("USER EN BD: " + u.getEmail())
+        );
+
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Email incorrecto"));
+
+        boolean passwordOk;
+
+        if (usuario.getPassword().startsWith("$2a$")) {
+            passwordOk = passwordEncoder.matches(password, usuario.getPassword());
+        } else {
+            passwordOk = usuario.getPassword().equals(password);
+        }
+
+        if (!passwordOk) {
+            throw new RuntimeException("Password incorrecto");
         }
 
         return usuario;

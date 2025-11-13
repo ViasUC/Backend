@@ -4,8 +4,8 @@ public enum RolUsuario {
     administrador,
     profesor,
     investigador,
+    EMPLEADOR,
     egresado,
     alumno,
-    empresa,
-    EMPLEADOR
+    empresa
 }

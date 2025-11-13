@@ -3,15 +3,18 @@ package com.vias.uc.backend.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-/**
- * Opción B:
- * - Conserva la columna física INTEGER `id_auditoria` sin relación JPA.
- * - Evita choques integer/bigint porque no hay JOIN automático.
- * - Cuando se crea la auditoría (BIGINT), se castea en el service con Math.toIntExact(...)
- *   y se almacena el valor entero en esta columna.
- */
 @Entity
-@Table(name = "postulaciones", schema = "public")
+@Table(name = "postulaciones")
+@NamedEntityGraph(
+        name = "Postulacion.graph",
+        attributeNodes = {
+                @NamedAttributeNode("postulante"),
+                @NamedAttributeNode("ofertante"),
+                @NamedAttributeNode("oportunidad"),
+                @NamedAttributeNode("auditoria")
+        }
+)
+
 public class Postulacion {
 
     @Id
@@ -19,52 +22,71 @@ public class Postulacion {
     @Column(name = "id_postulacion")
     private Integer idPostulacion;
 
-    @Column(name = "id_oportunidad", nullable = false)
-    private Integer idOportunidad;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "id_oportunidad", nullable = false)
+    private Oportunidad oportunidad;
 
-    @Column(name = "id_postulante", nullable = false)
-    private Integer idPostulante; // usuarios.id_usuario (alumno)
+    // Usuario que postula (obligatorio)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "id_postulante", referencedColumnName = "id_usuario", nullable = false)
+    private Usuario postulante;
 
-    @Column(name = "id_ofertante", nullable = false)
-    private Integer idOfertante;  // oportunidades.id_creador
+    // Usuario ofertante (creador de la oportunidad, obligatorio)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "id_ofertante", nullable = false)
+    private Usuario ofertante;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado", nullable = false, length = 20)
+    private EstadoPostulacion estado;
 
     @Column(name = "fecha_postulacion", nullable = false)
     private LocalDateTime fechaPostulacion;
 
-    @Column(name = "estado", nullable = false)
-    private String estado; // 'pendiente' | 'aceptada' | 'rechazada'
+    // Auditoría obligatoria (columna NOT NULL)
+    @OneToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.PERSIST)
+    @JoinColumn(
+            name = "id_auditoria",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_postulaciones_auditoria")
+    )
+    private Auditoria auditoria;
 
-    @Column(name = "motivo")
-    private String motivo; // JSON: {"motivo":"...", "evidencias":[...]}
+    public Postulacion() { }
 
-    // *** Clave: mantener INTEGER y SIN relación JPA ***
-    @Column(name = "id_auditoria", nullable = false)
-    private Integer idAuditoria;
+    public Postulacion(Oportunidad oportunidad, Usuario postulante, EstadoPostulacion estado) {
+        this.oportunidad = oportunidad;
+        this.postulante = postulante;
+        this.estado = estado;
+        this.fechaPostulacion = LocalDateTime.now();
+    }
+
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.fechaPostulacion == null) this.fechaPostulacion = LocalDateTime.now();
+        // La auditoría se setea desde el service (obligatoria)
+    }
 
 
     // ===== Getters & Setters =====
     public Integer getIdPostulacion() { return idPostulacion; }
-    public void setIdPostulacion(Integer idPostulacion) { this.idPostulacion = idPostulacion; }
 
-    public Integer getIdOportunidad() { return idOportunidad; }
-    public void setIdOportunidad(Integer idOportunidad) { this.idOportunidad = idOportunidad; }
+    public Oportunidad getOportunidad() { return oportunidad; }
+    public void setOportunidad(Oportunidad oportunidad) { this.oportunidad = oportunidad; }
 
-    public Integer getIdPostulante() { return idPostulante; }
-    public void setIdPostulante(Integer idPostulante) { this.idPostulante = idPostulante; }
+    public Usuario getPostulante() { return postulante; }
+    public void setPostulante(Usuario postulante) { this.postulante = postulante; }
 
-    public Integer getIdOfertante() { return idOfertante; }
-    public void setIdOfertante(Integer idOfertante) { this.idOfertante = idOfertante; }
+    public Usuario getOfertante() { return ofertante; }
+    public void setOfertante(Usuario ofertante) { this.ofertante = ofertante; }
+
+    public EstadoPostulacion getEstado() { return estado; }
+    public void setEstado(EstadoPostulacion estado) { this.estado = estado; }
 
     public LocalDateTime getFechaPostulacion() { return fechaPostulacion; }
     public void setFechaPostulacion(LocalDateTime fechaPostulacion) { this.fechaPostulacion = fechaPostulacion; }
 
-    public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
-
-    public String getMotivo() { return motivo; }
-    public void setMotivo(String motivo) { this.motivo = motivo; }
-
-    public Integer getIdAuditoria() { return idAuditoria; }
-    public void setIdAuditoria(Integer idAuditoria) { this.idAuditoria = idAuditoria; }
-
+    public Auditoria getAuditoria() { return auditoria; }
+    public void setAuditoria(Auditoria auditoria) { this.auditoria = auditoria; }
 }

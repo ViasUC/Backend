@@ -1,9 +1,10 @@
 package com.vias.uc.backend.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "oportunidades", schema = "public")
+@Table(name = "oportunidades")
 public class Oportunidad {
 
     @Id
@@ -11,25 +12,60 @@ public class Oportunidad {
     @Column(name = "id_oportunidad")
     private Integer idOportunidad;
 
+    // FK (obligatoria) hacia usuarios.id_usuario del ofertante/creador
     @Column(name = "id_creador", nullable = false)
-    private Integer idCreador; // usuarios.id_usuario (docente/no-alumno)
+    private Integer idCreador;
+
+    // Relación opcional para acceder al objeto Usuario creador
+    // (no escribe la FK; sólo lectura del objeto)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "id_creador",
+            insertable = false,
+            updatable = false,
+            foreignKey = @ForeignKey(name = "fk_oportunidades_usuarios")
+    )
+    private Usuario creador;
 
     @Column(name = "titulo")
     private String titulo;
 
-    // (Opcionales según tu tabla)
     @Column(name = "descripcion")
     private String descripcion;
 
-    @Column(name = "estado")
-    private String estado; // 'activo','borrador','pausada','cerrado', etc.
+    @Column(name = "requisitos")
+    private String requisitos;
 
-    // Getters & Setters
+    @Column(name = "ubicacion")
+    private String ubicacion;
+
+    @Column(name = "modalidad")
+    private String modalidad;
+
+    @Column(name = "tipo")
+    private String tipo;
+
+    @Column(name = "fecha_publicacion")
+    private LocalDateTime fechaPublicacion;
+
+    @Column(name = "fecha_cierre")
+    private LocalDateTime fechaCierre;
+
+    // 'activo','borrador','pausada','cerrado'
+    @Column(name = "estado")
+    private String estado;
+
+    @Column(name = "id_auditoria")
+    private Integer idAuditoria;
+
+    // ===== Getters/Setters =====
     public Integer getIdOportunidad() { return idOportunidad; }
     public void setIdOportunidad(Integer idOportunidad) { this.idOportunidad = idOportunidad; }
 
     public Integer getIdCreador() { return idCreador; }
     public void setIdCreador(Integer idCreador) { this.idCreador = idCreador; }
+
+    public Usuario getCreador() { return creador; }
 
     public String getTitulo() { return titulo; }
     public void setTitulo(String titulo) { this.titulo = titulo; }
@@ -37,6 +73,27 @@ public class Oportunidad {
     public String getDescripcion() { return descripcion; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
 
+    public String getRequisitos() { return requisitos; }
+    public void setRequisitos(String requisitos) { this.requisitos = requisitos; }
+
+    public String getUbicacion() { return ubicacion; }
+    public void setUbicacion(String ubicacion) { this.ubicacion = ubicacion; }
+
+    public String getModalidad() { return modalidad; }
+    public void setModalidad(String modalidad) { this.modalidad = modalidad; }
+
+    public String getTipo() { return tipo; }
+    public void setTipo(String tipo) { this.tipo = tipo; }
+
+    public LocalDateTime getFechaPublicacion() { return fechaPublicacion; }
+    public void setFechaPublicacion(LocalDateTime fechaPublicacion) { this.fechaPublicacion = fechaPublicacion; }
+
+    public LocalDateTime getFechaCierre() { return fechaCierre; }
+    public void setFechaCierre(LocalDateTime fechaCierre) { this.fechaCierre = fechaCierre; }
+
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+
+    public Integer getIdAuditoria() { return idAuditoria; }
+    public void setIdAuditoria(Integer idAuditoria) { this.idAuditoria = idAuditoria; }
 }

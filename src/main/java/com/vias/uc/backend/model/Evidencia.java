@@ -3,7 +3,7 @@ package com.vias.uc.backend.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "evidencia", schema = "public")
+@Table(name = "evidencia")
 public class Evidencia {
 
     @Id
@@ -14,34 +14,93 @@ public class Evidencia {
     @Column(name = "id_portafolio", nullable = false)
     private Integer idPortafolio;
 
-    @Column(name = "titulo")
     private String titulo;
 
-    @Column(name = "descripcion")
     private String descripcion;
 
-    @Column(name = "tipo")
     private String tipo;
 
-    @Column(name = "recurso")
-    private String recurso; // URL/ruta/identificador del recurso
+    private String recurso;
 
-    // Getters & Setters
-    public Integer getIdEvidencia() { return idEvidencia; }
-    public void setIdEvidencia(Integer idEvidencia) { this.idEvidencia = idEvidencia; }
+    @Column(name = "id_participacion")
+    private Integer idParticipacion;
 
-    public Integer getIdPortafolio() { return idPortafolio; }
-    public void setIdPortafolio(Integer idPortafolio) { this.idPortafolio = idPortafolio; }
+    @Column(name = "id_calificacion")
+    private Integer idCalificacion;
 
-    public String getTitulo() { return titulo; }
-    public void setTitulo(String titulo) { this.titulo = titulo; }
+    @Column(name = "id_auditoria")
+    private Integer idAuditoria;
 
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    // Getters y setters
+    public Integer getIdEvidencia() {
+        return idEvidencia;
+    }
 
-    public String getTipo() { return tipo; }
-    public void setTipo(String tipo) { this.tipo = tipo; }
+    public void setIdEvidencia(Integer idEvidencia) {
+        this.idEvidencia = idEvidencia;
+    }
 
-    public String getRecurso() { return recurso; }
-    public void setRecurso(String recurso) { this.recurso = recurso; }
+    public Integer getIdPortafolio() {
+        return idPortafolio;
+    }
+
+    public void setIdPortafolio(Integer idPortafolio) {
+        this.idPortafolio = idPortafolio;
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
+    public String getRecurso() {
+        return recurso;
+    }
+
+    public void setRecurso(String recurso) {
+        this.recurso = recurso;
+    }
+
+    public Integer getIdParticipacion() {
+        return idParticipacion;
+    }
+
+    public void setIdParticipacion(Integer idParticipacion) {
+        this.idParticipacion = idParticipacion;
+    }
+
+    public Integer getIdCalificacion() {
+        return idCalificacion;
+    }
+
+    public void setIdCalificacion(Integer idCalificacion) {
+        this.idCalificacion = idCalificacion;
+    }
+
+    public Integer getIdAuditoria() {
+        return idAuditoria;
+    }
+
+    public void setIdAuditoria(Integer idAuditoria) {
+        this.idAuditoria = idAuditoria;
+    }
 }
