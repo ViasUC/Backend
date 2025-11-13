@@ -111,6 +111,8 @@ type Query {
     alumnos: [Alumno!]!
     alumno(id: ID!): Alumno
     alumnoPorId(id: ID!): Alumno
+    consultarPerfil(idUsuario: ID!): AlumnoPerfil
+    bolsaTrabajo(filtro: PublicacionFiltroInput): [PublicacionOutput]
 
     # Oportunidades
     oportunidades: [Oportunidad!]!
@@ -184,6 +186,24 @@ input AlumnoInput {
     semestre: Int
 }
 
+input PublicacionFiltroInput {
+    area: String
+    ubicacion: String
+    modalidad: String
+    empresa: String
+}
+
+type PublicacionOutput {
+    id: ID
+    titulo: String
+    descripcion: String
+    tipo: String
+    area: String
+    ubicacion: String
+    modalidad: String
+    empresa: String
+}
+
 # --- Inputs para registro (alta) ---
 input UsuarioRegistroInput {
     nombre: String!
@@ -195,6 +215,16 @@ input UsuarioRegistroInput {
     rolPrincipal: RolUsuario = alumno
     completitud: Int = 0
 }
+
+type AlumnoPerfil {
+    nombre: String
+    apellido: String
+    email: String
+    telefono: String
+    ubicacion: String
+    carrera: String
+    semestre: Int
+} #se crea para consultar info del perfil
 
 input RegistroAlumnoInput {
     usuario: UsuarioRegistroInput!
