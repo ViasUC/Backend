@@ -96,6 +96,19 @@ mutation {
   }
 }
 ```
+o para que consulte sus datos de perfil sin cambiarlos:
+```graphql
+query {
+    consultarPerfil(idUsuario: 3) {
+        nombre
+        apellido
+        email
+        carrera
+        semestre
+    }
+}
+```
+
 # DOCENTES
 
 ## F0: Gestión de perfiles
