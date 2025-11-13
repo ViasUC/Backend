@@ -27,6 +27,10 @@ public class Oportunidad {
     )
     private Usuario creador;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_empresa", foreignKey = @ForeignKey(name = "fk_oportunidades_empresas"))
+    private Empresa empresa;
+
     @Column(name = "titulo")
     private String titulo;
 
@@ -57,6 +61,14 @@ public class Oportunidad {
 
     @Column(name = "id_auditoria")
     private Integer idAuditoria;
+
+    public Empresa getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(Empresa empresa) {
+        this.empresa = empresa;
+    }
 
     // ===== Getters/Setters =====
     public Integer getIdOportunidad() { return idOportunidad; }

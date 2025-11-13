@@ -101,6 +101,21 @@ public class OportunidadResolver {
                 .orElseThrow(() -> new RuntimeException("Creador no encontrado: " + oportunidad.getIdCreador()));
     }
 
+    @SchemaMapping(typeName = "Oportunidad", field = "empresa")
+    public String getEmpresaNombre(Oportunidad oportunidad) {
+        // Devuelve solo el nombre de la empresa, no el objeto entero.
+        if (oportunidad.getEmpresa() != null) {
+            return oportunidad.getEmpresa().getNombreEmpresa();
+        }
+        return null;
+    }
+
+    @SchemaMapping(typeName = "Oportunidad", field = "id")
+    public Integer getId(Oportunidad oportunidad) {
+        // Devuelve el valor del campo 'idOportunidad' de tu clase Java
+        return oportunidad.getIdOportunidad();
+    }
+
     // =========================
     // Helpers
     // =========================

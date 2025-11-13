@@ -48,12 +48,12 @@ public class PostulacionResolver {
     }
 
     // ===== F1: filtros/paginación =====
-    public record FiltroInput(Long idOportunidad, Long idAlumno, List<EstadoPostulacion> estados,
+    public record PostulacionFiltro(Long idOportunidad, Long idAlumno, List<EstadoPostulacion> estados,
                               String fechaDesde, String fechaHasta, String texto) {}
 
     @QueryMapping
     public com.vias.uc.backend.graphql.dto.PostulacionPageDTO postulacionesPage(
-            @Argument FiltroInput filtro,
+            @Argument PostulacionFiltro filtro,
             @Argument int page,
             @Argument int size,
             @Argument String sort) {
