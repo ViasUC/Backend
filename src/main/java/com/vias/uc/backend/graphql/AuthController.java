@@ -48,8 +48,8 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Contraseña incorrecta");
         }
 
-        boolean esProfesor = profesorRepository.existsByIdUsuario(usuario.getIdUsuario());
-        boolean esInvestigador = investigadorRepository.existsByIdUsuario(usuario.getIdUsuario());
+        boolean esProfesor = profesorRepository.existsByIdUsuario(Math.toIntExact(usuario.getIdUsuario()));
+        boolean esInvestigador = investigadorRepository.existsByIdUsuario(Math.toIntExact(usuario.getIdUsuario()));
 
         if (!esProfesor && !esInvestigador) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo profesores o investigadores pueden iniciar sesión");
