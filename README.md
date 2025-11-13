@@ -160,36 +160,17 @@ mutation registrarInvestigador{
 }
 ```
 
-### Inicio de sesión: Docente
+### Inicio de sesión: Docente/Investigador
 ```graphql
-mutation loginDocente {
-  loginDocenteInvestigador(input: {
-    email: "lucia@uca.edu.py",
-    password: "1234"
+mutation loginGeneral{
+  login(input: {
+    email: "luciana@uca.edu.py",
+    password: "luci123"
   }) {
-    token
-    usuario {
-      idUsuario
-      email
-      rolPrincipal
-    }
-  }
-}
-```
-
-### Inicio de sesión: Investigador
-```graphql
-mutation loginInvestigador {
-  loginDocenteInvestigador(input: {
-    email: "diego@uca.edu.py",
-    password: "abcd"
-  }) {
-    token
-    usuario {
-      idUsuario
-      email
-      rolPrincipal
-    }
+    idUsuario
+    nombre
+    apellido
+    rolPrincipal
   }
 }
 ```
@@ -238,7 +219,7 @@ mutation actualizarInvestigador{
 
 ## F1: Manejo de postulantes + Ejemplos de uso en GraphQL
 
-### Crear Postulación
+### Crear Postulación (ALUMNO)
 ```graphql
 mutation crearPostulacion {
   crearPostulacion(idAlumno: 47, idOportunidad: 4) {
@@ -252,12 +233,11 @@ mutation crearPostulacion {
 ```
 ### Listar Postulación
 ```graphql
-query listarPostulacion {
+query listarPostulacion{
   postulacionesPage(
     filtro: {
-      idOportunidad: 4
-      estados: [PENDIENTE, ACEPTADA]
-      texto: "Roberto"
+      idOportunidad: 5
+      estados: [PENDIENTE, ACEPTADA, CANCELADA]
     }
     page: 0
     size: 10
@@ -278,9 +258,10 @@ query listarPostulacion {
 ```graphql
 mutation actualizarEstadoPostulacion {
   actualizarEstadoPostulacion(
-    idPostulacion: 20,
-    estado: ACEPTADA,
-    motivo: "Cumple los requisitos del puesto"
+    idPostulacion: 44,
+    estado: CANCELADA,
+    motivo: "Motivo desconocido"
+    idActor: 1024
   ) {
     idPostulacion
     estado
@@ -322,7 +303,7 @@ query listarOportunidades {
 ### Listar Oportunidades por Creador
 ```graphql
 query oportunidadesPorCreador{
-  oportunidadesPorCreador(creadorId: 1020) {
+  oportunidadesPorCreador(creadorId: 1024) {
     idOportunidad
     titulo
     estado
@@ -364,7 +345,7 @@ mutation crearOportunidadDocente{
 ```graphql
 mutation createEndorsement{
   createEndorsement(
-    input: { toUserId: 13, skill: "GraphQL", message: "Excelente trabajo en F1" }
+    input: { fromUserId: 1024, toUserId: 1000, skill: "Mejor alumno INFO 3", message: "Enhorabuena" }
   ) {
     idEndorsement
     status
@@ -377,17 +358,15 @@ mutation createEndorsement{
 }
 ```
 
-### Consultar Endorsement
+### Consultar Endorsement (RECEPTOR)
 ```graphql
-query endorsements {
-  endorsementsReceived(status: PENDING) {
+query endorsementsPendientes{
+  endorsementsReceived(toUserId: 1000, status: PENDING) {
     idEndorsement
     fromUserId
-    toUserId
     skill
     message
     status
-    createdAt
   }
 }
 ```
@@ -395,7 +374,7 @@ query endorsements {
 ### Consultar Endorsement Dados
 ```graphql
 query endorsementsGiven{
-  endorsementsGiven {
+  endorsementsGiven(fromUserId: 1024) {
     idEndorsement
     toUserId
     skill
@@ -405,13 +384,18 @@ query endorsementsGiven{
 }
 ```
 
-### Aceptar/Rechazar Endorsement
+### Aceptar/Rechazar Endorsement (RECEPTOR)
 ```graphql
-mutation endorsementDecision {
-  decideEndorsement(id: 6, accept: false) {
+mutation endorsementDecision{
+  decideEndorsement(
+    input: {
+      id: 19
+      actorId: 1000
+      accept: true
+    }
+  ) {
     idEndorsement
     status
-    decidedAt
   }
 }
 ```
