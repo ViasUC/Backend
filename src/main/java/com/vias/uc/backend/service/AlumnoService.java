@@ -130,9 +130,10 @@ public class AlumnoService {
         if (input.semestre() != null) alumno.setSemestre(input.semestre());
 
         Alumno actualizado = alumnoRepository.save(alumno);
+        mostrarConfirmacion("OK");
 
         // Llamada “trivial” para cumplir con el diagrama
-        return mostrarConfirmacion("OK");
+        return actualizado;
     }
 
     // (→ “mostrarConfirmacion(estado)” en el diagrama)
