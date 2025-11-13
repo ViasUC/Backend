@@ -150,6 +150,7 @@ type Mutation {
   registrarAlumno(input: RegistroAlumnoInput!): Alumno
   actualizarAlumno(id: ID!, input: AlumnoInput): Alumno
   login(input: LoginInput!): LoginResponse
+  actualizarUsuario(idUsuario: Int!, input: UsuarioInput): Usuario 
 
   actualizarEgresado(id: Int!, input: EgresadoInput!): Egresado
 }
