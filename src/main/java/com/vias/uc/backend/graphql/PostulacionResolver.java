@@ -94,12 +94,11 @@ public class PostulacionResolver {
                                                    @Argument EstadoPostulacion estado,
                                                    @Argument String motivo,
                                                    @Argument Long idActor) {
-        // 🔹 NUEVO: cargar actor y validar permisos por rol (mismo patrón que OportunidadResolver)
+        // cargar actor y validar permisos por rol (mismo patrón que OportunidadResolver)
         Usuario actor = usuarioRepository.findById(idActor)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + idActor));
         assertPermisoActualizar(actor, estado);
 
-        // continuar como ya tenías
         return postulacionService.actualizarEstado(idPostulacion, estado, motivo, idActor);
     }
 
@@ -118,7 +117,7 @@ public class PostulacionResolver {
         }
 
         // Empresa / Profesor / Administrador: permitido (aceptar, rechazar, cancelar)
-        if (rol == RolUsuario.empresa || rol == RolUsuario.profesor || rol == RolUsuario.administrador) {
+        if (rol == RolUsuario.investigador || rol == RolUsuario.profesor || rol == RolUsuario.administrador) {
             return;
         }
 

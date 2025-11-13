@@ -132,8 +132,8 @@ type Query {
     historialPostulacion(idPostulacion: ID!): [HistorialPostulacion!]!
 
     # Endorsements
-    endorsementsReceived(status: EndorsementStatus): [Endorsement!]!
-    endorsementsGiven: [Endorsement!]!
+    endorsementsReceived(toUserId: Int!, status: EndorsementStatus): [Endorsement!]!
+    endorsementsGiven(fromUserId: Int!): [Endorsement!]!
     publicEndorsementsOf(userId: Int!): [Endorsement!]!
 }
 
@@ -152,7 +152,6 @@ type Mutation {
 
     # Auth
     login(input: LoginInput!): LoginResponse
-    loginDocenteInvestigador(input: LoginInput!): AuthPayload!
 
     # Perfiles
     registrarProfesor(input: ProfesorInput!): Profesor
@@ -174,7 +173,7 @@ type Mutation {
 
     # Endorsements
     createEndorsement(input: CreateEndorsementInput!): Endorsement!
-    decideEndorsement(id: ID!, accept: Boolean!): Endorsement!
+    decideEndorsement(input: DecideEndorsementInput!): Endorsement!
 }
 
 # =========================
@@ -231,9 +230,16 @@ type Endorsement {
 }
 
 input CreateEndorsementInput {
+  fromUserId: Int!
   toUserId: Int!
   skill: String
   message: String
+}
+
+input DecideEndorsementInput {
+  id: ID!
+  actorId: Int!     # el usuario que está intentando aceptar/rechazar
+  accept: Boolean!
 }
 
 input LoginInput {
@@ -246,13 +252,6 @@ type LoginResponse {
     apellido: String
     rolPrincipal: RolUsuario
 }
-
-
-type AuthPayload {
-  token: String!
-  usuario: Usuario!
-}
-
 
 # --- Inputs para alta de profesor/investigador ---
 input UsuarioInput {

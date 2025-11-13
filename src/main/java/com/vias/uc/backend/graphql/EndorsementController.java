@@ -2,8 +2,6 @@ package com.vias.uc.backend.graphql;
 
 import com.vias.uc.backend.model.Endorsement;
 import com.vias.uc.backend.model.Endorsement.Status;
-import com.vias.uc.backend.service.AuthDocente;
-import com.vias.uc.backend.service.AuthService;
 import com.vias.uc.backend.service.EndorsementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -18,31 +16,38 @@ import java.util.List;
 public class EndorsementController {
 
     private final EndorsementService service;
-    private final AuthDocente auth; // reemplaza por tu clase real de auth (de donde sacás el userId)
 
     // DTO de entrada (record)
-    public record CreateEndorsementInput(Integer toUserId, String skill, String message) {}
+    public record CreateEndorsementInput(Integer fromUserId, Integer toUserId, String skill, String message) {}
+    public record DecideEndorsementInput(Long id, Integer actorId, Boolean accept) {}
 
     // ---- Mutations ----
     @MutationMapping
     public Endorsement createEndorsement(@Argument CreateEndorsementInput input) {
-        return service.create(auth.getUserId(), input.toUserId(), input.skill(), input.message());
+        return service.create(input.fromUserId(), input.toUserId(), input.skill(), input.message());
     }
 
     @MutationMapping
-    public Endorsement decideEndorsement(@Argument Long id, @Argument Boolean accept) {
-        return service.decide(id, auth.getUserId(), accept);
+    public Endorsement decideEndorsement(@Argument DecideEndorsementInput input) {
+        return service.decide(
+                input.id(),
+                input.actorId(),   // <--- reemplaza auth.getUserId()
+                input.accept()
+        );
     }
 
     // ---- Queries ----
     @QueryMapping
-    public List<Endorsement> endorsementsReceived(@Argument Status status) {
-        return service.inbox(auth.getUserId(), status);
+    public List<Endorsement> endorsementsReceived(
+            @Argument Integer toUserId,
+            @Argument Status status
+    ) {
+        return service.inbox(toUserId, status);
     }
 
     @QueryMapping
-    public List<Endorsement> endorsementsGiven() {
-        return service.given(auth.getUserId());
+    public List<Endorsement> endorsementsGiven(@Argument Integer fromUserId) {
+        return service.given(fromUserId);
     }
 
     @QueryMapping
