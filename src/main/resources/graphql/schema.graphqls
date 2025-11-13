@@ -1,4 +1,6 @@
-# --- Tipos base ---
+# =========================================
+# ENUMS
+# =========================================
 enum RolUsuario {
   administrador
   profesor
@@ -9,6 +11,9 @@ enum RolUsuario {
   empresa
 }
 
+# =========================================
+# TIPOS PRINCIPALES
+# =========================================
 type Usuario {
   idUsuario: ID!
   nombre: String!
@@ -24,71 +29,6 @@ type Usuario {
   alumnoData: Alumno
 }
 
-# --- Queries ---
-type Query {
-  alumnos: [Alumno!]!
-  alumno(id: ID!): Alumno
-  alumnoPorEmail(email: String!): Alumno
-  usuarioById(id: Int!): Usuario
-  usuarios: [Usuario!]!   # <-- ANTES TENÍAS EL EXTEND TYPE, AHORA LO UNIFICO AQUÍ
-  portafolioPorUsuario(idUsuario: Int!): Portafolio   # <-- AQUÍ VA TU NUEVA QUERY
-}
-
-# --- Inputs para actualización parcial ---
-input UsuarioInput {
-  nombre: String
-  apellido: String
-  email: String
-  telefono: String
-  ubicacion: String
-}
-
-input AlumnoInput {
-  usuario: UsuarioInput
-  carrera: String
-  semestre: Int
-}
-
-# --- Inputs para registro (alta) ---
-input UsuarioRegistroInput {
-  nombre: String!
-  apellido: String
-  email: String!
-  telefono: String
-  ubicacion: String
-  password: String!
-  rolPrincipal: RolUsuario = alumno
-  completitud: Int = 0
-}
-
-input RegistroAlumnoInput {
-  usuario: UsuarioRegistroInput!
-  carrera: String!
-  semestre: Int!
-  detalleAuditoria: String = "registro alumno"
-}
-
-# --- Input para login ---
-input LoginInput {
-  email: String!
-  password: String!
-}
-
-# --- Mutations ---
-type Mutation {
-  registrarAlumno(input: RegistroAlumnoInput!): Alumno!
-  actualizarAlumno(id: ID!, input: AlumnoInput): Alumno
-  login(input: LoginInput!): Usuario
-    # Alta (crea usuario + alumno + auditoría)
-    registrarAlumno(input: RegistroAlumnoInput!): Alumno!
-
-    # Tu mutación existente para actualizar datos parcialmente
-    actualizarAlumno(id: ID!, input: AlumnoInput): Alumno
-
-    #login(input: LoginInput!): LoginResponse
-}
-
-# --- Datos extendidos ---
 type Administrador {
   idUsuario: Int!
   titulo: String
@@ -98,6 +38,7 @@ type Administrador {
 type Egresado {
   idUsuario: Int!
   anioEgreso: Int!
+  titulo: String
 }
 
 type Alumno {
@@ -108,7 +49,9 @@ type Alumno {
   usuario: Usuario!
 }
 
-# --- Portafolio ---
+# =========================================
+# PORTAFOLIO
+# =========================================
 type Portafolio {
   idPortafolio: Int!
   idUsuario: Int!
@@ -128,11 +71,63 @@ type Evidencia {
   recurso: String
 }
 
+# =========================================
+# QUERIES
+# =========================================
+type Query {
+  alumnos: [Alumno!]!
+  alumno(id: ID!): Alumno
+  alumnoPorEmail(email: String!): Alumno
+
+  usuarioById(id: Int!): Usuario
+  usuarios: [Usuario!]!
+
+  portafolioPorUsuario(idUsuario: Int!): Portafolio
+}
+
+# =========================================
+# INPUTS
+# =========================================
+input UsuarioInput {
+  nombre: String
+  apellido: String
+  email: String
+  telefono: String
+  ubicacion: String
+}
+
+input AlumnoInput {
+  usuario: UsuarioInput
+  carrera: String
+  semestre: Int
+}
+
+input UsuarioRegistroInput {
+  nombre: String!
+  apellido: String
+  email: String!
+  telefono: String
+  ubicacion: String
+  password: String!
+  rolPrincipal: RolUsuario = alumno
+  completitud: Int = 0
+}
+
+input RegistroAlumnoInput {
+  usuario: UsuarioRegistroInput!
+  carrera: String!
+  semestre: Int!
+  detalleAuditoria: String = "registro alumno"
+}
+
 input LoginInput {
   email: String!
   password: String!
 }
 
+# =========================================
+# LOGIN RESPONSE
+# =========================================
 type LoginResponse {
   idUsuario: ID!
   nombre: String
@@ -140,9 +135,21 @@ type LoginResponse {
   rolPrincipal: RolUsuario
 }
 
-type Mutation {
-  registrarAlumno(input: RegistroAlumnoInput!): Alumno
-  actualizarAlumno(input: AlumnoInput!): Alumno
-  login(input: LoginInput!): LoginResponse
+# =========================================
+# INPUT EGRESADO
+# =========================================
+input EgresadoInput {
+  anioEgreso: Int
+  titulo: String
 }
 
+# =========================================
+# MUTATIONS
+# =========================================
+type Mutation {
+  registrarAlumno(input: RegistroAlumnoInput!): Alumno
+  actualizarAlumno(id: ID!, input: AlumnoInput): Alumno
+  login(input: LoginInput!): LoginResponse
+
+  actualizarEgresado(id: Int!, input: EgresadoInput!): Egresado
+}

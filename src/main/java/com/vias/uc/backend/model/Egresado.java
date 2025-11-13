@@ -13,6 +13,10 @@ public class Egresado {
     @Column(name = "anio_egreso")
     private Integer anioEgreso;
 
+    @Column(name = "titulo_universitario")  
+    private String titulo;
+
+
     @Column(name = "id_portafolio")
     private Integer idPortafolio;
 
@@ -29,6 +33,9 @@ public class Egresado {
     public Integer getAnioEgreso() { return anioEgreso; }
     public void setAnioEgreso(Integer anioEgreso) { this.anioEgreso = anioEgreso; }
 
+    public String getTitulo() { return titulo; }
+    public void setTitulo(String titulo) { this.titulo = titulo; }
+
     public Integer getIdPortafolio() { return idPortafolio; }
     public void setIdPortafolio(Integer idPortafolio) { this.idPortafolio = idPortafolio; }
 
@@ -37,3 +44,4 @@ public class Egresado {
 
     public Usuario getUsuario() { return usuario; }
 }
+
