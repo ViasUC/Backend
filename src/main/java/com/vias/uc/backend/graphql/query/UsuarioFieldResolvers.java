@@ -25,12 +25,12 @@ public class UsuarioFieldResolvers {
     @SchemaMapping(typeName = "Usuario", field = "adminData")
     public Administrador getAdminData(Usuario usuario) {
         // como idUsuario ES el ID de Admin en la tabla, se usa findById
-        return adminRepo.findById(usuario.getIdUsuario()).orElse(null);
+        return adminRepo.findById(Math.toIntExact(usuario.getIdUsuario())).orElse(null);
     }
 
     @SchemaMapping(typeName = "Usuario", field = "egresadoData")
     public Egresado getEgresadoData(Usuario usuario) {
         // igual aquí: la PK es idUsuario en la tabla egresado
-        return egresadoRepo.findById(usuario.getIdUsuario()).orElse(null);
+        return egresadoRepo.findById(Math.toIntExact(usuario.getIdUsuario())).orElse(null);
     }
 }

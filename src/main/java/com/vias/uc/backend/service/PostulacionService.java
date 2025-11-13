@@ -58,7 +58,7 @@ public class PostulacionService {
         Auditoria au = Auditoria.builder()
                 .accion("CREAR_POSTULACION")
                 .detalle("Alumno " + idAlumno + " postula a oportunidad " + idOportunidad)
-                .actorId(postulante.getIdUsuario())
+                .actorId(Math.toIntExact(postulante.getIdUsuario()))
                 .fechaEvento(LocalDateTime.now())
                 .build();
         auditoriaRepository.save(au);
