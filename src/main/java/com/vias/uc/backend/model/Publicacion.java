@@ -5,6 +5,11 @@ import java.time.LocalDateTime;
 import com.vias.uc.backend.model.enums.EstadoPublicacion;
 import org.hibernate.annotations.JdbcType;
 import org.hibernate.dialect.PostgreSQLEnumJdbcType;
+import com.vias.uc.backend.model.Usuario;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
+
 
 @Entity
 @Table(name = "publicaciones")
@@ -20,12 +25,6 @@ public class Publicacion {
 
     @Column(name = "id_proyecto")
     private Integer idProyecto; // FK opcional
-
-    @Column(name = "publicado_por_profesor")
-    private Integer publicadoPorProfesor; // FK a profesores.id_usuario
-
-    @Column(name = "publicado_por_investigador")
-    private Integer publicadoPorInvestigador; // FK a investigadores.id_usuario
 
     @Enumerated(EnumType.STRING)
     @JdbcType(PostgreSQLEnumJdbcType.class)
@@ -43,6 +42,24 @@ public class Publicacion {
 
     @Column(name = "id_auditoria")
     private Integer idAuditoria; // FK a auditoria
+
+
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_autor")
+    private Usuario autor;
+
+    public Usuario getAutor() {
+        return autor;
+    }
+
+    public void setAutor(Usuario autor) {
+        this.autor = autor;
+    }
+
+
+
 
     // GETTERS Y SETTERS
 
@@ -68,22 +85,6 @@ public class Publicacion {
 
     public void setIdProyecto(Integer idProyecto) {
         this.idProyecto = idProyecto;
-    }
-
-    public Integer getPublicadoPorProfesor() {
-        return publicadoPorProfesor;
-    }
-
-    public void setPublicadoPorProfesor(Integer publicadoPorProfesor) {
-        this.publicadoPorProfesor = publicadoPorProfesor;
-    }
-
-    public Integer getPublicadoPorInvestigador() {
-        return publicadoPorInvestigador;
-    }
-
-    public void setPublicadoPorInvestigador(Integer publicadoPorInvestigador) {
-        this.publicadoPorInvestigador = publicadoPorInvestigador;
     }
 
     public EstadoPublicacion getEstado() {

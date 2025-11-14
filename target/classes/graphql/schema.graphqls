@@ -260,7 +260,7 @@ input CrearCanalInput {
 input CrearPublicacionEnCanalInput {
   idCanal: ID!
   idProyectoF7: ID!   # el proyecto genérico F7 en la BD
-  idProfesor: ID!     # id_usuario del docente
+  idAutor: ID!
   contenido: String!
 }
 

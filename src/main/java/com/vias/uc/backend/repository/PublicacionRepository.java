@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface PublicacionRepository extends JpaRepository<Publicacion, Integer> {
 
-    List<Publicacion> findAllByPublicadoPorProfesor(Integer idProfesor);
+    //List<Publicacion> findAllByPublicadoPorProfesor(Integer idProfesor);
 
-    List<Publicacion> findAllByEstado(EstadoPublicacion estado);
+    //List<Publicacion> findAllByEstado(EstadoPublicacion estado);
 }

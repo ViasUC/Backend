@@ -18,6 +18,7 @@ import com.vias.uc.backend.model.canales.CanalSeguidorId;
 import com.vias.uc.backend.repository.canales.CanalSeguidorRepository;
 import com.vias.uc.backend.repository.UsuarioRepository;
 import com.vias.uc.backend.model.enums.TipoCanal;
+import com.vias.uc.backend.model.enums.RolUsuario;
 
 
 
@@ -59,19 +60,46 @@ public class CanalService {
     }
 
     // 2) Crear canal (la universidad/administrador)
-    public CanalInformacion crearCanal(String nombre, String slug, TipoCanal tipo, String descripcion, Long actorId) {
-        Long idAud = Long.valueOf(auditoria.log(Math.toIntExact(actorId), "canales.create", "slug=" + slug));
+    public CanalInformacion crearCanal(String nombre,
+                                       String slug,
+                                       TipoCanal tipo,
+                                       String descripcion,
+                                       Long actorId) {
 
+        // 0) Buscar al actor que intenta crear el canal
+        Usuario actor = usuarioRepo.findById(actorId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Usuario (actor) no encontrado"));
+
+        // 0.1) Validar que sea ADMINISTRADOR, PROFESOR o INVESTIGADOR
+        RolUsuario rol = actor.getRolPrincipal();
+        if (rol != RolUsuario.administrador &&
+                rol != RolUsuario.profesor &&
+                rol != RolUsuario.investigador) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Solo administrador, profesor o investigador pueden crear canales."
+            );
+        }
+
+        // 1) Registrar auditoría (puede seguir usando actorId sin problema)
+        Long idAud = Long.valueOf(
+                auditoria.log(Math.toIntExact(actorId), "canales.create", "slug=" + slug)
+        );
+
+        // 2) Crear el canal
         CanalInformacion c = new CanalInformacion();
         c.setNombre(nombre);
         c.setSlug(slug);
-        c.setTipo(tipo);                   // ahora pasa el enum
+        c.setTipo(tipo);          // enum
         c.setDescripcion(descripcion);
         c.setActivo(true);
         c.setIdAuditoria(Math.toIntExact(idAud));
 
         return canalRepo.save(c);
     }
+
 
 
     // 3) Listar publicaciones de un canal
@@ -83,28 +111,48 @@ public class CanalService {
                 .toList();
     }
 
-    // 4) Crear publicación NUEVA de un docente y vincularla a un canal
+
+    // 4) Crear publicación NUEVA de un docente/investigador y vincularla a un canal
     public Publicacion crearPublicacionEnCanal(Integer idCanal, Integer idProyectoF7, Integer idProfesor, String contenido) {
+        // 1) Verificar que el canal exista
         CanalInformacion canal = canalRepo.findById(idCanal)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Canal no encontrado"));
 
-        // Crear auditoría
-        int idAud = Math.toIntExact(Long.valueOf(auditoria.log((int) idProfesor.longValue(), "canales.publicar",
-                "canal=" + idCanal)));
+        // 2) Traer el usuario autor (idAutor ahora es id_usuario) y validar rol
+        Usuario autor = usuarioRepo.findById(Long.valueOf(idProfesor))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario (autor) no encontrado"));
 
-        // Crear publicación
+        RolUsuario rol = autor.getRolPrincipal();
+        if (rol != RolUsuario.profesor &&
+                rol != RolUsuario.investigador &&
+                rol != RolUsuario.administrador &&
+                rol != RolUsuario.egresado &&
+                rol != RolUsuario.empresa) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Solo usuarios autorizados pueden publicar en canales"
+            );
+        }
+
+        // 3) Crear auditoría
+        int idAud = Math.toIntExact(Long.valueOf(
+                auditoria.log(idProfesor, "canales.publicar", "canal=" + idCanal)
+        ));
+
+        // 4) Crear publicación
         Publicacion pub = new Publicacion();
-        pub.setIdProyecto(idProyectoF7);              // proyecto genérico F7
-        pub.setIdReporte(null);                       // para cumplir el CHECK
-        pub.setPublicadoPorProfesor(idProfesor);
+        pub.setIdProyecto(idProyectoF7);      // proyecto genérico F7
+        pub.setIdReporte(null);               // para cumplir el CHECK
+        pub.setAutor(autor);                  // <<< ACA se llena id_autor
         pub.setEstado(EstadoPublicacion.publicado);
         pub.setFechaPublicacion(LocalDateTime.now());
         pub.setObservacion(contenido);
-        pub.setIdAuditoria(Math.toIntExact(idAud));
+        pub.setIdAuditoria(idAud);
 
         pub = publicacionRepo.save(pub);
 
-        // Vincular a canal
+        // 5) Vincular a canal
         CanalPublicacionId cpId = new CanalPublicacionId(idCanal, pub.getIdPublicacion());
 
         CanalPublicacion cp = new CanalPublicacion();
@@ -118,6 +166,8 @@ public class CanalService {
         return pub;
     }
 
+
+
     public boolean seguirCanal(Integer idCanal, Integer idUsuario) {
         CanalInformacion canal = canalRepo.findById(idCanal)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Canal no encontrado"));
@@ -129,7 +179,7 @@ public class CanalService {
         CanalSeguidorId csId = new CanalSeguidorId(idCanal, idUsuario);
 
         if (canalSeguidorRepo.existsById(csId)) {
-            return false; // ya seguía el canal
+            return false; // ya seguía el canal ok
         }
 
         Long idAud = Long.valueOf(auditoria.log(idUsuario, "canales.follow",
