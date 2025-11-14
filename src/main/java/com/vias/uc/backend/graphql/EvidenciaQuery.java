@@ -32,4 +32,5 @@ public class EvidenciaQuery {
                 .orElseThrow(() -> new IllegalArgumentException("El usuario no tiene portafolio"));
         return evRepo.findByIdPortafolio(port.getIdPortafolio());
     }
+
 }

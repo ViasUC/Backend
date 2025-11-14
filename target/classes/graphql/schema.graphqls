@@ -84,6 +84,7 @@ type Postulacion {
   postulante: Usuario!
   estado: PostulacionEstado!
   fechaPostulacion: String
+  evidencias: [Evidencia!]! # NUEVO
 }
 
 input PostulacionFiltro {
@@ -137,6 +138,10 @@ type Query {
     endorsementsReceived(status: EndorsementStatus): [Endorsement!]!
     endorsementsGiven: [Endorsement!]!
     publicEndorsementsOf(userId: Int!): [Endorsement!]!
+
+    # Evidencias
+    evidenciasPorAlumno(idAlumno: ID!): [Evidencia!]!
+    evidenciasPorUsuario(idUsuario: ID!): [Evidencia!]!
 }
 
 
@@ -163,7 +168,11 @@ type Mutation {
     actualizarInvestigador(id: ID!, input: InvestigadorInput): Investigador
 
     # Postulaciones
-    crearPostulacion(idAlumno: ID!, idOportunidad: ID!): Postulacion
+    crearPostulacion(
+      idAlumno: ID!
+      idOportunidad: ID!
+      idsEvidencias: [Int] # NUEVO, opcional
+    ): Postulacion
     actualizarEstadoPostulacion(
         idPostulacion: ID!
         estado: PostulacionEstado!
@@ -340,5 +349,7 @@ type Evidencia {
     tipo: String
     recurso: String
 }
+
+
 
 
