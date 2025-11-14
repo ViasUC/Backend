@@ -81,7 +81,7 @@ type Query {
 
   usuarioById(id: Int!): Usuario
   usuarios: [Usuario!]!
-
+  conexionesPorUsuario(idUsuario: Int!): [Conexion]
   portafolioPorUsuario(idUsuario: Int!): Portafolio
 }
 
@@ -154,3 +154,13 @@ type Mutation {
 
   actualizarEgresado(id: Int!, input: EgresadoInput!): Egresado
 }
+
+
+type Conexion {
+  idConexion: Int
+  idUsuario1: Int
+  idUsuario2: Int
+  fechaConexion: String
+  idAuditoria: Int
+}
+
