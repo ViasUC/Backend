@@ -401,6 +401,38 @@ mutation crearOportunidadDocente{
 }
 ```
 
+## F2:Asociación de Evidencias al Portafolio
+
+### Crear Postulacion con Evidencias
+```graphql
+mutation {
+  crearPostulacion(
+    idAlumno: 10
+    idOportunidad: 4
+  ) {
+    idPostulacion
+    estado
+    fechaPostulacion
+    evidencias {
+      idEvidencia
+      titulo
+    }
+  }
+}
+```
+
+### Consultar evidencias por Alumno
+```graphql
+query {
+  evidenciasPorAlumno(idAlumno: 13) {
+    idEvidencia
+    titulo
+    descripcion
+    tipo
+  }
+}
+```
+
 ## F3: Endorsements
 
 ### Crear Endorsement
