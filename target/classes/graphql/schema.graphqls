@@ -101,6 +101,24 @@ type PostulacionPage {
   page: Int!
   size: Int!
 }
+
+type Canal {
+  idCanal: ID!
+  nombre: String!
+  slug: String!
+  tipo: String!
+  descripcion: String
+  activo: Boolean!
+}
+
+type Publicacion {
+  idPublicacion: ID!
+  observacion: String
+  estado: String
+  fechaPublicacion: String
+}
+
+
 # ===== Root types =====
 type Query {
     # Usuarios
@@ -135,6 +153,13 @@ type Query {
     endorsementsReceived(toUserId: Int!, status: EndorsementStatus): [Endorsement!]!
     endorsementsGiven(fromUserId: Int!): [Endorsement!]!
     publicEndorsementsOf(userId: Int!): [Endorsement!]!
+
+    canalesActivos: [Canal!]!
+    publicacionesDeCanal(idCanal: ID!): [Publicacion!]!
+
+    canalesSeguidos(idUsuario: ID!): [Canal!]!
+    feedCanalesSeguidos(idUsuario: ID!): [Publicacion!]!
+    canalesPorTipo(tipo: TipoCanal!): [CanalInformacion]
 }
 
 
@@ -174,6 +199,14 @@ type Mutation {
     # Endorsements
     createEndorsement(input: CreateEndorsementInput!): Endorsement!
     decideEndorsement(input: DecideEndorsementInput!): Endorsement!
+
+    crearCanal(input: CrearCanalInput!): Canal!
+    crearPublicacionEnCanal(input: CrearPublicacionEnCanalInput!): Publicacion!
+
+    seguirCanal(idCanal: ID!, idUsuario: ID!): Boolean
+    dejarDeSeguirCanal(idCanal: ID!, idUsuario: ID!): Boolean!
+    destacarPublicacion(idCanal: ID!, idPublicacion: ID!, destacado: Boolean!): Boolean!
+
 }
 
 # =========================
@@ -215,6 +248,22 @@ input CrearOportunidadInput {
   fechaCierre: String
   estado: String          # default backend: "activo"
 }
+
+input CrearCanalInput {
+  nombre: String!
+  slug: String!
+  tipo: String!
+  descripcion: String
+  actorId: ID!
+}
+
+input CrearPublicacionEnCanalInput {
+  idCanal: ID!
+  idProyectoF7: ID!   # el proyecto genérico F7 en la BD
+  idProfesor: ID!     # id_usuario del docente
+  contenido: String!
+}
+
 
 enum EndorsementStatus { PENDING ACCEPTED REJECTED }
 
@@ -312,5 +361,22 @@ type Evidencia {
     tipo: String
     recurso: String
 }
+
+type CanalInformacion {
+  idCanal: ID!
+  nombre: String!
+  slug: String!
+  tipo: String!
+  descripcion: String
+  activo: Boolean!
+}
+
+enum TipoCanal {
+  OFERTAS
+  EVENTOS
+  INNOVACION
+  NOTICIAS_INSTITUCIONALES
+}
+
 
 
