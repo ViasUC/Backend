@@ -109,6 +109,36 @@ query {
 }
 ```
 
+para crear una postulacion (dará error si un alumno ya se postuló a una oportunidad):
+```graphql
+mutation {
+  crearPostulacion(idAlumno: 10, idOportunidad: 2) {
+    idPostulacion
+    estado
+  }
+}
+```
+
+para mostrar las oportunidades con filtro:
+```graphql
+query {
+  bolsaTrabajo(filtro: {
+    ubicacion: "Asunción"
+    modalidad: "híbrido"
+    empresa: "grupo4"
+  }) {
+    id
+    titulo
+    descripcion
+    tipo
+    ubicacion
+    modalidad
+    empresa
+  }
+}
+
+```
+
 # DOCENTES
 
 ## F0: Gestión de perfiles

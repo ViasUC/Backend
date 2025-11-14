@@ -42,17 +42,19 @@ type Investigador {
 # =========================
 
 type Oportunidad {
-  idOportunidad: ID!
-  titulo: String
-  descripcion: String
-  requisitos: String
-  ubicacion: String
-  modalidad: String
-  tipo: String
-  fechaPublicacion: String
-  fechaCierre: String
-  estado: String        # en BD: activo/borrador/pausada/cerrado
-  creador: Usuario!     # <-- reemplaza a idCreador
+    id: ID!
+    idOportunidad: ID!
+    titulo: String
+    descripcion: String
+    requisitos: String
+    ubicacion: String
+    modalidad: String
+    tipo: String
+    fechaPublicacion: String
+    fechaCierre: String
+    estado: String        # en BD: activo/borrador/pausada/cerrado
+    creador: Usuario!     # <-- reemplaza a idCreador
+    empresa: String
 }
 
 # =========================
@@ -113,7 +115,7 @@ type Query {
     alumno(id: ID!): Alumno
     alumnoPorId(id: ID!): Alumno
     consultarPerfil(idUsuario: ID!): AlumnoPerfil
-    bolsaTrabajo(filtro: PublicacionFiltroInput): [PublicacionOutput]
+    bolsaTrabajo(filtro: BolsaTrabajoFiltro): [Oportunidad]
 
     # Oportunidades
     oportunidades: [Oportunidad!]!
@@ -134,6 +136,10 @@ type Query {
 
     historialPostulacion(idPostulacion: ID!): [HistorialPostulacion!]!
 
+    buscarPostulaciones(
+        filters: PostulacionFiltro!
+    ): [Postulacion]
+
     # Endorsements
     endorsementsReceived(status: EndorsementStatus): [Endorsement!]!
     endorsementsGiven: [Endorsement!]!
@@ -148,7 +154,7 @@ type Query {
 type Mutation {
     # Alumnos
     registrarAlumno(input: RegistroAlumnoInput!): Alumno
-    actualizarAlumno(input: AlumnoInput!): Alumno
+    actualizarAlumno(id: ID!, input: AlumnoInput!): Alumno
     crearAlumno(
         nombre: String!
         apellido: String!
@@ -195,23 +201,22 @@ input AlumnoInput {
     semestre: Int
 }
 
-input PublicacionFiltroInput {
-    area: String
+input BolsaTrabajoFiltro {
     ubicacion: String
     modalidad: String
     empresa: String
 }
 
-type PublicacionOutput {
-    id: ID
-    titulo: String
-    descripcion: String
-    tipo: String
-    area: String
-    ubicacion: String
-    modalidad: String
-    empresa: String
-}
+#-type PublicacionOutput {
+    #idOportunidad: ID
+    #id: ID
+    #titulo: String
+    #descripcion: String
+    #tipo: String
+   # ubicacion: String
+    #modalidad: String
+   # empresa: String
+#}#
 
 # --- Inputs para registro (alta) ---
 input UsuarioRegistroInput {
