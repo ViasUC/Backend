@@ -16,41 +16,31 @@ public class SolicitudConexionResolver {
 
     private final SolicitudConexionService solicitudService;
 
-    // ============================================================
-    // 🔵 PENDIENTES
-    // ============================================================
     @QueryMapping
     public List<SolicitudConexion> solicitudesPendientes(@Argument Integer idUsuario) {
         return solicitudService.pendientes(idUsuario);
     }
 
-    // ============================================================
-    // 📨 RECIBIDAS
-    // ============================================================
     @QueryMapping
     public List<SolicitudConexion> solicitudesRecibidas(@Argument Integer idUsuario) {
         return solicitudService.recibidas(idUsuario);
     }
 
-    // ============================================================
-    // 📨 ENVIADAS
-    // ============================================================
     @QueryMapping
     public List<SolicitudConexion> solicitudesEnviadas(@Argument Integer idUsuario) {
         return solicitudService.enviadas(idUsuario);
     }
 
-    // ============================================================
-    // ✔ ACEPTAR
-    // ============================================================
+    @MutationMapping
+    public SolicitudConexion enviarSolicitud(@Argument Integer origen, @Argument Integer destino) {
+        return solicitudService.enviarSolicitud(origen, destino);
+    }
+
     @MutationMapping
     public SolicitudConexion aceptarSolicitud(@Argument Integer idSolicitud) {
         return solicitudService.aceptarSolicitud(idSolicitud);
     }
 
-    // ============================================================
-    // ❌ RECHAZAR
-    // ============================================================
     @MutationMapping
     public Boolean rechazarSolicitud(@Argument Integer idSolicitud) {
         return solicitudService.rechazarSolicitud(idSolicitud);
