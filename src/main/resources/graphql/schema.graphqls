@@ -72,6 +72,26 @@ type Evidencia {
 }
 
 # =========================================
+# SOLICITUDES / CONEXIONES
+# =========================================
+type Conexion {
+  idConexion: Int
+  idUsuario1: Int
+  idUsuario2: Int
+  fechaConexion: String
+  idAuditoria: Int
+}
+
+type SolicitudConexion {
+  idSolicitud: Int!
+  idUsuarioOrigen: Int!
+  idUsuarioDestino: Int!
+  estado: String!
+  fechaSolicitud: String
+  fechaRespuesta: String
+}
+
+# =========================================
 # QUERIES
 # =========================================
 type Query {
@@ -81,8 +101,16 @@ type Query {
 
   usuarioById(id: Int!): Usuario
   usuarios: [Usuario!]!
+
   conexionesPorUsuario(idUsuario: Int!): [Conexion]
+
   portafolioPorUsuario(idUsuario: Int!): Portafolio
+
+  solicitudesRecibidas(idUsuario: Int!): [SolicitudConexion]
+  solicitudesEnviadas(idUsuario: Int!): [SolicitudConexion]
+
+  # 🔥 AGREGADO PARA EL FRONT
+  solicitudesPendientes(idUsuario: Int!): [SolicitudConexion]
 }
 
 # =========================================
@@ -125,9 +153,6 @@ input LoginInput {
   password: String!
 }
 
-# =========================================
-# LOGIN RESPONSE
-# =========================================
 type LoginResponse {
   idUsuario: ID!
   nombre: String
@@ -135,9 +160,6 @@ type LoginResponse {
   rolPrincipal: RolUsuario
 }
 
-# =========================================
-# INPUT EGRESADO
-# =========================================
 input EgresadoInput {
   anioEgreso: Int
   titulo: String
@@ -153,14 +175,8 @@ type Mutation {
   actualizarUsuario(idUsuario: Int!, input: UsuarioInput): Usuario 
 
   actualizarEgresado(id: Int!, input: EgresadoInput!): Egresado
+
+  enviarSolicitud(origen: Int!, destino: Int!): SolicitudConexion
+  aceptarSolicitud(idSolicitud: Int!): SolicitudConexion
+  rechazarSolicitud(idSolicitud: Int!): Boolean
 }
-
-
-type Conexion {
-  idConexion: Int
-  idUsuario1: Int
-  idUsuario2: Int
-  fechaConexion: String
-  idAuditoria: Int
-}
-
