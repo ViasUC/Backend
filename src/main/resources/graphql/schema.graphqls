@@ -113,9 +113,11 @@ type Canal {
 
 type Publicacion {
   idPublicacion: ID!
+  titulo: String
   observacion: String
   estado: String
   fechaPublicacion: String
+  autor: Usuario
 }
 
 
@@ -260,6 +262,7 @@ input CrearCanalInput {
 input CrearPublicacionEnCanalInput {
   idCanal: ID!
   idProyectoF7: ID!   # el proyecto genérico F7 en la BD
+  titulo: String
   idAutor: ID!
   contenido: String!
 }

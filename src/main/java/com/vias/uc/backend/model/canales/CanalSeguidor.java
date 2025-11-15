@@ -12,9 +12,9 @@ public class CanalSeguidor {
     @EmbeddedId
     private CanalSeguidorId id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("idCanal")
-    @JoinColumn(name = "id_canal")
+    @JoinColumn(name = "id_canal", nullable = false)
     private CanalInformacion canal;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -36,9 +36,11 @@ public class CanalSeguidor {
     public CanalSeguidor(Usuario usuario, CanalInformacion canal) {
         this.usuario = usuario;
         this.canal = canal;
-        this.id = new CanalSeguidorId(usuario.getIdUsuario(), canal.getId());
-        this.fechaAlta= LocalDateTime.now();
+        // orden correcto: (idCanal, idUsuario)
+        this.id = new CanalSeguidorId(canal.getIdCanal(), usuario.getIdUsuario());
+        this.fechaAlta = LocalDateTime.now();
     }
+
 
     public CanalSeguidorId getId() {
         return id;

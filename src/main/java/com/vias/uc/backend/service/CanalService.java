@@ -21,12 +21,9 @@ import com.vias.uc.backend.model.enums.TipoCanal;
 import com.vias.uc.backend.model.enums.RolUsuario;
 
 
-
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -113,13 +110,17 @@ public class CanalService {
 
 
     // 4) Crear publicación NUEVA de un docente/investigador y vincularla a un canal
-    public Publicacion crearPublicacionEnCanal(Integer idCanal, Integer idProyectoF7, Integer idProfesor, String contenido) {
+    public Publicacion crearPublicacionEnCanal(Integer idCanal,
+                                               Integer idProyectoF7,
+                                               Integer idAutor,
+                                               String titulo,
+                                               String contenido) {
         // 1) Verificar que el canal exista
         CanalInformacion canal = canalRepo.findById(idCanal)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Canal no encontrado"));
 
         // 2) Traer el usuario autor (idAutor ahora es id_usuario) y validar rol
-        Usuario autor = usuarioRepo.findById(Long.valueOf(idProfesor))
+        Usuario autor = usuarioRepo.findById(Long.valueOf(idAutor))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario (autor) no encontrado"));
 
         RolUsuario rol = autor.getRolPrincipal();
@@ -137,7 +138,7 @@ public class CanalService {
 
         // 3) Crear auditoría
         int idAud = Math.toIntExact(Long.valueOf(
-                auditoria.log(idProfesor, "canales.publicar", "canal=" + idCanal)
+                auditoria.log(idAutor, "canales.publicar", "canal=" + idCanal)
         ));
 
         // 4) Crear publicación
@@ -147,6 +148,7 @@ public class CanalService {
         pub.setAutor(autor);                  // <<< ACA se llena id_autor
         pub.setEstado(EstadoPublicacion.publicado);
         pub.setFechaPublicacion(LocalDateTime.now());
+        pub.setTitulo(titulo);
         pub.setObservacion(contenido);
         pub.setIdAuditoria(idAud);
 
@@ -225,19 +227,33 @@ public class CanalService {
     }
 
     public List<Publicacion> feedCanalesSeguidos(Integer idUsuario) {
-        List<Integer> idsCanales = canalSeguidorRepo.findAllById_IdUsuario(idUsuario)
-                .stream()
-                .map(cs -> cs.getId().getIdCanal())
+
+        // 1) Traer los canales que sigue el usuario
+        List<CanalSeguidor> seguidos = canalSeguidorRepo.findAllById_IdUsuario(idUsuario);
+
+        List<Integer> idsCanales = seguidos.stream()
+                .map(cs -> cs.getCanal().getIdCanal())
                 .toList();
 
-        if (idsCanales.isEmpty()) return List.of();
+        if (idsCanales.isEmpty()) {
+            return List.of();
+        }
 
-        return canalPubRepo
-                .findAllByCanal_IdCanalInOrderByPublicacion_FechaPublicacionDesc(idsCanales)
-                .stream()
-                .map(CanalPublicacion::getPublicacion)
+        // 2) Obtener publicaciones de esos canales
+        List<CanalPublicacion> relaciones = canalPubRepo.findAllById_IdCanalIn(idsCanales);
+
+        List<Integer> idsPublicaciones = relaciones.stream()
+                .map(rel -> rel.getPublicacion().getIdPublicacion())
                 .toList();
+
+        if (idsPublicaciones.isEmpty()) {
+            return List.of();
+        }
+
+        // 3) Retorna publicaciones activas del feed
+        return publicacionRepo.findAllByIdPublicacionInOrderByFechaPublicacionDesc(idsPublicaciones);
     }
+
 
     @Transactional
     public boolean destacarPublicacion(Integer idCanal, Integer idPublicacion, boolean destacado) {

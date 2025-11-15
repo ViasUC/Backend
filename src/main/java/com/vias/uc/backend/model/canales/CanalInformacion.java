@@ -80,4 +80,12 @@ public class CanalInformacion {
         this.tipo = tipo;
     }
 
+    public Integer getIdCanal() {
+        return idCanal;
+    }
+
+    public void setIdCanal(Integer idCanal) {
+        this.idCanal = idCanal;
+    }
+
 }

@@ -11,4 +11,6 @@ public interface PublicacionRepository extends JpaRepository<Publicacion, Intege
     //List<Publicacion> findAllByPublicadoPorProfesor(Integer idProfesor);
 
     //List<Publicacion> findAllByEstado(EstadoPublicacion estado);
+    List<Publicacion> findAllByIdPublicacionInOrderByFechaPublicacionDesc(List<Integer> idsPublicaciones);
+
 }

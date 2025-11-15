@@ -40,13 +40,16 @@ public class Publicacion {
     @Column(name = "observacion")
     private String observacion; // contenido del post (texto)
 
+    @Column(name = "titulo")
+    private String titulo;
+
     @Column(name = "id_auditoria")
     private Integer idAuditoria; // FK a auditoria
 
 
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_autor")
     private Usuario autor;
 
@@ -117,6 +120,14 @@ public class Publicacion {
 
     public void setObservacion(String observacion) {
         this.observacion = observacion;
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
     }
 
     public Integer getIdAuditoria() {

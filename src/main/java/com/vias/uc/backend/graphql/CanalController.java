@@ -33,6 +33,7 @@ public class CanalController {
     public record CrearPublicacionEnCanalInput(
             Integer idCanal,
             Integer idProyectoF7,
+            String titulo,
             Integer idAutor,
             String contenido
     ) {}
@@ -68,6 +69,7 @@ public class CanalController {
                 input.idCanal(),
                 input.idProyectoF7(),
                 input.idAutor(),
+                input.titulo(),
                 input.contenido()
         );
     }
