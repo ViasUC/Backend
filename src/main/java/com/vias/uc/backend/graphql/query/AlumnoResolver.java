@@ -50,7 +50,7 @@ public class AlumnoResolver {
 
     @MutationMapping
     public Alumno actualizarAlumno(@Argument Long id, @Argument AlumnoInput input) {
-        return alumnoService.actualizarDatos(id, input);
+        return alumnoService.actualizarAlumno(id, input);
     }
 
     @QueryMapping

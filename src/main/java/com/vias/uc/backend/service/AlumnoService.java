@@ -2,22 +2,30 @@ package com.vias.uc.backend.service;
 
 import com.vias.uc.backend.model.Alumno;
 import com.vias.uc.backend.model.Auditoria;
+import com.vias.uc.backend.model.Portafolio;
 import com.vias.uc.backend.model.Usuario;
 import com.vias.uc.backend.model.dto.AlumnoInput;
 import com.vias.uc.backend.model.dto.RegistroAlumnoInput;
 import com.vias.uc.backend.model.dto.AlumnoPerfilOutput;
 import com.vias.uc.backend.repository.AlumnoRepository;
 import com.vias.uc.backend.repository.AuditoriaRepository;
+import com.vias.uc.backend.repository.PortafolioRepository;
 import com.vias.uc.backend.repository.UsuarioRepository;
 
 import org.springframework.stereotype.Service;
 
 
+import com.vias.uc.backend.model.dto.UsuarioRegistroInput;
 import com.vias.uc.backend.model.enums.RolUsuario;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
+import com.vias.uc.backend.model.dto.UsuarioInput;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,14 +36,17 @@ public class AlumnoService {
     private final AlumnoRepository alumnoRepository;
     private final UsuarioRepository usuarioRepository;
     private final AuditoriaRepository auditoriaRepository;
+    private final PortafolioRepository portafolioRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public AlumnoService(AlumnoRepository alumnoRepository,
                          UsuarioRepository usuarioRepository,
-                         AuditoriaRepository auditoriaRepository) {
+                         AuditoriaRepository auditoriaRepository,
+                         PortafolioRepository portafolioRepository) {
         this.alumnoRepository = alumnoRepository;
         this.usuarioRepository = usuarioRepository;
         this.auditoriaRepository = auditoriaRepository;
+        this.portafolioRepository = portafolioRepository;
     }
 
     @Transactional
@@ -92,6 +103,21 @@ public class AlumnoService {
         u.setAuditoria(auUsuario);
         u = usuarioRepository.save(u);
 
+        Auditoria auPortafolio = new Auditoria();
+        auPortafolio.setAccion("CREAR_PORTAFOLIO");
+        auPortafolio.setDetalle("Portafolio 1:1 para usuario " + u.getEmail());
+        auPortafolio.setFechaEvento(LocalDateTime.now());
+        auPortafolio = auditoriaRepository.save(auPortafolio);
+
+        // Crear Portafolio 1–a-1 inmutable (PK compartida)
+        Portafolio p = new Portafolio();
+        p.setDescripcion(null);
+        p.setSkills(null);
+        p.setVisibilidad(true);                   // o false, como definas
+        p.setUltimaActualizacion(LocalDateTime.now());
+        p.setIdAuditoria(Long.valueOf(auPortafolio.getIdAuditoria())); // <<<<<< esto evita el NULL
+        portafolioRepository.save(p);
+        // Crear Alumno
         Auditoria auAlumno = new Auditoria();
         auAlumno.setAccion("CREAR_ALUMNO");
         auAlumno.setDetalle("Creación de alumno para " + ui.email());
@@ -103,15 +129,11 @@ public class AlumnoService {
         a.setCarrera(input.carrera());
         a.setSemestre(input.semestre());
         a.setAuditoria(auAlumno);
-        return guardarUsuario(a);
+        return alumnoRepository.save(a);
     }
 
-    public Alumno guardarUsuario(Alumno a){
-        return alumnoRepository.save(a);
-    } //diagrama de secuencia
-
     @Transactional
-    public Alumno actualizarDatos(Long id, AlumnoInput input) { // (→ "actualizarPerfil" en el diagrama)
+    public Alumno actualizarAlumno(Long id, AlumnoInput input) {
         Alumno alumno = alumnoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Alumno no encontrado id=" + id));
         Usuario usuario = alumno.getUsuario();

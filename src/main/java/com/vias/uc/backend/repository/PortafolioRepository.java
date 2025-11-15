@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface PortafolioRepository extends JpaRepository<Portafolio, Integer> {
 
-    Optional<Portafolio> findByIdUsuario(Integer idUsuario);
+    Optional<Portafolio> findByIdUsuario(Long idUsuario);
 }

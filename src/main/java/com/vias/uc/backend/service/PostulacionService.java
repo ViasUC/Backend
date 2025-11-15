@@ -144,7 +144,7 @@ public class PostulacionService {
                     ));
 
             // si tu Portafolio no tiene getIdUsuario() y sí getUsuario(), adaptá esta línea
-            Integer idUsuarioDueno = portafolio.getIdUsuario();
+            Integer idUsuarioDueno = Math.toIntExact(portafolio.getIdUsuario());
             if (!Objects.equals(idUsuarioDueno, idUsuarioPostulante)) {
                 throw new RuntimeException(
                         "La evidencia " + evidencia.getIdEvidencia() + " no pertenece al alumno que se está postulando"
@@ -293,7 +293,7 @@ public class PostulacionService {
         Integer idUsuario = Math.toIntExact(usuario.getIdUsuario());
 
         // 1. El portafolio del usuario (solo uno!)
-        Portafolio portafolio = portafolioRepository.findByIdUsuario(idUsuario)
+        Portafolio portafolio = portafolioRepository.findByIdUsuario(Long.valueOf(idUsuario))
                 .orElse(null);
 
         if (portafolio == null) {

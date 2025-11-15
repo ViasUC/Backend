@@ -28,7 +28,7 @@ public class EvidenciaQuery {
     // ✅ Alternativa: traer evidencias directamente por usuario (usa su portafolio)
     @QueryMapping
     public List<Evidencia> evidenciasPorUsuario(@Argument Integer idUsuario) {
-        var port = portRepo.findByIdUsuario(idUsuario)
+        var port = portRepo.findByIdUsuario(Long.valueOf(idUsuario))
                 .orElseThrow(() -> new IllegalArgumentException("El usuario no tiene portafolio"));
         return evRepo.findByIdPortafolio(port.getIdPortafolio());
     }
