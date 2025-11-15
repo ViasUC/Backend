@@ -3,6 +3,7 @@ package com.vias.uc.backend.graphql;
 import com.vias.uc.backend.model.Auditoria;
 import com.vias.uc.backend.model.Oportunidad;
 import com.vias.uc.backend.model.Usuario;
+import com.vias.uc.backend.model.enums.EstadoOportunidad;
 import com.vias.uc.backend.repository.AuditoriaRepository;
 import com.vias.uc.backend.repository.OportunidadRepository;
 import com.vias.uc.backend.repository.UsuarioRepository;
@@ -81,13 +82,89 @@ public class OportunidadResolver {
         op.setFechaPublicacion(LocalDateTime.now());
         op.setFechaCierre(parseFechaCierre(input.fechaCierre()));
 
-        String estado = (input.estado() == null || input.estado().isBlank()) ? "activo" : input.estado().trim();
+        EstadoOportunidad estado = (input.estado() == null)
+                ? EstadoOportunidad.activo
+                : input.estado();
+
         op.setEstado(estado);
+
 
         op.setIdAuditoria(audit.getIdAuditoria().intValue());
 
         return oportunidadRepository.save(op);
     }
+
+    @MutationMapping
+    public Oportunidad editarOportunidad(@Argument EditarOportunidadInput input) {
+        if (input == null) throw new IllegalArgumentException("Input requerido");
+        if (input.idOportunidad() == null) throw new IllegalArgumentException("idOportunidad es obligatorio");
+        if (isBlank(input.idEditor())) throw new IllegalArgumentException("idEditor es obligatorio");
+
+        int editorId = safeParseInt(input.idEditor());
+
+        // 1) Resolver y validar el usuario editor por rol
+        Usuario editor = usuarioRepository.findById((long) editorId)
+                .orElseThrow(() -> new RuntimeException("Editor no encontrado: " + editorId));
+        assertRolHabilitado(editor);
+
+        // 2) Buscar la oportunidad
+        Oportunidad op = oportunidadRepository.findById(input.idOportunidad())
+                .orElseThrow(() -> new RuntimeException("Oportunidad no encontrada: " + input.idOportunidad()));
+
+        // 2.b) Validar que solo el creador o un administrador puedan editar
+        String rolEditor = editor.getRolPrincipal().name().toLowerCase();
+        boolean esCreador = editor.getIdUsuario().equals(op.getIdCreador());
+        boolean esAdmin = "administrador".equals(rolEditor);
+
+        if (!esCreador && !esAdmin) {
+            throw new AccessDeniedException("Solo el creador o un administrador pueden editar la oportunidad");
+        }
+
+
+
+        // 3) Actualizar solo los campos que vienen con valor
+        if (!isBlank(input.titulo())) op.setTitulo(trimOrNull(input.titulo()));
+        if (!isBlank(input.descripcion())) op.setDescripcion(trimOrNull(input.descripcion()));
+        if (!isBlank(input.requisitos())) op.setRequisitos(trimOrNull(input.requisitos()));
+        if (!isBlank(input.ubicacion())) op.setUbicacion(trimOrNull(input.ubicacion()));
+        if (!isBlank(input.modalidad())) op.setModalidad(trimOrNull(input.modalidad()));
+        if (!isBlank(input.tipo())) op.setTipo(trimOrNull(input.tipo()));
+
+        if (!isBlank(input.fechaCierre())) {
+            var cierre = parseFechaCierre(input.fechaCierre());
+            if (cierre != null && cierre.isBefore(LocalDateTime.now())) {
+                throw new IllegalArgumentException("fechaCierre no puede ser en el pasado");
+            }
+            op.setFechaCierre(cierre);
+        }
+
+        if (input.estado() != null) {
+            op.setEstado(input.estado());
+        }
+
+        // 4) Registrar auditoría de edición
+        Auditoria audit = Auditoria.builder()
+                .actorId(editorId)
+                .accion("EDITAR_OPORTUNIDAD")
+                .detalle("Edición de oportunidad id=" + op.getIdOportunidad())
+                .build();
+        audit = auditoriaRepository.save(audit);
+
+        op.setIdAuditoria(audit.getIdAuditoria().intValue());
+
+        // 5) Guardar cambios
+        return oportunidadRepository.save(op);
+    }
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -148,8 +225,23 @@ public class OportunidadResolver {
             String modalidad,
             String tipo,
             String fechaCierre,
-            String estado
+            EstadoOportunidad estado
     ) {}
+
+    public static record EditarOportunidadInput(
+            Integer idOportunidad,
+            String idEditor,
+            String titulo,
+            String descripcion,
+            String requisitos,
+            String ubicacion,
+            String modalidad,
+            String tipo,
+            String fechaCierre,
+            EstadoOportunidad estado
+    ) {}
+
+
 
     @QueryMapping
     public List<Oportunidad> oportunidadesPorCreador(@Argument Long creadorId) {

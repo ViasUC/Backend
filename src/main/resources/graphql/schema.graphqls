@@ -51,9 +51,17 @@ type Oportunidad {
   tipo: String
   fechaPublicacion: String
   fechaCierre: String
-  estado: String        # en BD: activo/borrador/pausada/cerrado
+  estado: EstadoOportunidad        # en BD: activo/borrador/pausada/cerrado
   creador: Usuario!     # <-- reemplaza a idCreador
 }
+
+enum EstadoOportunidad {
+    activo
+    borrador
+    pausado
+    cerrado
+}
+
 
 # =========================
 # Postulaciones
@@ -197,6 +205,7 @@ type Mutation {
 
     # Docentes - Oportunidades
     crearOportunidadDocente(input: CrearOportunidadInput!): Oportunidad!
+    editarOportunidad(input: EditarOportunidadInput!): Oportunidad!
 
     # Endorsements
     createEndorsement(input: CreateEndorsementInput!): Endorsement!
@@ -248,8 +257,22 @@ input CrearOportunidadInput {
   modalidad: String!      # "presencial" | "remoto" | "híbrido"
   tipo: String!           # "pasantía" | "empleo" | ...
   fechaCierre: String
-  estado: String          # default backend: "activo"
+  estado: EstadoOportunidad          # default backend: "activo"
 }
+
+input EditarOportunidadInput {
+  idOportunidad: Int!
+  idEditor: ID!
+  titulo: String
+  descripcion: String
+  requisitos: String
+  ubicacion: String
+  modalidad: String
+  tipo: String
+  fechaCierre: String
+  estado: EstadoOportunidad
+}
+
 
 input CrearCanalInput {
   nombre: String!
