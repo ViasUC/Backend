@@ -339,6 +339,23 @@ mutation crearOportunidadDocente{
 }
 ```
 
+### Editar Oportunidad
+```graphql
+mutation editarOportunidad{
+  editarOportunidad(input: {
+    idOportunidad: 35
+    idEditor: "1024"
+    titulo: "Aprendizaje CISCO"
+    estado: borrador
+    requisitos: "Estudiante IF" 
+  }) {
+    idOportunidad
+    titulo
+    estado
+  }
+}
+```
+
 ## F3: Endorsements
 
 ### Crear Endorsement
