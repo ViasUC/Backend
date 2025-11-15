@@ -399,3 +399,135 @@ mutation endorsementDecision{
   }
 }
 ```
+
+## F7: Canales de información
+
+### Canales Activos
+```graphql
+query CanalesActivos{
+  canalesActivos {
+    idCanal
+    nombre
+    slug
+    tipo
+    descripcion
+    activo
+  }
+}
+```
+
+### Crear Canal de Información
+```graphql
+mutation crearCanal {
+  crearCanal(input: {
+    nombre: "Prueba"
+    slug: "prueba-1"
+    tipo: "EVENTOS"
+    descripcion: "Descripción de prueba"
+    actorId: 1025
+  }) {
+    idCanal
+    nombre
+    slug
+  }
+}
+```
+
+### Consultar Publicaciones Asociadas a un Canal (FUNCIÓN GENERAL)
+```graphql
+query publicacionesDeCanal{
+  publicacionesDeCanal(idCanal: 12) {
+    idPublicacion
+    observacion
+    estado
+    fechaPublicacion
+  }
+}
+```
+
+### Crear Publicación en un Canal Específico
+```graphql
+mutation crearPublicacionEnCanal{
+  crearPublicacionEnCanal(
+    input: {
+      idCanal: 12
+      idProyectoF7: 1
+      idAutor: 1024
+      titulo: "Post sobre Innovación y Desarrollo"
+      contenido: "Descripción del post sobre Innovación y Desarrollo"
+    }
+  ) {
+    idPublicacion
+    titulo
+    observacion
+    estado
+    fechaPublicacion
+    autor {
+      idUsuario
+      nombre
+    }
+  }
+}
+```
+
+### Seguir a un Canal
+```graphql
+mutation seguirCanal{
+  seguirCanal(idCanal: 12, idUsuario: 32)
+}
+```
+
+### Dejar de Seguir a un Canal
+```graphql
+mutation dejarDeSeguirCanal{
+  dejarDeSeguirCanal(idCanal: 12, idUsuario: 32)
+}
+```
+
+### Destacar una Publicación
+```graphql
+mutation destacarPublicacion{
+  destacarPublicacion(idCanal: 15, idPublicacion: 16, destacado: true)
+}
+```
+
+### Consultar Canales por Tipo
+```graphql
+query canalesPorTipo{
+  canalesPorTipo(tipo: OFERTAS) {
+    idCanal
+    nombre
+    tipo
+  }
+}
+```
+
+### Consultar Canales Seguidos por Usuario en Específico
+```graphql
+query canalesSeguidos {
+  canalesSeguidos(idUsuario: 32) {
+    idCanal
+    nombre
+    slug
+    tipo
+  }
+}
+```
+
+### Consultar Publicaciones Asociadas a Seguimiento de Canales por Usuarios (FEED)
+```graphql
+query feedCanalesSeguidos{
+  feedCanalesSeguidos(idUsuario: 32) {
+    idPublicacion
+    titulo
+    observacion
+    estado
+    fechaPublicacion
+    autor {
+      idUsuario
+      nombre
+      apellido
+    }
+  }
+}
+```
