@@ -62,6 +62,17 @@ type Portafolio {
   evidencias: [Evidencia!]!
 }
 
+type Postulacion {
+  idPostulacion: ID!
+  idOportunidad: Int!
+  idPostulante: Int!
+  idOfertante: Int!
+  fechaPostulacion: String
+  estado: String
+  motivo: String
+  idAuditoria: Int
+}
+
 type Evidencia {
   idEvidencia: Int!
   idPortafolio: Int!
@@ -130,6 +141,8 @@ type Query {
 
   oportunidades: [Oportunidad]
   oportunidadById(id: Int!): Oportunidad
+  postulacionesPorUsuario(idUsuario: Int!): [Postulacion]
+
 }
 
 # =========================================
@@ -229,5 +242,15 @@ type Mutation {
   ): Oportunidad
   
   eliminarOportunidad(idOportunidad: Int!): Boolean
+crearPostulacion(
+  idOportunidad: Int!
+  idPostulante: Int!
+  idOfertante: Int!
+): Postulacion
+
+eliminarPostulacion(
+  idPostulante: Int!,
+  idOportunidad: Int!
+): Boolean
 
 }

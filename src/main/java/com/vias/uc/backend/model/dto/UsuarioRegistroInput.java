@@ -2,8 +2,6 @@ package com.vias.uc.backend.model.dto;
 
 import com.vias.uc.backend.model.enums.RolUsuario;
 
-import com.vias.uc.backend.model.enums.RolUsuario;
-
 public record UsuarioRegistroInput(
         String nombre,
         String apellido,
