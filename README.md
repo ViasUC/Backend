@@ -100,51 +100,46 @@ mutation {
 
 ## F0: Gestión de perfiles
 
-### Registro al sistema: Docente
+### Registro al sistema: Docente (Solo administrador tiene permisos)
 ```graphql
-mutation registrarProfesor{
+mutation adminRegistrarProfesor{
   registrarProfesor(
+    idActor: 11,                     # <--- RolUsuario.administrador
     input: {
       usuario: {
-        nombre: "Lucía"
-        apellido: "González"
-        email: "lucia@uca.edu.py"
-        telefono: "0981999999"
-        ubicacion: "Asunción"
+        nombre: "Carlos"
+        apellido: "Lopez"
+        email: "carlos.lopez@uc.edu.py"
         password: "1234"
       }
-      departamento: "Informática"
+      departamento: "Informatica"
       categoriaDocente: "Titular"
-      areasDocentes: "SE1, Arquitectura"
+      areasDocentes: "Sistemas"
     }
   ) {
     idUsuario
-    departamento
-    categoriaDocente
-    usuario {
-      nombre
-      email
-    }
+    usuario { nombre apellido }
   }
 }
 ```
 
-### Registro al sistema: Investigador
+### Registro al sistema: Investigador (Solo administrador tiene permisos)
 ```graphql
-mutation registrarInvestigador{
+mutation adminRegistrarInvestigador{
   registrarInvestigador(
+    idActor: 11
     input: {
       usuario: {
-        nombre: "Diego"
+        nombre: "Jorge"
         apellido: "Medina"
-        email: "diego@uca.edu.py"
+        email: "jmedina@uca.edu.py"
         telefono: "0981222333"
-        ubicacion: "Encarnación"
+        ubicacion: "Villeta"
         password: "abcd"
       }
       areasInvestigacion: "Inteligencia Artificial, Deep Learning"
-      afiliaciones: "UCA, Laboratorio de IA"
-      hindex: 5
+      afiliaciones: "Empresas varias"
+      hindex: 3
     }
   ) {
     idUsuario
