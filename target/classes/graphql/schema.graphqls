@@ -148,6 +148,11 @@ type Query {
     # Evidencias
     evidenciasPorAlumno(idAlumno: ID!): [Evidencia!]!
     evidenciasPorUsuario(idUsuario: ID!): [Evidencia!]!
+    evidenciasPorPortafolio(idPortafolio: ID!): [Evidencia!]!
+
+    # Portafolios
+    portafolioPorUsuario(idUsuario: ID!): Portafolio
+
 }
 
 
@@ -189,6 +194,17 @@ type Mutation {
     # Endorsements
     createEndorsement(input: CreateEndorsementInput!): Endorsement!
     decideEndorsement(id: ID!, accept: Boolean!): Endorsement!
+
+    # --- Portafolio ---
+    crearPortafolio(input: GuardarPortafolioInput!): Portafolio
+    actualizarPortafolio(input: GuardarPortafolioInput!): Portafolio
+
+    # --- Evidencias ---
+    agregarEvidencia(input: CrearEvidenciaInput!): Evidencia
+    editarEvidencia(input: EditarEvidenciaInput!): Evidencia
+    eliminarEvidencia(idEvidencia: Int!, idUsuario: Int!): Boolean
+
+
 }
 
 # =========================
@@ -257,6 +273,34 @@ input CrearOportunidadInput {
   fechaCierre: String
   estado: String          # default backend: "activo"
 }
+
+
+input GuardarPortafolioInput {
+    idUsuario: Int!
+    descripcion: String
+    skills: String
+    visibilidad: Boolean
+}
+
+input CrearEvidenciaInput {
+  idPortafolio: Int!
+  idUsuario: Int!        # NUEVO
+  titulo: String
+  descripcion: String
+  tipo: String
+  recurso: String
+}
+
+
+input EditarEvidenciaInput {
+  idEvidencia: Int!
+  idUsuario: Int!        # NUEVO
+  titulo: String
+  descripcion: String
+  tipo: String
+  recurso: String
+}
+
 
 enum EndorsementStatus { PENDING ACCEPTED REJECTED }
 
@@ -338,11 +382,12 @@ type Egresado {
 # --- Portafolio ---
 type Portafolio {
     idPortafolio: Int!
-    idUsuario: Int!
+    # idUsuario: Int!
     descripcion: String
     skills: String
-    visibilidad: String
+    visibilidad: Boolean
     ultimaActualizacion: String
+    idAuditoria: Int
     evidencias: [Evidencia!]!
 }
 
@@ -353,6 +398,7 @@ type Evidencia {
     descripcion: String
     tipo: String
     recurso: String
+    idAuditoria: Int
 }
 
 

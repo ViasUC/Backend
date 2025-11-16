@@ -3,18 +3,22 @@
 Readme para el backend que todos van a usar en sus frontend
 
 ## Uso para usuarios de windows:
+
 -Instalar Linux
 
 ## Uso para usuarios de Linux :
+
 1-Tener instalado el Java 21.0.8
 
-2-Tener instalado y corriendo el PostgreSQL con las tablas creadas con el .txt que mandó Hector en el grupo de Whatsapp de SE
+2-Tener instalado y corriendo el PostgreSQL con las tablas creadas con el .txt que mandó Hector en el grupo de Whatsapp
+de SE
 
 3-Meter crendeciales de la base de datos local en application.yaml (src/main/resources/application.yml)
 
-4-Sincronizar el maven. Apretar el ciclo de flechas: 
+4-Sincronizar el maven. Apretar el ciclo de flechas:
 ![img.png](img.png)
 O correr el siguiente comando en la raíz del proyecto:
+
 ```bash
 choco upgrade maven
 ```
@@ -27,10 +31,11 @@ Ir a src->main->resources y cambiar el nombre de la carpeta graphql por graphql-
 
 7-Ir a http://localhost:8080/graphiql?path=/graphql (capaz tarda un poquito al cargar)
 
-
 # Guía (maso) para Alumnos :
+
 Dentro del graphql, así se hacen las siguientes llamadas:
 ara crear un Alumno:
+
 ```graphql
 mutation {
   registrarAlumno(
@@ -60,6 +65,7 @@ mutation {
 ```
 
 Para hacer login con un Alumno:
+
 ```graphql
 mutation {
   login(input: {
@@ -74,8 +80,8 @@ mutation {
 }
 ```
 
-
 Para que el Alumno cambie sus datos dentro de su perfil:
+
 ```graphql
 mutation {
   actualizarAlumno(id: 2, input: {
@@ -96,7 +102,9 @@ mutation {
   }
 }
 ```
+
 o para que consulte sus datos de perfil sin cambiarlos:
+
 ```graphql
 query {
     consultarPerfil(idUsuario: 3) {
@@ -110,6 +118,7 @@ query {
 ```
 
 para crear una postulacion (dará error si un alumno ya se postuló a una oportunidad):
+
 ```graphql
 mutation {
   crearPostulacion(idAlumno: 10, idOportunidad: 2) {
@@ -120,6 +129,7 @@ mutation {
 ```
 
 para mostrar las oportunidades con filtro:
+
 ```graphql
 query {
   bolsaTrabajo(filtro: {
@@ -144,6 +154,7 @@ query {
 ## F0: Gestión de perfiles
 
 ### Registro al sistema: Docente
+
 ```graphql
 mutation registrarProfesor{
   registrarProfesor(
@@ -173,6 +184,7 @@ mutation registrarProfesor{
 ```
 
 ### Registro al sistema: Investigador
+
 ```graphql
 mutation registrarInvestigador{
   registrarInvestigador(
@@ -204,6 +216,7 @@ mutation registrarInvestigador{
 ```
 
 ### Inicio de sesión: Docente
+
 ```graphql
 mutation loginDocente {
   loginDocenteInvestigador(input: {
@@ -221,6 +234,7 @@ mutation loginDocente {
 ```
 
 ### Inicio de sesión: Investigador
+
 ```graphql
 mutation loginInvestigador {
   loginDocenteInvestigador(input: {
@@ -238,6 +252,7 @@ mutation loginInvestigador {
 ```
 
 ### Actualizar Perfil: Docente
+
 ```graphql
 mutation actualizarProfesor{
   actualizarProfesor(id: 1020, input: {
@@ -252,6 +267,7 @@ mutation actualizarProfesor{
 ```
 
 ### Actualizar Perfil: Investigador
+
 ```graphql
 mutation actualizarInvestigador{
   actualizarInvestigador(
@@ -282,6 +298,7 @@ mutation actualizarInvestigador{
 ## F1: Manejo de postulantes + Ejemplos de uso en GraphQL
 
 ### Crear Postulación
+
 ```graphql
 mutation crearPostulacion {
   crearPostulacion(idAlumno: 47, idOportunidad: 4) {
@@ -293,7 +310,9 @@ mutation crearPostulacion {
   }
 }
 ```
+
 ### Listar Postulación
+
 ```graphql
 query listarPostulacion {
   postulacionesPage(
@@ -318,6 +337,7 @@ query listarPostulacion {
 ```
 
 ### Actualizar Estado de Postulación
+
 ```graphql
 mutation actualizarEstadoPostulacion {
   actualizarEstadoPostulacion(
@@ -330,15 +350,18 @@ mutation actualizarEstadoPostulacion {
   }
 }
 ```
+
 **Transiciones válidas para update endpoints:**
-- PENDIENTE	→ ACEPTADA  : Cuando el postulante es seleccionado.
-- PENDIENTE	→ RECHAZADA : Cuando no cumple con los requisitos.
-- PENDIENTE	→ CANCELADA : Cuando el postulante retira su solicitud o se cierra el proceso.
-- ACEPTADA	→ CANCELADA : Si por alguna razón se revoca la aceptación.
-- RECHAZADA	→ CANCELADA : Si el registro se anula o la postulación se borra administrativamente.
-- CANCELADA	-	No puede cambiar más.
+
+- PENDIENTE → ACEPTADA  : Cuando el postulante es seleccionado.
+- PENDIENTE → RECHAZADA : Cuando no cumple con los requisitos.
+- PENDIENTE → CANCELADA : Cuando el postulante retira su solicitud o se cierra el proceso.
+- ACEPTADA → CANCELADA : Si por alguna razón se revoca la aceptación.
+- RECHAZADA → CANCELADA : Si el registro se anula o la postulación se borra administrativamente.
+- CANCELADA - No puede cambiar más.
 
 ### Consultar Historial de Postulación
+
 ```graphql
 query historialPostulacion {
   historialPostulacion(idPostulacion: 20) {
@@ -351,6 +374,7 @@ query historialPostulacion {
 ```
 
 ### Listar Oportunidades
+
 ```graphql
 query listarOportunidades {
   oportunidades {
@@ -363,6 +387,7 @@ query listarOportunidades {
 ```
 
 ### Listar Oportunidades por Creador
+
 ```graphql
 query oportunidadesPorCreador{
   oportunidadesPorCreador(creadorId: 1020) {
@@ -379,6 +404,7 @@ query oportunidadesPorCreador{
 ```
 
 ### Crear Oportunidad
+
 ```graphql
 mutation crearOportunidadDocente{
   crearOportunidadDocente(input: {
@@ -404,6 +430,7 @@ mutation crearOportunidadDocente{
 ## F2:Asociación de Evidencias al Portafolio
 
 ### Crear Postulacion con Evidencias
+
 ```graphql
 mutation {
   crearPostulacion(
@@ -422,6 +449,7 @@ mutation {
 ```
 
 ### Consultar evidencias por Alumno
+
 ```graphql
 query {
   evidenciasPorAlumno(idAlumno: 13) {
@@ -436,6 +464,7 @@ query {
 ## F3: Endorsements
 
 ### Crear Endorsement
+
 ```graphql
 mutation createEndorsement{
   createEndorsement(
@@ -453,6 +482,7 @@ mutation createEndorsement{
 ```
 
 ### Consultar Endorsement
+
 ```graphql
 query endorsements {
   endorsementsReceived(status: PENDING) {
@@ -468,6 +498,7 @@ query endorsements {
 ```
 
 ### Consultar Endorsement Dados
+
 ```graphql
 query endorsementsGiven{
   endorsementsGiven {
@@ -481,6 +512,7 @@ query endorsementsGiven{
 ```
 
 ### Aceptar/Rechazar Endorsement
+
 ```graphql
 mutation endorsementDecision {
   decideEndorsement(id: 6, accept: false) {
@@ -489,4 +521,132 @@ mutation endorsementDecision {
     decidedAt
   }
 }
+```
+
+## Portafolio
+
+```graphql
+mutation crearPortafolio {
+  crearPortafolio(input: {
+    idUsuario: 2
+    descripcion: "Hola soy Juanchi Kun"
+    skills: "Java, Spring"
+    visibilidad: true
+  }) {
+    idPortafolio
+    descripcion
+    idAuditoria
+  }
+}
+
+mutation actualizarPortafolio {
+  actualizarPortafolio(input: {
+    idUsuario: 2
+    descripcion: "Perfil actualizado de Juanchi Kun"
+    skills: "Java, Spring, React"
+    visibilidad: false
+  }) {
+    idPortafolio
+    descripcion
+    skills
+    visibilidad
+    ultimaActualizacion
+    idAuditoria
+  }
+}
+
+
+query consultarPortafolio {
+  portafolioPorUsuario(idUsuario: 2) {
+    idPortafolio
+    descripcion
+    skills
+    visibilidad
+    ultimaActualizacion
+    idAuditoria
+    evidencias {
+      idEvidencia
+      titulo
+      tipo
+    }
+  }
+}
+
+```
+
+## Evidencia
+
+```graphql
+mutation agregarEvidencia {
+  agregarEvidencia(input: {
+    idPortafolio: 1
+    idUsuario: 2
+    titulo: "Certificado Java SE 11"
+    descripcion: "Certificado emitido por Oracle"
+    tipo: "CERTIFICADO"
+    recurso: "https://mis-evidencias.com/java11.pdf"
+  }) {
+    idEvidencia
+    titulo
+    tipo
+    idPortafolio
+    idAuditoria
+  }
+}
+
+
+mutation editarEvidencia {
+  editarEvidencia(input: {
+    idEvidencia: 2
+    idUsuario: 2
+    titulo: "Certificado Java SE 11 (Actualizado)"
+    descripcion: "Actualización de datos"
+    tipo: "LOGRO"
+    recurso: "https://mis-evidencias.com/java11-new.pdf"
+  }) {
+    idEvidencia
+    titulo
+    tipo
+    descripcion
+    idAuditoria
+  }
+}
+
+
+mutation eliminarEvidencia {
+  eliminarEvidencia(
+    idEvidencia: 1
+    idUsuario: 2
+  )
+}
+
+
+query evidenciasUsuario {
+  evidenciasPorUsuario(idUsuario: 2) {
+    idEvidencia
+    titulo
+    tipo
+    idPortafolio
+  }
+}
+
+
+query evidenciasPorPortafolio {
+  evidenciasPorPortafolio(idPortafolio: 1) {
+    idEvidencia
+    titulo
+    tipo
+  }
+}
+
+
+query evidenciasPorAlumno {
+  evidenciasPorAlumno(idAlumno: 2) {
+    idEvidencia
+    titulo
+    tipo
+    idPortafolio
+  }
+}
+
 ```
