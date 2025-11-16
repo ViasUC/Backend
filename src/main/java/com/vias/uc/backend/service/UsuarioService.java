@@ -3,7 +3,6 @@ package com.vias.uc.backend.service;
 import org.springframework.stereotype.Service;
 
 import com.vias.uc.backend.model.Usuario;
-import com.vias.uc.backend.model.Portafolio;
 import com.vias.uc.backend.model.dto.UsuarioInput;
 import com.vias.uc.backend.repository.UsuarioRepository;
 import com.vias.uc.backend.repository.PortafolioRepository;

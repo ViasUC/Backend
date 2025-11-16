@@ -14,8 +14,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
-import com.vias.uc.backend.model.dto.UsuarioInput;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,11 +90,13 @@ public class AlumnoService {
         log.info("✅ Usuario creado con ID {}", u.getIdUsuario());
 
         // Alumno
-        Alumno a = new Alumno();
-        a.setUsuario(u);
-        a.setCarrera(input.carrera());
-        a.setSemestre(input.semestre());
-        a.setIdAuditoria(audit.getIdAuditoria().longValue());
+// Alumno
+Alumno a = new Alumno();
+a.setUsuario(u);
+a.setCarrera(input.carrera());
+a.setSemestre(input.semestre());
+a.setIdAuditoria(audit.getIdAuditoria()); // ✔ ahora Integer
+
 
         Alumno saved = alumnoRepository.save(a);
         log.info("🎓 Alumno registrado con éxito: {}", saved);

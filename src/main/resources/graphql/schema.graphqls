@@ -72,7 +72,7 @@ type Evidencia {
 }
 
 # =========================================
-# SOLICITUDES / CONEXIONES
+# CONEXIONES Y SOLICITUDES
 # =========================================
 type Conexion {
   idConexion: Int
@@ -92,6 +92,25 @@ type SolicitudConexion {
 }
 
 # =========================================
+# OPORTUNIDADES
+# =========================================
+type Oportunidad {
+  idOportunidad: ID!
+  idEmpresa: Int
+  idCreador: Int
+  titulo: String
+  descripcion: String
+  requisitos: String
+  ubicacion: String
+  modalidad: String
+  tipo: String
+  fechaPublicacion: String
+  fechaCierre: String
+  estado: String
+  idAuditoria: Int
+}
+
+# =========================================
 # QUERIES
 # =========================================
 type Query {
@@ -103,14 +122,14 @@ type Query {
   usuarios: [Usuario!]!
 
   conexionesPorUsuario(idUsuario: Int!): [Conexion]
-
   portafolioPorUsuario(idUsuario: Int!): Portafolio
 
   solicitudesRecibidas(idUsuario: Int!): [SolicitudConexion]
   solicitudesEnviadas(idUsuario: Int!): [SolicitudConexion]
-
-  # 🔥 AGREGADO PARA EL FRONT
   solicitudesPendientes(idUsuario: Int!): [SolicitudConexion]
+
+  oportunidades: [Oportunidad]
+  oportunidadById(id: Int!): Oportunidad
 }
 
 # =========================================
@@ -169,14 +188,46 @@ input EgresadoInput {
 # MUTATIONS
 # =========================================
 type Mutation {
+
   registrarAlumno(input: RegistroAlumnoInput!): Alumno
   actualizarAlumno(id: ID!, input: AlumnoInput): Alumno
-  login(input: LoginInput!): LoginResponse
-  actualizarUsuario(idUsuario: Int!, input: UsuarioInput): Usuario 
 
+  login(input: LoginInput!): LoginResponse
+  actualizarUsuario(idUsuario: Int!, input: UsuarioInput): Usuario
   actualizarEgresado(id: Int!, input: EgresadoInput!): Egresado
 
   enviarSolicitud(origen: Int!, destino: Int!): SolicitudConexion
   aceptarSolicitud(idSolicitud: Int!): SolicitudConexion
   rechazarSolicitud(idSolicitud: Int!): Boolean
+
+  crearOportunidad(
+    idEmpresa: Int
+    idCreador: Int
+    titulo: String
+    descripcion: String
+    requisitos: String
+    ubicacion: String
+    modalidad: String
+    tipo: String
+    fechaPublicacion: String
+    fechaCierre: String
+    estado: String
+  ): Oportunidad
+
+  # 🟦🔥 ESTA ES LA MUTATION QUE TE FALTABA PARA EDITAR
+  actualizarOportunidad(
+    idOportunidad: Int!
+    idCreador: Int!
+    titulo: String!
+    descripcion: String!
+    requisitos: String!
+    ubicacion: String!
+    modalidad: String!
+    tipo: String!
+    fechaCierre: String
+    estado: String!
+  ): Oportunidad
+  
+  eliminarOportunidad(idOportunidad: Int!): Boolean
+
 }

@@ -1,10 +1,5 @@
 package com.vias.uc.backend.model;
 
-import java.math.BigInteger;
-
-import jakarta.persistence.*;
-import lombok.Data;
-
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -29,5 +24,5 @@ public class Alumno {
     private Integer semestre;
 
     @Column(name = "id_auditoria", nullable = false)
-    private Long idAuditoria;
+    private Integer idAuditoria;
 }
