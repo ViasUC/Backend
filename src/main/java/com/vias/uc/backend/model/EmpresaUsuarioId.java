@@ -10,12 +10,12 @@ import java.util.Objects;
 public class EmpresaUsuarioId implements Serializable {
 
     private Integer empresa;  // Debe coincidir con el nombre del atributo en EmpresaUsuario
-    private Integer usuario;  // Debe coincidir con el nombre del atributo en EmpresaUsuario (INTEGER en BD)
+    private Long usuario;  // Debe coincidir con BIGINT en BD y Long en EmpresaUsuario
 
     public EmpresaUsuarioId() {
     }
 
-    public EmpresaUsuarioId(Integer empresa, Integer usuario) {
+    public EmpresaUsuarioId(Integer empresa, Long usuario) {
         this.empresa = empresa;
         this.usuario = usuario;
     }
@@ -28,11 +28,11 @@ public class EmpresaUsuarioId implements Serializable {
         this.empresa = empresa;
     }
 
-    public Integer getUsuario() {
+    public Long getUsuario() {
         return usuario;
     }
 
-    public void setUsuario(Integer usuario) {
+    public void setUsuario(Long usuario) {
         this.usuario = usuario;
     }
 

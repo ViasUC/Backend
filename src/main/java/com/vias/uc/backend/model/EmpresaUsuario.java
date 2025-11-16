@@ -14,14 +14,21 @@ import java.time.LocalDateTime;
 public class EmpresaUsuario {
 
     @Id
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_empresa", nullable = false)
-    private Empresa empresa;
+    @Column(name = "id_empresa", nullable = false)
+    private Integer empresa;
 
     @Id
+    @Column(name = "id_usuario", nullable = false)
+    private Long usuario;
+
+    // Relaciones para acceso a las entidades completas (no parte de la PK)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_usuario", nullable = false)
-    private Usuario usuario;
+    @JoinColumn(name = "id_empresa", insertable = false, updatable = false)
+    private Empresa empresaEntity;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_usuario", insertable = false, updatable = false)
+    private Usuario usuarioEntity;
 
     @Column(name = "rol_en_empresa", nullable = false, length = 50)
     private String rolEnEmpresa;
@@ -41,21 +48,38 @@ public class EmpresaUsuario {
         this.fechaAlta = LocalDateTime.now();
     }
 
-    // Getters y Setters
-    public Empresa getEmpresa() {
+    // Getters y Setters para IDs (parte de la PK)
+    public Integer getEmpresa() {
         return empresa;
     }
 
-    public void setEmpresa(Empresa empresa) {
+    public void setEmpresa(Integer empresa) {
         this.empresa = empresa;
     }
 
-    public Usuario getUsuario() {
+    public Long getUsuario() {
         return usuario;
     }
 
-    public void setUsuario(Usuario usuario) {
+    public void setUsuario(Long usuario) {
         this.usuario = usuario;
+    }
+
+    // Getters y Setters para las entidades completas
+    public Empresa getEmpresaEntity() {
+        return empresaEntity;
+    }
+
+    public void setEmpresaEntity(Empresa empresaEntity) {
+        this.empresaEntity = empresaEntity;
+    }
+
+    public Usuario getUsuarioEntity() {
+        return usuarioEntity;
+    }
+
+    public void setUsuarioEntity(Usuario usuarioEntity) {
+        this.usuarioEntity = usuarioEntity;
     }
 
     public String getRolEnEmpresa() {

@@ -14,6 +14,7 @@ public class RegistroService {
 
     private final UsuarioRepository usuarioRepository;
     private final EmpresaRepository empresaRepository;
+    private final EmpresaUsuarioRepository empresaUsuarioRepository;
     private final AuditoriaService auditoriaService;
     private final SesionService sesionService;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -69,6 +70,7 @@ public class RegistroService {
             usuario.getIdUsuario().intValue()
         );
 
+        // Crear empresa
         Empresa empresa = new Empresa();
         empresa.setNombreEmpresa(input.getNombreEmpresa());
         empresa.setRuc(input.getRuc());
@@ -79,7 +81,26 @@ public class RegistroService {
         empresa.setDescripcion("Empresa registrada a través de VIAS-UC");
         empresa.setIdAuditoria(Math.toIntExact(auditoriaEmpresa.getIdAuditoria()));
 
-        empresaRepository.save(empresa);
+        empresa = empresaRepository.save(empresa);
+
+        // Crear auditoría para la relación empresa-usuario
+        Auditoria auditoriaRelacion = auditoriaService.crear(
+            "VINCULACION_EMPRESA_USUARIO",
+            "Usuario " + usuario.getEmail() + " vinculado a empresa " + empresa.getNombreEmpresa(),
+            usuario.getIdUsuario().intValue()
+        );
+
+        // Crear relación en empresa_usuario
+        EmpresaUsuario empresaUsuario = new EmpresaUsuario();
+        empresaUsuario.setEmpresa(empresa.getIdEmpresa());
+        empresaUsuario.setUsuario(usuario.getIdUsuario());
+        empresaUsuario.setEmpresaEntity(empresa);
+        empresaUsuario.setUsuarioEntity(usuario);
+        empresaUsuario.setRolEnEmpresa(input.getRolEnEmpresa() != null ? input.getRolEnEmpresa() : "Propietario");
+        empresaUsuario.setActivo(true);
+        empresaUsuario.setAuditoria(auditoriaRelacion);
+
+        empresaUsuarioRepository.save(empresaUsuario);
     }
 
     private RolUsuario mapearTipoUsuarioARol(String tipoUsuario) {
