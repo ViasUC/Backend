@@ -148,6 +148,11 @@ type Query {
     # Evidencias
     evidenciasPorAlumno(idAlumno: ID!): [Evidencia!]!
     evidenciasPorUsuario(idUsuario: ID!): [Evidencia!]!
+    
+    # Portafolios
+    portafolioPorUsuario(idUsuario: ID!): Portafolio
+    buscarPortafolios(filtros: FiltrosBusqueda): ResultadoBusqueda!
+    obtenerFiltros: FiltrosDisponibles!
 }
 
 
@@ -345,6 +350,13 @@ type Portafolio {
     visibilidad: String
     ultimaActualizacion: String
     evidencias: [Evidencia!]!
+    # Datos del usuario para búsqueda
+    nombre: String
+    apellido: String
+    email: String
+    telefono: String
+    ubicacion: String
+    carrera: String
 }
 
 type Evidencia {
@@ -427,5 +439,43 @@ type UserRegistered {
     apellido: String!
     email: String!
     rol: String!
+}
+
+# =========================
+# Búsqueda de Portafolios
+# =========================
+
+input FiltrosBusqueda {
+    textoBusqueda: String
+    carrera: String
+    ubicacion: String
+    habilidades: [String]
+    pagina: Int
+    limite: Int
+}
+
+type PortafolioBusqueda {
+    idPortafolio: Int
+    usuarioId: Int
+    nombre: String
+    apellido: String
+    email: String
+    telefono: String
+    carrera: String
+    ubicacion: String
+    descripcion: String
+    skills: String
+}
+
+type ResultadoBusqueda {
+    portafolios: [PortafolioBusqueda!]!
+    total: Int!
+    pagina: Int!
+    totalPaginas: Int!
+}
+
+type FiltrosDisponibles {
+    carreras: [String!]!
+    ubicaciones: [String!]!
 }
 
