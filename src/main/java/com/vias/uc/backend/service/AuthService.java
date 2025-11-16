@@ -9,10 +9,14 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final UsuarioRepository usuarioRepository;
+    private final AuditoriaService auditoriaService;
+    private final SesionService sesionService;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public AuthService(UsuarioRepository usuarioRepository) {
+    public AuthService(UsuarioRepository usuarioRepository, AuditoriaService auditoriaService, SesionService sesionService) {
         this.usuarioRepository = usuarioRepository;
+        this.auditoriaService = auditoriaService;
+        this.sesionService = sesionService;
     }
 
     public Usuario login(String email, String password) {
@@ -29,6 +33,10 @@ public class AuthService {
         
         if (usuario == null) {
             System.out.println(">>> Usuario no encontrado: " + email);
+            
+            // Registrar intento de login con usuario no encontrado
+            auditoriaService.crear("LOGIN_FALLIDO", "Intento de login con email no registrado: " + email, null);
+            
             return null;
         }
 
@@ -48,10 +56,18 @@ public class AuthService {
         if (!passwordOk) {
             System.out.println(">>> Password incorrecto para: " + email);
             System.out.println(">>> Hash en BD: " + usuario.getPassword().substring(0, 20) + "...");
+            
+            // Registrar intento de login fallido
+            auditoriaService.crear("LOGIN_FALLIDO", "Contraseña incorrecta para: " + email, usuario.getIdUsuario().intValue());
+            
             return null;
         }
 
         System.out.println(">>> Login exitoso para: " + email);
+        
+        // Registrar login exitoso en sesión (esto también crea el registro en auditoría)
+        sesionService.registrarLoginExitoso(usuario.getIdUsuario().intValue(), email);
+        
         return usuario;
     }
 }
