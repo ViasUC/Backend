@@ -29,6 +29,19 @@ type Usuario {
   alumnoData: Alumno
 }
 
+type PostulanteDTO {
+  idUsuario: Int
+  nombre: String
+  apellido: String
+  email: String
+  telefono: String
+  ubicacion: String
+  rolPrincipal: String
+  completitud: Int
+  fechaPostulacion: String
+}
+
+
 type Administrador {
   idUsuario: Int!
   titulo: String
@@ -142,6 +155,7 @@ type Query {
   oportunidades: [Oportunidad]
   oportunidadById(id: Int!): Oportunidad
   postulacionesPorUsuario(idUsuario: Int!): [Postulacion]
+  postulantesPorOportunidad(idOportunidad: Int!): [PostulanteDTO]
 
 }
 
