@@ -166,6 +166,7 @@ type Mutation {
     # Auth
     login(input: LoginInput!): LoginResponse
     loginDocenteInvestigador(input: LoginInput!): AuthPayload!
+    register(input: RegisterInput!): RegisterResponse!
 
     # Perfiles
     registrarProfesor(input: ProfesorInput!): Profesor
@@ -394,5 +395,37 @@ extend type Mutation {
     actualizarEmpresa(input: ActualizarEmpresaInput!, idUsuario: ID!): ActualizarEmpresaResponse!
 }
 
+# Inputs y tipos para registro
+input RegisterInput {
+    tipoUsuario: String!
+    nombre: String!
+    apellido: String!
+    email: String!
+    telefono: String!
+    password: String!
+    ubicacion: String
+    # Datos de empresa (solo para EMPLEADOR)
+    nombreEmpresa: String
+    ruc: String
+    razonSocial: String
+    contacto: String
+    ubicacionEmpresa: String
+    emailEmpresa: String
+    rolEnEmpresa: String
+}
 
+type RegisterResponse {
+    token: String!
+    usuario: UserRegistered!
+    success: Boolean!
+    message: String!
+}
+
+type UserRegistered {
+    idUsuario: ID!
+    nombre: String!
+    apellido: String!
+    email: String!
+    rol: String!
+}
 
