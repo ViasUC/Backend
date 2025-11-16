@@ -15,8 +15,8 @@ public interface EmpresaRepository extends JpaRepository<Empresa, Integer> {
      * Busca la empresa activa de un usuario mediante JOIN con empresa_usuario
      */
     @Query("SELECT e FROM Empresa e " +
-           "INNER JOIN EmpresaUsuario eu ON e.id = eu.empresa.id " +
-           "WHERE eu.usuario.id = :usuarioId AND eu.activo = true")
+           "INNER JOIN EmpresaUsuario eu ON e.idEmpresa = eu.empresa.idEmpresa " +
+           "WHERE eu.usuario.idUsuario = :usuarioId AND eu.activo = true")
     Optional<Empresa> findByUsuarioId(@Param("usuarioId") Long usuarioId);
     
     /**

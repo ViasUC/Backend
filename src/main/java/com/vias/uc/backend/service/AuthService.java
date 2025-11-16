@@ -25,21 +25,33 @@ public class AuthService {
             System.out.println("USER EN BD: " + u.getEmail())
         );
 
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Email incorrecto"));
+        Usuario usuario = usuarioRepository.findByEmail(email).orElse(null);
+        
+        if (usuario == null) {
+            System.out.println(">>> Usuario no encontrado: " + email);
+            return null;
+        }
 
         boolean passwordOk;
 
-        if (usuario.getPassword().startsWith("$2a$")) {
+        // Verificar si el password está hasheado con bcrypt ($2a$, $2b$, $2y$)
+        if (usuario.getPassword().startsWith("$2a$") || 
+            usuario.getPassword().startsWith("$2b$") || 
+            usuario.getPassword().startsWith("$2y$")) {
+            System.out.println(">>> Verificando password hasheado con bcrypt");
             passwordOk = passwordEncoder.matches(password, usuario.getPassword());
         } else {
+            System.out.println(">>> Verificando password en texto plano");
             passwordOk = usuario.getPassword().equals(password);
         }
 
         if (!passwordOk) {
-            throw new RuntimeException("Password incorrecto");
+            System.out.println(">>> Password incorrecto para: " + email);
+            System.out.println(">>> Hash en BD: " + usuario.getPassword().substring(0, 20) + "...");
+            return null;
         }
 
+        System.out.println(">>> Login exitoso para: " + email);
         return usuario;
     }
 }

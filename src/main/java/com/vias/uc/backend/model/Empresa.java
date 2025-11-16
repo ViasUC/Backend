@@ -34,6 +34,9 @@ public class Empresa {
     @Column(name = "email")
     private String email;
 
+    @Column(name = "descripcion")
+    private String descripcion;
+
     @Column(name = "id_auditoria", nullable = false)
     private Integer idAuditoria; // Nota: Esto podría ser un @OneToOne con Auditoria
 
@@ -107,6 +110,14 @@ public class Empresa {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
     public Integer getIdAuditoria() {
