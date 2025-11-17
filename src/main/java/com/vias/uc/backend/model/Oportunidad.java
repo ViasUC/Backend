@@ -1,5 +1,6 @@
 package com.vias.uc.backend.model;
 
+import com.vias.uc.backend.model.enums.EstadoOportunidad;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -56,8 +57,10 @@ public class Oportunidad {
     private LocalDateTime fechaCierre;
 
     // 'activo','borrador','pausada','cerrado'
+    @Enumerated(EnumType.STRING)
     @Column(name = "estado")
-    private String estado;
+    private EstadoOportunidad estado;
+
 
     @Column(name = "id_auditoria")
     private Integer idAuditoria;
@@ -103,8 +106,8 @@ public class Oportunidad {
     public LocalDateTime getFechaCierre() { return fechaCierre; }
     public void setFechaCierre(LocalDateTime fechaCierre) { this.fechaCierre = fechaCierre; }
 
-    public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
+    public EstadoOportunidad getEstado() { return estado; }
+    public void setEstado(EstadoOportunidad estado) { this.estado = estado; }
 
     public Integer getIdAuditoria() { return idAuditoria; }
     public void setIdAuditoria(Integer idAuditoria) { this.idAuditoria = idAuditoria; }

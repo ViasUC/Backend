@@ -34,6 +34,7 @@
 		<boot.config.processor.version>${project.parent.version}</boot.config.processor.version>
 		<maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
 		<build.helper.plugin.version>3.5.0</build.helper.plugin.version>
+        <logback.version>1.5.19</logback.version>
 	</properties>
     <dependencies>
         <!-- GraphQL -->
@@ -60,12 +61,6 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-		<!-- Driver PostgreSQL (runtime) -->
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<scope>runtime</scope>
-		</dependency>
 
 		<!-- BCrypt (puede mantenerse aunque el starter ya trae crypto) -->
 		<dependency>
@@ -73,13 +68,7 @@
 			<artifactId>spring-security-crypto</artifactId>
 		</dependency>
 
-		<!-- Lombok -->
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>${lombok.version}</version>
-			<optional>true</optional>
-		</dependency>
+
         <!-- Validaciones (Bean Validation para anotaciones @NotNull, @Email, etc.) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -139,11 +128,6 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-crypto</artifactId>
         </dependency>
 
 
