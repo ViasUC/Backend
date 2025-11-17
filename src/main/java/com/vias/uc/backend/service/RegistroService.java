@@ -1,12 +1,15 @@
 package com.vias.uc.backend.service;
 
 import com.vias.uc.backend.model.*;
+import com.vias.uc.backend.model.enums.RolEmpresa;
 import com.vias.uc.backend.model.enums.RolUsuario;
 import com.vias.uc.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -51,15 +54,56 @@ public class RegistroService {
         // Guardar usuario
         usuario = usuarioRepository.save(usuario);
 
-        // Si es empleador, crear empresa
-        if (rol == RolUsuario.empresa && input.getNombreEmpresa() != null) {
-            crearEmpresa(input, usuario);
+        // Si es empleador, manejar empresa
+        if (rol == RolUsuario.empresa) {
+            if (input.getIdEmpresaExistente() != null) {
+                // Caso: Unirse a empresa existente (solicitud pendiente)
+                unirseAEmpresaExistente(input, usuario);
+            } else if (input.getNombreEmpresa() != null) {
+                // Caso: Crear nueva empresa (se vuelve ADMINISTRADOR automáticamente)
+                crearEmpresa(input, usuario);
+            }
         }
 
         // Registrar sesión inicial
         sesionService.registrarLoginExitoso(usuario.getIdUsuario().intValue(), usuario.getEmail());
 
         return usuario;
+    }
+
+    /**
+     * Crea una solicitud de acceso a una empresa existente
+     * El usuario queda pendiente de aprobación (activo=false)
+     */
+    private void unirseAEmpresaExistente(RegisterInput input, Usuario usuario) {
+        Integer idEmpresa = input.getIdEmpresaExistente();
+        RolEmpresa rolSolicitado = input.getRolSolicitado() != null 
+            ? input.getRolSolicitado() 
+            : RolEmpresa.AUXILIAR_RRHH; // Rol por defecto si no especifica
+
+        // Verificar que la empresa existe
+        Empresa empresa = empresaRepository.findById(idEmpresa)
+            .orElseThrow(() -> new RuntimeException("Empresa no encontrada"));
+
+        // Crear auditoría para la solicitud
+        Auditoria auditoriaSolicitud = auditoriaService.crear(
+            "SOLICITUD_ACCESO_EMPRESA",
+            "Usuario " + usuario.getEmail() + " solicita acceso a empresa " + empresa.getNombreEmpresa() + " con rol " + rolSolicitado.name(),
+            usuario.getIdUsuario().intValue()
+        );
+
+        // Crear relación en estado pendiente
+        EmpresaUsuario empresaUsuario = new EmpresaUsuario();
+        empresaUsuario.setEmpresa(idEmpresa);
+        empresaUsuario.setUsuario(usuario.getIdUsuario());
+        empresaUsuario.setEmpresaEntity(empresa);
+        empresaUsuario.setUsuarioEntity(usuario);
+        empresaUsuario.setRolEnEmpresa(rolSolicitado);
+        empresaUsuario.setActivo(false); // PENDIENTE de aprobación
+        empresaUsuario.setFechaAlta(LocalDateTime.now());
+        empresaUsuario.setAuditoria(auditoriaSolicitud);
+
+        empresaUsuarioRepository.save(empresaUsuario);
     }
 
     private void crearEmpresa(RegisterInput input, Usuario usuario) {
@@ -91,12 +135,13 @@ public class RegistroService {
         );
 
         // Crear relación en empresa_usuario
+        // El primer usuario que crea la empresa es ADMINISTRADOR
         EmpresaUsuario empresaUsuario = new EmpresaUsuario();
         empresaUsuario.setEmpresa(empresa.getIdEmpresa());
         empresaUsuario.setUsuario(usuario.getIdUsuario());
         empresaUsuario.setEmpresaEntity(empresa);
         empresaUsuario.setUsuarioEntity(usuario);
-        empresaUsuario.setRolEnEmpresa(input.getRolEnEmpresa() != null ? input.getRolEnEmpresa() : "Propietario");
+        empresaUsuario.setRolEnEmpresa(RolEmpresa.ADMINISTRADOR);
         empresaUsuario.setActivo(true);
         empresaUsuario.setAuditoria(auditoriaRelacion);
 
@@ -123,14 +168,16 @@ public class RegistroService {
         private String telefono;
         private String password;
         private String ubicacion;
-        // Datos empresa
+        // Datos empresa nueva
         private String nombreEmpresa;
         private String ruc;
         private String razonSocial;
         private String contacto;
         private String ubicacionEmpresa;
         private String emailEmpresa;
-        private String rolEnEmpresa;
+        // Datos para unirse a empresa existente
+        private Integer idEmpresaExistente;
+        private RolEmpresa rolSolicitado;
 
         // Getters y Setters
         public String getTipoUsuario() { return tipoUsuario; }
@@ -172,7 +219,10 @@ public class RegistroService {
         public String getEmailEmpresa() { return emailEmpresa; }
         public void setEmailEmpresa(String emailEmpresa) { this.emailEmpresa = emailEmpresa; }
         
-        public String getRolEnEmpresa() { return rolEnEmpresa; }
-        public void setRolEnEmpresa(String rolEnEmpresa) { this.rolEnEmpresa = rolEnEmpresa; }
+        public Integer getIdEmpresaExistente() { return idEmpresaExistente; }
+        public void setIdEmpresaExistente(Integer idEmpresaExistente) { this.idEmpresaExistente = idEmpresaExistente; }
+        
+        public RolEmpresa getRolSolicitado() { return rolSolicitado; }
+        public void setRolSolicitado(RolEmpresa rolSolicitado) { this.rolSolicitado = rolSolicitado; }
     }
 }

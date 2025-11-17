@@ -1,5 +1,6 @@
 package com.vias.uc.backend.model;
 
+import com.vias.uc.backend.model.enums.RolEmpresa;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -30,8 +31,9 @@ public class EmpresaUsuario {
     @JoinColumn(name = "id_usuario", insertable = false, updatable = false)
     private Usuario usuarioEntity;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "rol_en_empresa", nullable = false, length = 50)
-    private String rolEnEmpresa;
+    private RolEmpresa rolEnEmpresa;
 
     @Column(name = "activo", nullable = false)
     private Boolean activo = true;
@@ -82,11 +84,11 @@ public class EmpresaUsuario {
         this.usuarioEntity = usuarioEntity;
     }
 
-    public String getRolEnEmpresa() {
+    public RolEmpresa getRolEnEmpresa() {
         return rolEnEmpresa;
     }
 
-    public void setRolEnEmpresa(String rolEnEmpresa) {
+    public void setRolEnEmpresa(RolEmpresa rolEnEmpresa) {
         this.rolEnEmpresa = rolEnEmpresa;
     }
 

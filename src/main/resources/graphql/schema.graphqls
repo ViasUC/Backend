@@ -4,7 +4,7 @@ type Usuario {
     idUsuario: ID!
     nombre: String!
     apellido: String
-    email: String!
+    email: String
     telefono: String
     ubicacion: String
     rolPrincipal: RolUsuario        # ← NO String, usa el enum
@@ -506,7 +506,7 @@ enum TipoCanal {
 # =========================
 
 type Empresa {
-    id: ID!
+    idEmpresa: Int!
     nombreEmpresa: String!
     ruc: String
     razonSocial: String
@@ -546,14 +546,16 @@ input RegisterInput {
     telefono: String!
     password: String!
     ubicacion: String
-    # Datos de empresa (solo para EMPLEADOR)
+    # Datos de empresa (solo para EMPLEADOR - crear nueva)
     nombreEmpresa: String
     ruc: String
     razonSocial: String
     contacto: String
     ubicacionEmpresa: String
     emailEmpresa: String
-    rolEnEmpresa: String
+    # Datos para unirse a empresa existente (solo para EMPLEADOR)
+    idEmpresaExistente: Int
+    rolSolicitado: RolEmpresa
 }
 
 type RegisterResponse {
@@ -607,5 +609,125 @@ type ResultadoBusqueda {
 type FiltrosDisponibles {
     carreras: [String!]!
     ubicaciones: [String!]!
+}
+
+# =========================
+# Gestión de Usuarios de Empresa
+# =========================
+
+"""
+Roles internos de usuarios dentro de una empresa
+"""
+enum RolEmpresa {
+    ADMINISTRADOR
+    GERENTE_RRHH
+    AUXILIAR_RRHH
+}
+
+"""
+Información de un usuario asociado a una empresa
+"""
+type UsuarioEmpresa {
+    idEmpresa: Int!
+    idUsuario: ID!
+    usuario: Usuario!
+    rolEnEmpresa: RolEmpresa!
+    activo: Boolean!
+    fechaAlta: String!
+}
+
+"""
+Solicitud de acceso a una empresa (usuario pendiente de aprobación)
+"""
+type SolicitudAcceso {
+    idEmpresa: Int!
+    idUsuario: ID!
+    usuario: Usuario!
+    rolSolicitado: RolEmpresa!
+    fechaSolicitud: String!
+}
+
+"""
+Input para solicitar acceso a una empresa
+"""
+input SolicitarAccesoEmpresaInput {
+    idEmpresa: Int!
+    idUsuario: ID!
+    rolSolicitado: RolEmpresa!
+}
+
+"""
+Input para aprobar o rechazar un usuario
+"""
+input GestionarUsuarioEmpresaInput {
+    idEmpresa: Int!
+    idUsuario: ID!
+    idAdministrador: ID!
+}
+
+"""
+Input para cambiar el rol de un usuario
+"""
+input CambiarRolUsuarioInput {
+    idEmpresa: Int!
+    idUsuario: ID!
+    nuevoRol: RolEmpresa!
+    idAdministrador: ID!
+}
+
+# Extender Query
+extend type Query {
+    """
+    Lista todos los usuarios activos de una empresa
+    """
+    listarUsuariosEmpresa(idEmpresa: Int!): [UsuarioEmpresa!]!
+    
+    """
+    Lista todas las solicitudes pendientes de aprobación de una empresa
+    """
+    listarSolicitudesPendientes(idEmpresa: Int!): [SolicitudAcceso!]!
+    
+    """
+    Obtiene el rol de un usuario específico en una empresa
+    """
+    obtenerRolUsuario(idEmpresa: Int!, idUsuario: ID!): RolEmpresa
+    
+    """
+    Lista todas las empresas registradas (para el selector de registro)
+    """
+    listarEmpresas: [Empresa!]!
+}
+
+# Extender Mutation
+extend type Mutation {
+    """
+    Solicita acceso de un usuario a una empresa con un rol específico
+    El usuario queda pendiente de aprobación (activo=false)
+    """
+    solicitarAccesoEmpresa(input: SolicitarAccesoEmpresaInput!): UsuarioEmpresa!
+    
+    """
+    Aprueba la solicitud de un usuario para acceder a una empresa
+    Solo puede ser ejecutado por un administrador
+    """
+    aprobarUsuarioEmpresa(input: GestionarUsuarioEmpresaInput!): UsuarioEmpresa!
+    
+    """
+    Rechaza la solicitud de un usuario (elimina la relación)
+    Solo puede ser ejecutado por un administrador
+    """
+    rechazarUsuarioEmpresa(input: GestionarUsuarioEmpresaInput!): Boolean!
+    
+    """
+    Cambia el rol de un usuario en la empresa
+    Solo puede ser ejecutado por un administrador
+    """
+    cambiarRolUsuarioEmpresa(input: CambiarRolUsuarioInput!): UsuarioEmpresa!
+    
+    """
+    Desactiva un usuario de la empresa
+    Solo puede ser ejecutado por un administrador
+    """
+    desactivarUsuarioEmpresa(input: GestionarUsuarioEmpresaInput!): Boolean!
 }
 
