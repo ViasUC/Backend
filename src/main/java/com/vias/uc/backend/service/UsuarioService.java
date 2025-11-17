@@ -9,8 +9,9 @@ public interface UsuarioService {
     boolean activo(Integer id);
 
     // Altas
-    Profesor registrarProfesor(UsuarioService.ProfesorInput input);
-    Investigador registrarInvestigador(UsuarioService.InvestigadorInput input);
+    Profesor registrarProfesor(Integer idActor, ProfesorInput input);
+    Investigador registrarInvestigador(Integer idActor, InvestigadorInput input);
+
 
     // Actualizaciones
     Profesor actualizarProfesor(Integer id, UsuarioService.ProfesorInput input);

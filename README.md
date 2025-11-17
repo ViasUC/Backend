@@ -3,22 +3,18 @@
 Readme para el backend que todos van a usar en sus frontend
 
 ## Uso para usuarios de windows:
-
 -Instalar Linux
 
 ## Uso para usuarios de Linux :
-
 1-Tener instalado el Java 21.0.8
 
-2-Tener instalado y corriendo el PostgreSQL con las tablas creadas con el .txt que mandó Hector en el grupo de Whatsapp
-de SE
+2-Tener instalado y corriendo el PostgreSQL con las tablas creadas con el .txt que mandó Hector en el grupo de Whatsapp de SE
 
 3-Meter crendeciales de la base de datos local en application.yaml (src/main/resources/application.yml)
 
-4-Sincronizar el maven. Apretar el ciclo de flechas:
+4-Sincronizar el maven. Apretar el ciclo de flechas: 
 ![img.png](img.png)
 O correr el siguiente comando en la raíz del proyecto:
-
 ```bash
 choco upgrade maven
 ```
@@ -31,11 +27,10 @@ Ir a src->main->resources y cambiar el nombre de la carpeta graphql por graphql-
 
 7-Ir a http://localhost:8080/graphiql?path=/graphql (capaz tarda un poquito al cargar)
 
-# Guía (maso) para Alumnos :
 
+# Guía (maso) para Alumnos :
 Dentro del graphql, así se hacen las siguientes llamadas:
 ara crear un Alumno:
-
 ```graphql
 mutation {
   registrarAlumno(
@@ -65,7 +60,6 @@ mutation {
 ```
 
 Para hacer login con un Alumno:
-
 ```graphql
 mutation {
   login(input: {
@@ -80,8 +74,8 @@ mutation {
 }
 ```
 
-Para que el Alumno cambie sus datos dentro de su perfil:
 
+Para que el Alumno cambie sus datos dentro de su perfil:
 ```graphql
 mutation {
   actualizarAlumno(id: 2, input: {
@@ -154,37 +148,29 @@ query {
 ## F0: Gestión de perfiles
 
 ### Registro al sistema: Docente
-
 ```graphql
-mutation registrarProfesor{
+mutation adminRegistrarProfesor{
   registrarProfesor(
+    idActor: 11,                     # <--- RolUsuario.administrador
     input: {
       usuario: {
-        nombre: "Lucía"
-        apellido: "González"
-        email: "lucia@uca.edu.py"
-        telefono: "0981999999"
-        ubicacion: "Asunción"
+        nombre: "Carlos"
+        apellido: "Lopez"
+        email: "carlos.lopez@uc.edu.py"
         password: "1234"
       }
-      departamento: "Informática"
+      departamento: "Informatica"
       categoriaDocente: "Titular"
-      areasDocentes: "SE1, Arquitectura"
+      areasDocentes: "Sistemas"
     }
   ) {
     idUsuario
-    departamento
-    categoriaDocente
-    usuario {
-      nombre
-      email
-    }
+    usuario { nombre apellido }
   }
 }
 ```
 
 ### Registro al sistema: Investigador
-
 ```graphql
 mutation registrarInvestigador{
   registrarInvestigador(
@@ -216,43 +202,21 @@ mutation registrarInvestigador{
 ```
 
 ### Inicio de sesión: Docente
-
 ```graphql
-mutation loginDocente {
-  loginDocenteInvestigador(input: {
-    email: "lucia@uca.edu.py",
-    password: "1234"
+mutation loginGeneral{
+  login(input: {
+    email: "luciana@uca.edu.py",
+    password: "luci123"
   }) {
-    token
-    usuario {
-      idUsuario
-      email
-      rolPrincipal
-    }
-  }
-}
-```
-
-### Inicio de sesión: Investigador
-
-```graphql
-mutation loginInvestigador {
-  loginDocenteInvestigador(input: {
-    email: "diego@uca.edu.py",
-    password: "abcd"
-  }) {
-    token
-    usuario {
-      idUsuario
-      email
-      rolPrincipal
-    }
+    idUsuario
+    nombre
+    apellido
+    rolPrincipal
   }
 }
 ```
 
 ### Actualizar Perfil: Docente
-
 ```graphql
 mutation actualizarProfesor{
   actualizarProfesor(id: 1020, input: {
@@ -267,7 +231,6 @@ mutation actualizarProfesor{
 ```
 
 ### Actualizar Perfil: Investigador
-
 ```graphql
 mutation actualizarInvestigador{
   actualizarInvestigador(
@@ -298,7 +261,6 @@ mutation actualizarInvestigador{
 ## F1: Manejo de postulantes + Ejemplos de uso en GraphQL
 
 ### Crear Postulación
-
 ```graphql
 mutation crearPostulacion {
   crearPostulacion(idAlumno: 47, idOportunidad: 4) {
@@ -310,16 +272,13 @@ mutation crearPostulacion {
   }
 }
 ```
-
 ### Listar Postulación
-
 ```graphql
 query listarPostulacion {
   postulacionesPage(
     filtro: {
-      idOportunidad: 4
-      estados: [PENDIENTE, ACEPTADA]
-      texto: "Roberto"
+      idOportunidad: 5
+      estados: [PENDIENTE, ACEPTADA, CANCELADA]
     }
     page: 0
     size: 10
@@ -337,20 +296,19 @@ query listarPostulacion {
 ```
 
 ### Actualizar Estado de Postulación
-
 ```graphql
 mutation actualizarEstadoPostulacion {
   actualizarEstadoPostulacion(
-    idPostulacion: 20,
-    estado: ACEPTADA,
-    motivo: "Cumple los requisitos del puesto"
+    idPostulacion: 44,
+    estado: CANCELADA,
+    motivo: "Motivo desconocido"
+    idActor: 1024
   ) {
     idPostulacion
     estado
   }
 }
 ```
-
 **Transiciones válidas para update endpoints:**
 
 - PENDIENTE → ACEPTADA  : Cuando el postulante es seleccionado.
@@ -361,7 +319,6 @@ mutation actualizarEstadoPostulacion {
 - CANCELADA - No puede cambiar más.
 
 ### Consultar Historial de Postulación
-
 ```graphql
 query historialPostulacion {
   historialPostulacion(idPostulacion: 20) {
@@ -374,7 +331,6 @@ query historialPostulacion {
 ```
 
 ### Listar Oportunidades
-
 ```graphql
 query listarOportunidades {
   oportunidades {
@@ -387,7 +343,6 @@ query listarOportunidades {
 ```
 
 ### Listar Oportunidades por Creador
-
 ```graphql
 query oportunidadesPorCreador{
   oportunidadesPorCreador(creadorId: 1020) {
@@ -404,7 +359,6 @@ query oportunidadesPorCreador{
 ```
 
 ### Crear Oportunidad
-
 ```graphql
 mutation crearOportunidadDocente{
   crearOportunidadDocente(input: {
@@ -461,14 +415,30 @@ query {
 }
 ```
 
+### Editar Oportunidad
+```graphql
+mutation editarOportunidad{
+  editarOportunidad(input: {
+    idOportunidad: 35
+    idEditor: "1024"
+    titulo: "Aprendizaje CISCO"
+    estado: borrador
+    requisitos: "Estudiante IF" 
+  }) {
+    idOportunidad
+    titulo
+    estado
+  }
+}
+```
+
 ## F3: Endorsements
 
 ### Crear Endorsement
-
 ```graphql
 mutation createEndorsement{
   createEndorsement(
-    input: { toUserId: 13, skill: "GraphQL", message: "Excelente trabajo en F1" }
+    input: { fromUserId: 1024, toUserId: 1000, skill: "Mejor alumno INFO 3", message: "Enhorabuena" }
   ) {
     idEndorsement
     status
@@ -481,27 +451,23 @@ mutation createEndorsement{
 }
 ```
 
-### Consultar Endorsement
-
+### Consultar Endorsement (RECEPTOR)
 ```graphql
-query endorsements {
-  endorsementsReceived(status: PENDING) {
+query endorsementsPendientes{
+  endorsementsReceived(toUserId: 1000, status: PENDING) {
     idEndorsement
     fromUserId
-    toUserId
     skill
     message
     status
-    createdAt
   }
 }
 ```
 
 ### Consultar Endorsement Dados
-
 ```graphql
 query endorsementsGiven{
-  endorsementsGiven {
+  endorsementsGiven(fromUserId: 1024) {
     idEndorsement
     toUserId
     skill
@@ -512,13 +478,149 @@ query endorsementsGiven{
 ```
 
 ### Aceptar/Rechazar Endorsement
-
 ```graphql
-mutation endorsementDecision {
-  decideEndorsement(id: 6, accept: false) {
+mutation endorsementDecision{
+  decideEndorsement(
+    input: {
+      id: 19
+      actorId: 1000
+      accept: true
+    }
+  ) {
     idEndorsement
     status
-    decidedAt
+  }
+}
+```
+
+## F7: Canales de información
+
+### Canales Activos
+```graphql
+query CanalesActivos{
+  canalesActivos {
+    idCanal
+    nombre
+    slug
+    tipo
+    descripcion
+    activo
+  }
+}
+```
+
+### Crear Canal de Información
+```graphql
+mutation crearCanal {
+  crearCanal(input: {
+    nombre: "Prueba"
+    slug: "prueba-1"
+    tipo: "EVENTOS"
+    descripcion: "Descripción de prueba"
+    actorId: 1025
+  }) {
+    idCanal
+    nombre
+    slug
+  }
+}
+```
+
+### Consultar Publicaciones Asociadas a un Canal (FUNCIÓN GENERAL)
+```graphql
+query publicacionesDeCanal{
+  publicacionesDeCanal(idCanal: 12) {
+    idPublicacion
+    observacion
+    estado
+    fechaPublicacion
+  }
+}
+```
+
+### Crear Publicación en un Canal Específico
+```graphql
+mutation crearPublicacionEnCanal{
+  crearPublicacionEnCanal(
+    input: {
+      idCanal: 12
+      idProyectoF7: 1
+      idAutor: 1024
+      titulo: "Post sobre Innovación y Desarrollo"
+      contenido: "Descripción del post sobre Innovación y Desarrollo"
+    }
+  ) {
+    idPublicacion
+    titulo
+    observacion
+    estado
+    fechaPublicacion
+    autor {
+      idUsuario
+      nombre
+    }
+  }
+}
+```
+
+### Seguir a un Canal
+```graphql
+mutation seguirCanal{
+  seguirCanal(idCanal: 12, idUsuario: 32)
+}
+```
+
+### Dejar de Seguir a un Canal
+```graphql
+mutation dejarDeSeguirCanal{
+  dejarDeSeguirCanal(idCanal: 12, idUsuario: 32)
+}
+```
+
+### Destacar una Publicación
+```graphql
+mutation destacarPublicacion{
+  destacarPublicacion(idCanal: 15, idPublicacion: 16, destacado: true)
+}
+```
+
+### Consultar Canales por Tipo
+```graphql
+query canalesPorTipo{
+  canalesPorTipo(tipo: OFERTAS) {
+    idCanal
+    nombre
+    tipo
+  }
+}
+```
+
+### Consultar Canales Seguidos por Usuario en Específico
+```graphql
+query canalesSeguidos {
+  canalesSeguidos(idUsuario: 32) {
+    idCanal
+    nombre
+    slug
+    tipo
+  }
+}
+```
+
+### Consultar Publicaciones Asociadas a Seguimiento de Canales por Usuarios (FEED)
+```graphql
+query feedCanalesSeguidos{
+  feedCanalesSeguidos(idUsuario: 32) {
+    idPublicacion
+    titulo
+    observacion
+    estado
+    fechaPublicacion
+    autor {
+      idUsuario
+      nombre
+      apellido
+    }
   }
 }
 ```

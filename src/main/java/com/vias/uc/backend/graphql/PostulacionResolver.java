@@ -29,6 +29,7 @@ public class PostulacionResolver {
         this.postulacionEvidenciaRepository = postulacionEvidenciaRepository;   // NUEVO
     }
 
+
     // ===== Existentes =====
     @QueryMapping
     public List<Postulacion> postulaciones() {
@@ -114,6 +115,7 @@ public class PostulacionResolver {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + idActor));
         assertPermisoActualizar(actor, estado);
 
+        // continuar como ya tenías
         return postulacionService.actualizarEstado(idPostulacion, estado, motivo, idActor);
     }
 
@@ -132,7 +134,7 @@ public class PostulacionResolver {
         }
 
         // Empresa / Profesor / Administrador: permitido (aceptar, rechazar, cancelar)
-        if (rol == RolUsuario.empresa || rol == RolUsuario.profesor || rol == RolUsuario.administrador) {
+        if (rol == RolUsuario.investigador || rol == RolUsuario.profesor || rol == RolUsuario.administrador) {
             return;
         }
 
