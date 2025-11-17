@@ -37,7 +37,7 @@ public class CanalSeguidor {
         this.usuario = usuario;
         this.canal = canal;
         // orden correcto: (idCanal, idUsuario)
-        this.id = new CanalSeguidorId(canal.getIdCanal(), usuario.getIdUsuario());
+        this.id = new CanalSeguidorId(canal.getIdCanal(), Math.toIntExact(usuario.getIdUsuario()));
         this.fechaAlta = LocalDateTime.now();
     }
 
