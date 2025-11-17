@@ -36,39 +36,5 @@ public class AuthController {
         this.investigadorRepository = investigadorRepository;
     }
 
-    @MutationMapping
-    public AuthPayload loginDocenteInvestigador(@Argument LoginInput input) {
-        System.out.println(">> Login docente/investigador: " + input.email());
-
-        Usuario usuario = usuarioRepository.findByEmail(input.email())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email no registrado"));
-
-        // 🔐 Compara la contraseña ingresada con el hash guardado
-        if (!passwordEncoder.matches(input.password(), usuario.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Contraseña incorrecta");
-        }
-
-        boolean esProfesor = profesorRepository.existsByIdUsuario(Math.toIntExact(usuario.getIdUsuario()));
-        boolean esInvestigador = investigadorRepository.existsByIdUsuario(Math.toIntExact(usuario.getIdUsuario()));
-
-        if (!esProfesor && !esInvestigador) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo profesores o investigadores pueden iniciar sesión");
-        }
-
-        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-
-        String token = Jwts.builder()
-                .setSubject(usuario.getEmail())
-                .claim("idUsuario", usuario.getIdUsuario())
-                .claim("rol", usuario.getRolPrincipal() != null ? usuario.getRolPrincipal().toString() : "DOCENTE")
-                .setIssuedAt(Date.from(Instant.now()))
-                .setExpiration(Date.from(Instant.now().plusSeconds(60 * 60 * 4))) // 4 horas
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
-
-        return new AuthPayload(token, usuario);
-    }
-
     public record LoginInput(String email, String password) {}
-    public record AuthPayload(String token, Usuario usuario) {}
 }

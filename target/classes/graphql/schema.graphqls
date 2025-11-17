@@ -52,10 +52,18 @@ type Oportunidad {
     tipo: String
     fechaPublicacion: String
     fechaCierre: String
-    estado: String        # en BD: activo/borrador/pausada/cerrado
+    estado: EstadoOportunidad        # en BD: activo/borrador/pausada/cerrado
     creador: Usuario!     # <-- reemplaza a idCreador
     empresa: String
 }
+
+enum EstadoOportunidad {
+    activo
+    borrador
+    pausado
+    cerrado
+}
+
 
 # =========================
 # Postulaciones
@@ -86,7 +94,6 @@ type Postulacion {
   postulante: Usuario!
   estado: PostulacionEstado!
   fechaPostulacion: String
-  evidencias: [Evidencia!]! # NUEVO
 }
 
 input PostulacionFiltro {
@@ -104,6 +111,26 @@ type PostulacionPage {
   page: Int!
   size: Int!
 }
+
+type Canal {
+  idCanal: ID!
+  nombre: String!
+  slug: String!
+  tipo: String!
+  descripcion: String
+  activo: Boolean!
+}
+
+type Publicacion {
+  idPublicacion: ID!
+  titulo: String
+  observacion: String
+  estado: String
+  fechaPublicacion: String
+  autor: Usuario
+}
+
+
 # ===== Root types =====
 type Query {
     # Usuarios
@@ -141,13 +168,25 @@ type Query {
     ): [Postulacion]
 
     # Endorsements
-    endorsementsReceived(status: EndorsementStatus): [Endorsement!]!
-    endorsementsGiven: [Endorsement!]!
+    endorsementsReceived(toUserId: Int!, status: EndorsementStatus): [Endorsement!]!
+    endorsementsGiven(fromUserId: Int!): [Endorsement!]!
     publicEndorsementsOf(userId: Int!): [Endorsement!]!
 
+    canalesActivos: [Canal!]!
+    publicacionesDeCanal(idCanal: ID!): [Publicacion!]!
+
+    canalesSeguidos(idUsuario: ID!): [Canal!]!
+    feedCanalesSeguidos(idUsuario: ID!): [Publicacion!]!
+    canalesPorTipo(tipo: TipoCanal!): [CanalInformacion]
     # Evidencias
     evidenciasPorAlumno(idAlumno: ID!): [Evidencia!]!
     evidenciasPorUsuario(idUsuario: ID!): [Evidencia!]!
+    evidenciasPorPortafolio(idPortafolio: ID!): [Evidencia!]!
+
+    # Portafolios
+    portafolioPorUsuario(idUsuario: ID!): Portafolio
+    buscarPortafolios(filtros: FiltrosBusqueda): ResultadoBusqueda!
+    obtenerFiltros: FiltrosDisponibles!
 }
 
 
@@ -165,12 +204,12 @@ type Mutation {
 
     # Auth
     login(input: LoginInput!): LoginResponse
-    loginDocenteInvestigador(input: LoginInput!): AuthPayload!
     register(input: RegisterInput!): RegisterResponse!
 
     # Perfiles
-    registrarProfesor(input: ProfesorInput!): Profesor
-    registrarInvestigador(input: InvestigadorInput!): Investigador
+    registrarProfesor(idActor: Int!, input: ProfesorInput!): Profesor!
+    registrarInvestigador(idActor: Int!, input: InvestigadorInput!): Investigador!
+
     actualizarProfesor(id: ID!, input: ProfesorInput): Profesor
     actualizarInvestigador(id: ID!, input: InvestigadorInput): Investigador
 
@@ -187,9 +226,31 @@ type Mutation {
         idActor: ID
     ): Postulacion!
 
+    # Docentes - Oportunidades
+    crearOportunidadDocente(input: CrearOportunidadInput!): Oportunidad!
+    editarOportunidad(input: EditarOportunidadInput!): Oportunidad!
+
     # Endorsements
     createEndorsement(input: CreateEndorsementInput!): Endorsement!
     decideEndorsement(id: ID!, accept: Boolean!): Endorsement!
+
+    # --- Portafolio ---
+    crearPortafolio(input: GuardarPortafolioInput!): Portafolio
+    actualizarPortafolio(input: GuardarPortafolioInput!): Portafolio
+
+    # --- Evidencias ---
+    agregarEvidencia(input: CrearEvidenciaInput!): Evidencia
+    editarEvidencia(input: EditarEvidenciaInput!): Evidencia
+    eliminarEvidencia(idEvidencia: Int!, idUsuario: Int!): Boolean
+    crearCanal(input: CrearCanalInput!): Canal!
+    crearPublicacionEnCanal(input: CrearPublicacionEnCanalInput!): Publicacion!
+
+    seguirCanal(idCanal: ID!, idUsuario: ID!): Boolean
+    dejarDeSeguirCanal(idCanal: ID!, idUsuario: ID!): Boolean!
+    destacarPublicacion(idCanal: ID!, idPublicacion: ID!, destacado: Boolean!): Boolean!
+    # --- Empresa ---
+    actualizarEmpresa(input: ActualizarEmpresaInput!, idUsuario: ID!): ActualizarEmpresaResponse!
+
 }
 
 # =========================
@@ -256,8 +317,67 @@ input CrearOportunidadInput {
   modalidad: String!      # "presencial" | "remoto" | "híbrido"
   tipo: String!           # "pasantía" | "empleo" | ...
   fechaCierre: String
-  estado: String          # default backend: "activo"
+  estado: EstadoOportunidad          # default backend: "activo"
 }
+
+input EditarOportunidadInput {
+  idOportunidad: Int!
+  idEditor: ID!
+  titulo: String
+  descripcion: String
+  requisitos: String
+  ubicacion: String
+  modalidad: String
+  tipo: String
+  fechaCierre: String
+  estado: EstadoOportunidad
+}
+
+
+input CrearCanalInput {
+  nombre: String!
+  slug: String!
+  tipo: String!
+  descripcion: String
+  actorId: ID!
+}
+
+input CrearPublicacionEnCanalInput {
+  idCanal: ID!
+  idProyectoF7: ID!   # el proyecto genérico F7 en la BD
+  titulo: String
+  idAutor: ID!
+  contenido: String!
+}
+
+
+
+input GuardarPortafolioInput {
+    idUsuario: Int!
+    descripcion: String
+    skills: String
+    visibilidad: Boolean
+}
+
+input CrearEvidenciaInput {
+  idPortafolio: Int!
+  idUsuario: Int!        # NUEVO
+  titulo: String
+  descripcion: String
+  tipo: String
+  recurso: String
+}
+
+
+input EditarEvidenciaInput {
+  idEvidencia: Int!
+  idUsuario: Int!        # NUEVO
+  titulo: String
+  descripcion: String
+  tipo: String
+  recurso: String
+}
+
 
 enum EndorsementStatus { PENDING ACCEPTED REJECTED }
 
@@ -273,9 +393,16 @@ type Endorsement {
 }
 
 input CreateEndorsementInput {
+  fromUserId: Int!
   toUserId: Int!
   skill: String
   message: String
+}
+
+input DecideEndorsementInput {
+  id: ID!
+  actorId: Int!     # el usuario que está intentando aceptar/rechazar
+  accept: Boolean!
 }
 
 input LoginInput {
@@ -288,13 +415,6 @@ type LoginResponse {
     apellido: String
     rolPrincipal: RolUsuario
 }
-
-
-type AuthPayload {
-  token: String!
-  usuario: Usuario!
-}
-
 
 # --- Inputs para alta de profesor/investigador ---
 input UsuarioInput {
@@ -339,12 +459,20 @@ type Egresado {
 # --- Portafolio ---
 type Portafolio {
     idPortafolio: Int!
-    idUsuario: Int!
+    # idUsuario: Int!
     descripcion: String
     skills: String
-    visibilidad: String
+    visibilidad: Boolean
     ultimaActualizacion: String
+    idAuditoria: Int
     evidencias: [Evidencia!]!
+    # Datos del usuario para búsqueda
+    nombre: String
+    apellido: String
+    email: String
+    telefono: String
+    ubicacion: String
+    carrera: String
 }
 
 type Evidencia {
@@ -354,8 +482,24 @@ type Evidencia {
     descripcion: String
     tipo: String
     recurso: String
+    idAuditoria: Int
 }
 
+type CanalInformacion {
+  idCanal: ID!
+  nombre: String!
+  slug: String!
+  tipo: String!
+  descripcion: String
+  activo: Boolean!
+}
+
+enum TipoCanal {
+  OFERTAS
+  EVENTOS
+  INNOVACION
+  NOTICIAS_INSTITUCIONALES
+}
 # =========================
 # Empresa
 # =========================
@@ -391,9 +535,6 @@ extend type Query {
     miEmpresa(idUsuario: ID!): Empresa
 }
 
-extend type Mutation {
-    actualizarEmpresa(input: ActualizarEmpresaInput!, idUsuario: ID!): ActualizarEmpresaResponse!
-}
 
 # Inputs y tipos para registro
 input RegisterInput {
@@ -427,5 +568,43 @@ type UserRegistered {
     apellido: String!
     email: String!
     rol: String!
+}
+
+# =========================
+# Búsqueda de Portafolios
+# =========================
+
+input FiltrosBusqueda {
+    textoBusqueda: String
+    carrera: String
+    ubicacion: String
+    habilidades: [String]
+    pagina: Int
+    limite: Int
+}
+
+type PortafolioBusqueda {
+    idPortafolio: Int
+    usuarioId: Int
+    nombre: String
+    apellido: String
+    email: String
+    telefono: String
+    carrera: String
+    ubicacion: String
+    descripcion: String
+    skills: String
+}
+
+type ResultadoBusqueda {
+    portafolios: [PortafolioBusqueda!]!
+    total: Int!
+    pagina: Int!
+    totalPaginas: Int!
+}
+
+type FiltrosDisponibles {
+    carreras: [String!]!
+    ubicaciones: [String!]!
 }
 

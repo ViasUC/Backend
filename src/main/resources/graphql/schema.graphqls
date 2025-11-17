@@ -204,7 +204,6 @@ type Mutation {
 
     # Auth
     login(input: LoginInput!): LoginResponse
-    loginDocenteInvestigador(input: LoginInput!): AuthPayload!
     register(input: RegisterInput!): RegisterResponse!
 
     # Perfiles
