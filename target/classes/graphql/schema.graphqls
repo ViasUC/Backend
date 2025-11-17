@@ -189,8 +189,9 @@ type Mutation {
     login(input: LoginInput!): LoginResponse
 
     # Perfiles
-    registrarProfesor(input: ProfesorInput!): Profesor
-    registrarInvestigador(input: InvestigadorInput!): Investigador
+    registrarProfesor(idActor: Int!, input: ProfesorInput!): Profesor!
+    registrarInvestigador(idActor: Int!, input: InvestigadorInput!): Investigador!
+
     actualizarProfesor(id: ID!, input: ProfesorInput): Profesor
     actualizarInvestigador(id: ID!, input: InvestigadorInput): Investigador
 

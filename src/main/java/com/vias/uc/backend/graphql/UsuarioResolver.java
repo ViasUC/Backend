@@ -33,14 +33,17 @@ public class UsuarioResolver {
 
     // === Mutations ===
     @MutationMapping
-    public Profesor registrarProfesor(@Argument("input") UsuarioService.ProfesorInput input) {
-        return usuarioService.registrarProfesor(input);
+    public Profesor registrarProfesor(@Argument Integer idActor,
+                                      @Argument("input") UsuarioService.ProfesorInput input) {
+        return usuarioService.registrarProfesor(idActor, input);
     }
 
     @MutationMapping
-    public Investigador registrarInvestigador(@Argument("input") UsuarioService.InvestigadorInput input) {
-        return usuarioService.registrarInvestigador(input);
+    public Investigador registrarInvestigador(@Argument Integer idActor,
+                                              @Argument("input") UsuarioService.InvestigadorInput input) {
+        return usuarioService.registrarInvestigador(idActor, input);
     }
+
 
     @MutationMapping
     public Profesor actualizarProfesor(@Argument Integer id, @Argument("input") UsuarioService.ProfesorInput input) {

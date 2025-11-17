@@ -53,7 +53,9 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     @Transactional
-    public Profesor registrarProfesor(UsuarioService.ProfesorInput input) {
+    public Profesor registrarProfesor(Integer idActor, UsuarioService.ProfesorInput input) {
+        validarAdmin(idActor);
+
         var ui = input.getUsuario();
         String email = safeEmail(ui);
         if (isBlank(email))
@@ -61,7 +63,9 @@ public class UsuarioServiceImpl implements UsuarioService {
         if (usuarioExisteEmail(email))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email ya registrado");
 
-        Auditoria audit = auditoriaRepository.save(nuevaAuditoria("REGISTRO_PROFESOR", email));
+        Auditoria audit = auditoriaRepository.save(
+                nuevaAuditoria(idActor, "REGISTRO_PROFESOR", email)
+        );
 
         Usuario u = new Usuario();
         u.setNombre(ns(ui.getNombre()));
@@ -83,15 +87,15 @@ public class UsuarioServiceImpl implements UsuarioService {
         p.setIdAuditoria(audit.getIdAuditoria());
         profesorRepository.save(p);
 
-        // para que GraphQL no reciba null en Profesor.usuario (Usuario!)
         p.setUsuario(u);
-
         return p;
     }
 
     @Override
     @Transactional
-    public Investigador registrarInvestigador(UsuarioService.InvestigadorInput input) {
+    public Investigador registrarInvestigador(Integer idActor, UsuarioService.InvestigadorInput input) {
+        validarAdmin(idActor);
+
         var ui = input.getUsuario();
         String email = safeEmail(ui);
         if (isBlank(email))
@@ -99,7 +103,9 @@ public class UsuarioServiceImpl implements UsuarioService {
         if (usuarioExisteEmail(email))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email ya registrado");
 
-        Auditoria audit = auditoriaRepository.save(nuevaAuditoria("REGISTRO_INVESTIGADOR", email));
+        Auditoria audit = auditoriaRepository.save(
+                nuevaAuditoria(idActor, "REGISTRO_INVESTIGADOR", email)
+        );
 
         Usuario u = new Usuario();
         u.setNombre(ns(ui.getNombre()));
@@ -121,11 +127,11 @@ public class UsuarioServiceImpl implements UsuarioService {
         i.setIdAuditoria(audit.getIdAuditoria());
         investigadorRepository.save(i);
 
-        // completa el subobjeto requerido por el schema
         i.setUsuario(u);
-
         return i;
     }
+
+
 
 
     @Override
@@ -201,13 +207,12 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     // ===== Helpers =====
 
-    private Auditoria nuevaAuditoria(String accion, String detalle) {
+    private Auditoria nuevaAuditoria(Integer idActor, String accion, String detalle) {
         Auditoria a = new Auditoria();
         a.setAccion(accion);
         a.setDetalle(detalle);
         a.setFechaEvento(LocalDateTime.now());
-        // si tu tabla exige actorId NOT NULL ajustá acá
-        a.setActorId(0);
+        a.setActorId(idActor != null ? idActor : 0);
         return a;
     }
 
@@ -223,4 +228,20 @@ public class UsuarioServiceImpl implements UsuarioService {
         if (in == null || in.getEmail() == null) return null;
         return in.getEmail().trim().toLowerCase();
     }
+
+    private void validarAdmin(Integer idActor) {
+        if (idActor == null)
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Actor no especificado");
+
+        Usuario actor = usuarioRepository.findById(idActor.longValue())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Usuario actor inexistente: " + idActor));
+
+        // AJUSTA el nombre del rol según tu enum:
+        // RolUsuario.admin, RolUsuario.administrador, etc.
+        if (actor.getRolPrincipal() != RolUsuario.administrador) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo un ADMIN puede registrar docentes/investigadores");
+        }
+    }
+
 }
