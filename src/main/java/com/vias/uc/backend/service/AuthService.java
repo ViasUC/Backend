@@ -105,4 +105,16 @@ public class AuthService {
         
         return usuario;
     }
+
+    /**
+     * Verifica si un email está disponible para registro
+     * @param email Email a verificar
+     * @return true si está disponible, false si ya existe
+     */
+    public boolean isEmailDisponible(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+        return !usuarioRepository.existsByEmail(email.trim().toLowerCase());
+    }
 }

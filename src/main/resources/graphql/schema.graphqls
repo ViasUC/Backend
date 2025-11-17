@@ -136,6 +136,7 @@ type Query {
     # Usuarios
     usuarios: [Usuario!]!
     usuario(id: ID!): Usuario
+    verificarEmailDisponible(email: String!): Boolean!
 
     # Alumnos
     alumnos: [Alumno!]!
@@ -204,7 +205,7 @@ type Mutation {
 
     # Auth
     login(input: LoginInput!): LoginResponse
-    loginDocenteInvestigador(input: LoginInput!): AuthPayload!
+    # loginDocenteInvestigador(input: LoginInput!): AuthPayload!  # TODO: Definir AuthPayload type
     register(input: RegisterInput!): RegisterResponse!
 
     # Perfiles
