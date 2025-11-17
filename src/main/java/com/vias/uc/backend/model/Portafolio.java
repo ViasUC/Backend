@@ -28,6 +28,10 @@ public class Portafolio {
     // @Column(name = "id_usuario", insertable = false, updatable = false)
     // private Long idUsuario;
 
+    // FK opcional al registro de oportunidad asociado
+    @Column(name = "id_oportunidad")
+    private Integer idOportunidad;
+
     @Column(name = "descripcion")
     private String descripcion;
 

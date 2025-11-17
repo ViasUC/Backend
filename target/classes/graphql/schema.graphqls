@@ -116,6 +116,8 @@ type Query {
     alumnoPorId(id: ID!): Alumno
     consultarPerfil(idUsuario: ID!): AlumnoPerfil
     bolsaTrabajo(filtro: BolsaTrabajoFiltro): [Oportunidad]
+    cursos(area: String, modalidad: String): [Oportunidad!]!
+
 
     # Oportunidades
     oportunidades: [Oportunidad!]!
