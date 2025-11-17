@@ -10,6 +10,7 @@ import com.vias.uc.backend.repository.UsuarioRepository;
 import com.vias.uc.backend.model.Usuario;
 import com.vias.uc.backend.model.enums.RolUsuario;
 
+import com.vias.uc.backend.repository.PostulacionEvidenciaRepository; // NUEVO
 
 import java.util.List;
 
@@ -18,11 +19,14 @@ public class PostulacionResolver {
 
     private final PostulacionService postulacionService;
     private final UsuarioRepository usuarioRepository;
+    private final PostulacionEvidenciaRepository postulacionEvidenciaRepository; // NUEVO
 
     public PostulacionResolver(PostulacionService postulacionService,
-                               UsuarioRepository usuarioRepository) {
+                               UsuarioRepository usuarioRepository,
+                               PostulacionEvidenciaRepository postulacionEvidenciaRepository) { // NUEVO
         this.postulacionService = postulacionService;
         this.usuarioRepository = usuarioRepository;
+        this.postulacionEvidenciaRepository = postulacionEvidenciaRepository;   // NUEVO
     }
 
 
@@ -43,17 +47,29 @@ public class PostulacionResolver {
     }
 
     @MutationMapping
-    public Postulacion crearPostulacion(@Argument Long idAlumno, @Argument Long idOportunidad) {
-        return postulacionService.crearPostulacion(idAlumno, idOportunidad);
+    public Postulacion crearPostulacion(@Argument Long idAlumno,
+                                        @Argument Long idOportunidad,
+                                        @Argument(name = "idsEvidencias") List<Integer> idsEvidencias) {
+        // idsEvidencias puede venir null o vacío → vinculación opcional
+        return postulacionService.crearPostulacion(idAlumno, idOportunidad, idsEvidencias);
+    }
+
+    // ===== Resolver de campo: Postulacion.evidencias =====
+    @SchemaMapping(typeName = "Postulacion", field = "evidencias")
+    public List<Evidencia> evidencias(Postulacion postulacion) {
+        return postulacionEvidenciaRepository.findByPostulacion(postulacion)
+                .stream()
+                .map(PostulacionEvidencia::getEvidencia)
+                .toList();
     }
 
     // ===== F1: filtros/paginación =====
-    public record FiltroInput(Long idOportunidad, Long idAlumno, List<EstadoPostulacion> estados,
+    public record PostulacionFiltro(Long idOportunidad, Long idAlumno, List<EstadoPostulacion> estados,
                               String fechaDesde, String fechaHasta, String texto) {}
 
     @QueryMapping
     public com.vias.uc.backend.graphql.dto.PostulacionPageDTO postulacionesPage(
-            @Argument FiltroInput filtro,
+            @Argument PostulacionFiltro filtro,
             @Argument int page,
             @Argument int size,
             @Argument String sort) {
@@ -94,11 +110,12 @@ public class PostulacionResolver {
                                                    @Argument EstadoPostulacion estado,
                                                    @Argument String motivo,
                                                    @Argument Long idActor) {
-        // cargar actor y validar permisos por rol (mismo patrón que OportunidadResolver)
+        // 🔹 Validar permisos por rol
         Usuario actor = usuarioRepository.findById(idActor)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + idActor));
         assertPermisoActualizar(actor, estado);
 
+        // continuar como ya tenías
         return postulacionService.actualizarEstado(idPostulacion, estado, motivo, idActor);
     }
 
@@ -125,5 +142,9 @@ public class PostulacionResolver {
         throw new AccessDeniedException("No autorizado");
     }
 
+    @QueryMapping
+    public List<Evidencia> evidenciasPorAlumno(@Argument Long idAlumno) {
+        return postulacionService.evidenciasPorAlumno(idAlumno);
+    }
 
 }

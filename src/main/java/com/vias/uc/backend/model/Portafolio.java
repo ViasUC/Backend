@@ -3,90 +3,46 @@ package com.vias.uc.backend.model;
 import java.time.OffsetDateTime;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "portafolio", schema = "public")
+@Getter @Setter
 public class Portafolio {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_portafolio")
-    private Integer idPortafolio;
+    private Integer idPortafolio; // PK única de esta tabla
 
-    @Column(name = "id_usuario", nullable = false)
+    // FK única a usuarios.id_usuario (1–a–1)
+    @OneToOne(optional = false)
+    @JoinColumn(name = "id_usuario", nullable = false, unique = true)
+    private Usuario usuario;
+
+    @Column(name = "id_usuario", insertable = false, updatable = false)
     private Integer idUsuario;
+    // Si además querés leer el id sin cargar Usuario:
+    // @Column(name = "id_usuario", insertable = false, updatable = false)
+    // private Long idUsuario;
 
+    @Column(name = "descripcion")
     private String descripcion;
 
+    @Column(name = "skills")
     private String skills;
 
+    // elegí: Boolean ó un ENUM/STRING. Si en BD guardás 'privado'/'publico', usa String o Enum.
     @Column(name = "visibilidad")
-    private Boolean visibilidad;
+    private boolean visibilidad; // o Boolean si la columna es booleana
 
+    // Usá el mismo tipo que en la columna (timestamp sin tz -> LocalDateTime)
     @Column(name = "ultima_actualizacion")
-    private java.time.OffsetDateTime ultimaActualizacion;
+    private java.time.LocalDateTime ultimaActualizacion;
 
-
+    // Auditoría: en tus otras tablas la estás usando como BIGINT. Alineá tipos.
     @Column(name = "id_auditoria")
-    private Integer idAuditoria;
-
-
-    // GETTERS y SETTERS
-
-    public Integer getIdPortafolio() {
-        return idPortafolio;
-    }
-
-    public void setIdPortafolio(Integer idPortafolio) {
-        this.idPortafolio = idPortafolio;
-    }
-
-    public Integer getIdUsuario() {
-        return idUsuario;
-    }
-
-    public void setIdUsuario(Integer idUsuario) {
-        this.idUsuario = idUsuario;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
-    public String getSkills() {
-        return skills;
-    }
-
-    public void setSkills(String skills) {
-        this.skills = skills;
-    }
-
-    public Boolean getVisibilidad() {
-        return visibilidad;
-    }
-
-    public void setVisibilidad(Boolean visibilidad) {
-        this.visibilidad = visibilidad;
-    }
-
-    public OffsetDateTime getUltimaActualizacion() {
-        return ultimaActualizacion;
-    }
-
-    public void setUltimaActualizacion(OffsetDateTime ultimaActualizacion) {
-        this.ultimaActualizacion = ultimaActualizacion;
-    }
-
-
-    public Integer getIdAuditoria() {
-        return idAuditoria;
-    }
-
-    public void setIdAuditoria(Integer idAuditoria) {
-        this.idAuditoria = idAuditoria;
-    }
+    private Long idAuditoria;
 }

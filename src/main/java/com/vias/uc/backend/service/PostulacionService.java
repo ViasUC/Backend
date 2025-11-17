@@ -23,22 +23,45 @@ public class PostulacionService {
     private final UsuarioRepository usuarioRepository;
     private final AuditoriaRepository auditoriaRepository;
 
+    // >>> NUEVO: repositorios para evidencias y la tabla intermedia
+    private final EvidenciaRepository evidenciaRepository;
+    private final PostulacionEvidenciaRepository postulacionEvidenciaRepository;
+    private final PortafolioRepository portafolioRepository;
+
     public PostulacionService(PostulacionRepository postulacionRepository,
                               AlumnoRepository alumnoRepository,
                               OportunidadRepository oportunidadRepository,
                               HistorialPostulacionRepository historialRepository,
                               UsuarioRepository usuarioRepository,
-                              AuditoriaRepository auditoriaRepository) {
+                              AuditoriaRepository auditoriaRepository,
+                              // >>> NUEVO: inyectar estos dos
+                              EvidenciaRepository evidenciaRepository,
+                              PostulacionEvidenciaRepository postulacionEvidenciaRepository,
+                              PortafolioRepository portafolioRepository) {
         this.postulacionRepository = postulacionRepository;
         this.alumnoRepository = alumnoRepository;
         this.oportunidadRepository = oportunidadRepository;
         this.historialRepository = historialRepository;
         this.usuarioRepository = usuarioRepository;
         this.auditoriaRepository = auditoriaRepository;
+        this.evidenciaRepository = evidenciaRepository;                         // >>> NUEVO
+        this.postulacionEvidenciaRepository = postulacionEvidenciaRepository;
+        this.portafolioRepository = portafolioRepository; // >>> NUEVO
     }
 
+    // >>> NUEVO: método “clásico” delega al nuevo que acepta evidencias
     @Transactional
     public Postulacion crearPostulacion(Long idAlumno, Long idOportunidad) {
+        // mantiene la firma original usada por el resolver
+        return crearPostulacion(idAlumno, idOportunidad, null);
+    }
+
+    // >>> NUEVO: sobrecarga que permite vincular evidencias opcionales
+    @Transactional
+    public Postulacion crearPostulacion(Long idAlumno,
+                                        Long idOportunidad,
+                                        List<Integer> idsEvidencias) {
+
         Alumno alumno = alumnoRepository.findById(idAlumno)
                 .orElseThrow(() -> new RuntimeException("Alumno no encontrado: " + idAlumno));
 
@@ -58,7 +81,7 @@ public class PostulacionService {
         Auditoria au = Auditoria.builder()
                 .accion("CREAR_POSTULACION")
                 .detalle("Alumno " + idAlumno + " postula a oportunidad " + idOportunidad)
-                .actorId(postulante.getIdUsuario())
+                .actorId(Math.toIntExact(postulante.getIdUsuario()))
                 .fechaEvento(LocalDateTime.now())
                 .build();
         auditoriaRepository.save(au);
@@ -80,8 +103,76 @@ public class PostulacionService {
         h.setMotivo("Creación de postulación");
         historialRepository.save(h);
 
+        // >>> NUEVO: vincular evidencias del portafolio si se enviaron
+        vincularEvidenciasConPostulacion(guardada, alumno, idsEvidencias);
+
         return guardada;
     }
+
+    // >>> NUEVO: helper para vincular evidencias opcionales
+    private void vincularEvidenciasConPostulacion(Postulacion postulacion,
+                                                  Alumno alumno,
+                                                  List<Integer> idsEvidencias) {
+        if (idsEvidencias == null || idsEvidencias.isEmpty()) {
+            // no hay evidencias a asociar: requisito de “vinculación opcional” cumplido
+            return;
+        }
+
+        Usuario postulante = alumno.getUsuario();
+        if (postulante == null) {
+            throw new RuntimeException("El alumno no tiene usuario asociado");
+        }
+        int idUsuarioPostulante = Math.toIntExact(postulante.getIdUsuario());
+
+        // buscar todas las evidencias enviadas
+        List<Evidencia> evidencias = evidenciaRepository.findAllById(idsEvidencias);
+
+        if (evidencias.size() != idsEvidencias.size()) {
+            throw new RuntimeException("Alguna evidencia no existe");
+        }
+
+        // validar que todas las evidencias pertenezcan al mismo usuario
+        for (Evidencia evidencia : evidencias) {
+            Integer idPortafolio = evidencia.getIdPortafolio();
+            if (idPortafolio == null) {
+                throw new RuntimeException("La evidencia " + evidencia.getIdEvidencia() + " no tiene id_portafolio asociado");
+            }
+
+            Portafolio portafolio = portafolioRepository.findById((int) idPortafolio.longValue())
+                    .orElseThrow(() -> new RuntimeException(
+                            "Portafolio no encontrado para la evidencia " + evidencia.getIdEvidencia()
+                    ));
+
+            // si tu Portafolio no tiene getIdUsuario() y sí getUsuario(), adaptá esta línea
+            Integer idUsuarioDueno = Math.toIntExact(portafolio.getIdUsuario());
+            if (!Objects.equals(idUsuarioDueno, idUsuarioPostulante)) {
+                throw new RuntimeException(
+                        "La evidencia " + evidencia.getIdEvidencia() + " no pertenece al alumno que se está postulando"
+                );
+            }
+        }
+
+        // auditoría específica para la vinculación de evidencias
+        Auditoria auVinculo = Auditoria.builder()
+                .accion("VINCULAR_EVIDENCIAS_POSTULACION")
+                .detalle("Vincular evidencias a postulación " + postulacion.getIdPostulacion())
+                .actorId(idUsuarioPostulante)
+                .fechaEvento(LocalDateTime.now())
+                .build();
+        auditoriaRepository.save(auVinculo);
+
+        // crear registros en postulacion_evidencia
+        for (Evidencia evidencia : evidencias) {
+            PostulacionEvidencia pe = new PostulacionEvidencia();
+            pe.setPostulacion(postulacion);
+            pe.setEvidencia(evidencia);
+            pe.setAuditoria(auVinculo);
+
+            postulacionEvidenciaRepository.save(pe);
+        }
+    }
+
+    // ===================== RESTO DEL CÓDIGO ORIGINAL =====================
 
     @Transactional(readOnly = true)
     public List<Postulacion> listarTodas() {
@@ -127,7 +218,7 @@ public class PostulacionService {
         LocalDateTime desde = parseFechaInicio(fechaDesdeStr);
         LocalDateTime hasta = parseFechaFin(fechaHastaStr);
 
-        Specification<Postulacion> spec = Specification.where(PostulacionSpecifications.porOportunidad(op))
+        Specification<Postulacion> spec = Specification.allOf(PostulacionSpecifications.porOportunidad(op))
                 .and(PostulacionSpecifications.porPostulante(postulante))
                 .and(PostulacionSpecifications.porEstados(estados))
                 .and(PostulacionSpecifications.desde(desde))
@@ -190,4 +281,29 @@ public class PostulacionService {
                 .orElseThrow(() -> new RuntimeException("Postulación no encontrada: " + idPostulacion));
         return historialRepository.findByPostulacionOrderByFechaCambioDesc(p);
     }
+
+    public List<Evidencia> evidenciasPorAlumno(Long idAlumno) {
+
+        Alumno alumno = alumnoRepository.findById(idAlumno)
+                .orElseThrow(() -> new RuntimeException("Alumno no encontrado: " + idAlumno));
+
+        Usuario usuario = Optional.ofNullable(alumno.getUsuario())
+                .orElseThrow(() -> new RuntimeException("El alumno no tiene un usuario asociado"));
+
+        Integer idUsuario = Math.toIntExact(usuario.getIdUsuario());
+
+        // 1. El portafolio del usuario (solo uno!)
+        Portafolio portafolio = portafolioRepository.findByIdUsuario(Long.valueOf(idUsuario))
+                .orElse(null);
+
+        if (portafolio == null) {
+            return List.of(); // no tiene portafolio
+        }
+
+        Integer idPortafolio = portafolio.getIdPortafolio();
+
+        // 2. Evidencias del único portafolio
+        return evidenciaRepository.findByIdPortafolio(idPortafolio);
+    }
+
 }

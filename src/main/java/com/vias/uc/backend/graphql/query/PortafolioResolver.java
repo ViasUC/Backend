@@ -29,14 +29,14 @@ public class PortafolioResolver {
 
     // ✅ Obtener portafolio por usuario
     @QueryMapping
-    public Portafolio portafolioPorUsuario(@Argument Integer idUsuario) {
+    public Portafolio portafolioPorUsuario(@Argument Long idUsuario) {
         return portafolioRepo.findByIdUsuario(idUsuario).orElse(null);
     }
 
     // ✅ Resolver de evidencias dentro del Portafolio
     @SchemaMapping(typeName = "Portafolio", field = "evidencias")
     public List<Evidencia> evidencias(Portafolio p) {
-        List<Evidencia> lista = evidenciaRepo.findByIdPortafolio(p.getIdPortafolio());
+        List<Evidencia> lista = evidenciaRepo.findByIdPortafolio(Math.toIntExact(p.getIdPortafolio()));
 
         // ✅ No podés devolver null porque el schema dice [Evidencia!]!
         return lista != null ? lista : Collections.emptyList();

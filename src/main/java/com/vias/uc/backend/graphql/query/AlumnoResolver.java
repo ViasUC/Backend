@@ -2,9 +2,8 @@ package com.vias.uc.backend.graphql.query;
 
 // --- IMPORTACIONES NECESARIAS ---
 import com.vias.uc.backend.model.Alumno;
-import com.vias.uc.backend.model.Usuario;
+import com.vias.uc.backend.model.dto.AlumnoPerfilOutput;
 import com.vias.uc.backend.model.dto.RegistroAlumnoInput;
-import com.vias.uc.backend.repository.AlumnoRepository;
 import com.vias.uc.backend.service.AlumnoService; // 1. Importar el SERVICIO
 
 // 2. IMPORTAR TU CLASE 'INPUT' (¡VERIFICA ESTE PAQUETE!)
@@ -13,12 +12,6 @@ import com.vias.uc.backend.model.dto.AlumnoInput;
 
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping; // 3. Importar la anotación de Mutación
-import org.springframework.graphql.data.method.annotation.QueryMapping;
-import org.springframework.stereotype.Controller;
-import java.util.List;
-
-import org.springframework.graphql.data.method.annotation.Argument;
-import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 import java.util.List;
@@ -58,5 +51,10 @@ public class AlumnoResolver {
     @MutationMapping
     public Alumno actualizarAlumno(@Argument Long id, @Argument AlumnoInput input) {
         return alumnoService.actualizarAlumno(id, input);
+    }
+
+    @QueryMapping
+    public AlumnoPerfilOutput consultarPerfil(@Argument Long idUsuario) {
+        return alumnoService.consultarPerfil(idUsuario);
     }
 }

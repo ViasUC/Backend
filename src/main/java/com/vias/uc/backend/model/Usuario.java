@@ -15,7 +15,7 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario")
-    private Integer idUsuario;
+    private Long idUsuario;
 
     @Column(nullable = false)
     private String nombre;
@@ -72,12 +72,12 @@ public class Usuario {
 
     // ======= getters / setters =======
 
-    public Integer getIdUsuario() {
-        return idUsuario;
+    public Long getIdUsuario() {
+        return idUsuario.longValue();
     }
 
     public void setIdUsuario(Integer idUsuario) {
-        this.idUsuario = idUsuario;
+        this.idUsuario = idUsuario.longValue();
     }
 
     public String getNombre() {

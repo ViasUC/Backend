@@ -80,11 +80,11 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioRepository.save(u);
 
         Profesor p = new Profesor();
-        p.setIdUsuario(u.getIdUsuario());              // PK = FK a usuarios
+        p.setIdUsuario(Math.toIntExact(u.getIdUsuario()));              // PK = FK a usuarios
         p.setDepartamento(input.getDepartamento());
         p.setCategoriaDocente(input.getCategoriaDocente());
         p.setAreasDocentes(input.getAreasDocentes());
-        p.setIdAuditoria(audit.getIdAuditoria());
+        p.setIdAuditoria(Math.toIntExact(audit.getIdAuditoria()));
         profesorRepository.save(p);
 
         p.setUsuario(u);
@@ -120,11 +120,11 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioRepository.save(u);
 
         Investigador i = new Investigador();
-        i.setIdUsuario(u.getIdUsuario());              // PK = FK a usuarios
+        i.setIdUsuario(Math.toIntExact(u.getIdUsuario()));              // PK = FK a usuarios
         i.setAreasInvestigacion(input.getAreasInvestigacion());
         i.setAfiliaciones(input.getAfiliaciones());
         i.setHindex(input.getHindex());
-        i.setIdAuditoria(audit.getIdAuditoria());
+        i.setIdAuditoria(Math.toIntExact(audit.getIdAuditoria()));
         investigadorRepository.save(i);
 
         i.setUsuario(u);

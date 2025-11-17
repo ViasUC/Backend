@@ -96,11 +96,58 @@ mutation {
   }
 }
 ```
+
+o para que consulte sus datos de perfil sin cambiarlos:
+
+```graphql
+query {
+    consultarPerfil(idUsuario: 3) {
+        nombre
+        apellido
+        email
+        carrera
+        semestre
+    }
+}
+```
+
+para crear una postulacion (dará error si un alumno ya se postuló a una oportunidad):
+
+```graphql
+mutation {
+  crearPostulacion(idAlumno: 10, idOportunidad: 2) {
+    idPostulacion
+    estado
+  }
+}
+```
+
+para mostrar las oportunidades con filtro:
+
+```graphql
+query {
+  bolsaTrabajo(filtro: {
+    ubicacion: "Asunción"
+    modalidad: "híbrido"
+    empresa: "grupo4"
+  }) {
+    id
+    titulo
+    descripcion
+    tipo
+    ubicacion
+    modalidad
+    empresa
+  }
+}
+
+```
+
 # DOCENTES
 
 ## F0: Gestión de perfiles
 
-### Registro al sistema: Docente (Solo administrador tiene permisos)
+### Registro al sistema: Docente
 ```graphql
 mutation adminRegistrarProfesor{
   registrarProfesor(
@@ -123,23 +170,22 @@ mutation adminRegistrarProfesor{
 }
 ```
 
-### Registro al sistema: Investigador (Solo administrador tiene permisos)
+### Registro al sistema: Investigador
 ```graphql
-mutation adminRegistrarInvestigador{
+mutation registrarInvestigador{
   registrarInvestigador(
-    idActor: 11
     input: {
       usuario: {
-        nombre: "Jorge"
+        nombre: "Diego"
         apellido: "Medina"
-        email: "jmedina@uca.edu.py"
+        email: "diego@uca.edu.py"
         telefono: "0981222333"
-        ubicacion: "Villeta"
+        ubicacion: "Encarnación"
         password: "abcd"
       }
       areasInvestigacion: "Inteligencia Artificial, Deep Learning"
-      afiliaciones: "Empresas varias"
-      hindex: 3
+      afiliaciones: "UCA, Laboratorio de IA"
+      hindex: 5
     }
   ) {
     idUsuario
@@ -155,7 +201,7 @@ mutation adminRegistrarInvestigador{
 }
 ```
 
-### Inicio de sesión: Docente/Investigador
+### Inicio de sesión: Docente
 ```graphql
 mutation loginGeneral{
   login(input: {
@@ -214,7 +260,7 @@ mutation actualizarInvestigador{
 
 ## F1: Manejo de postulantes + Ejemplos de uso en GraphQL
 
-### Crear Postulación (ALUMNO)
+### Crear Postulación
 ```graphql
 mutation crearPostulacion {
   crearPostulacion(idAlumno: 47, idOportunidad: 4) {
@@ -228,7 +274,7 @@ mutation crearPostulacion {
 ```
 ### Listar Postulación
 ```graphql
-query listarPostulacion{
+query listarPostulacion {
   postulacionesPage(
     filtro: {
       idOportunidad: 5
@@ -264,12 +310,13 @@ mutation actualizarEstadoPostulacion {
 }
 ```
 **Transiciones válidas para update endpoints:**
-- PENDIENTE	→ ACEPTADA  : Cuando el postulante es seleccionado.
-- PENDIENTE	→ RECHAZADA : Cuando no cumple con los requisitos.
-- PENDIENTE	→ CANCELADA : Cuando el postulante retira su solicitud o se cierra el proceso.
-- ACEPTADA	→ CANCELADA : Si por alguna razón se revoca la aceptación.
-- RECHAZADA	→ CANCELADA : Si el registro se anula o la postulación se borra administrativamente.
-- CANCELADA	-	No puede cambiar más.
+
+- PENDIENTE → ACEPTADA  : Cuando el postulante es seleccionado.
+- PENDIENTE → RECHAZADA : Cuando no cumple con los requisitos.
+- PENDIENTE → CANCELADA : Cuando el postulante retira su solicitud o se cierra el proceso.
+- ACEPTADA → CANCELADA : Si por alguna razón se revoca la aceptación.
+- RECHAZADA → CANCELADA : Si el registro se anula o la postulación se borra administrativamente.
+- CANCELADA - No puede cambiar más.
 
 ### Consultar Historial de Postulación
 ```graphql
@@ -298,7 +345,7 @@ query listarOportunidades {
 ### Listar Oportunidades por Creador
 ```graphql
 query oportunidadesPorCreador{
-  oportunidadesPorCreador(creadorId: 1024) {
+  oportunidadesPorCreador(creadorId: 1020) {
     idOportunidad
     titulo
     estado
@@ -330,6 +377,40 @@ mutation crearOportunidadDocente{
     estado
     fechaPublicacion
     creador { idUsuario nombre email }
+  }
+}
+```
+
+## F2:Asociación de Evidencias al Portafolio
+
+### Crear Postulacion con Evidencias
+
+```graphql
+mutation {
+  crearPostulacion(
+    idAlumno: 10
+    idOportunidad: 4
+  ) {
+    idPostulacion
+    estado
+    fechaPostulacion
+    evidencias {
+      idEvidencia
+      titulo
+    }
+  }
+}
+```
+
+### Consultar evidencias por Alumno
+
+```graphql
+query {
+  evidenciasPorAlumno(idAlumno: 13) {
+    idEvidencia
+    titulo
+    descripcion
+    tipo
   }
 }
 ```
@@ -396,7 +477,7 @@ query endorsementsGiven{
 }
 ```
 
-### Aceptar/Rechazar Endorsement (RECEPTOR)
+### Aceptar/Rechazar Endorsement
 ```graphql
 mutation endorsementDecision{
   decideEndorsement(
@@ -542,4 +623,132 @@ query feedCanalesSeguidos{
     }
   }
 }
+```
+
+## Portafolio
+
+```graphql
+mutation crearPortafolio {
+  crearPortafolio(input: {
+    idUsuario: 2
+    descripcion: "Hola soy Juanchi Kun"
+    skills: "Java, Spring"
+    visibilidad: true
+  }) {
+    idPortafolio
+    descripcion
+    idAuditoria
+  }
+}
+
+mutation actualizarPortafolio {
+  actualizarPortafolio(input: {
+    idUsuario: 2
+    descripcion: "Perfil actualizado de Juanchi Kun"
+    skills: "Java, Spring, React"
+    visibilidad: false
+  }) {
+    idPortafolio
+    descripcion
+    skills
+    visibilidad
+    ultimaActualizacion
+    idAuditoria
+  }
+}
+
+
+query consultarPortafolio {
+  portafolioPorUsuario(idUsuario: 2) {
+    idPortafolio
+    descripcion
+    skills
+    visibilidad
+    ultimaActualizacion
+    idAuditoria
+    evidencias {
+      idEvidencia
+      titulo
+      tipo
+    }
+  }
+}
+
+```
+
+## Evidencia
+
+```graphql
+mutation agregarEvidencia {
+  agregarEvidencia(input: {
+    idPortafolio: 1
+    idUsuario: 2
+    titulo: "Certificado Java SE 11"
+    descripcion: "Certificado emitido por Oracle"
+    tipo: "CERTIFICADO"
+    recurso: "https://mis-evidencias.com/java11.pdf"
+  }) {
+    idEvidencia
+    titulo
+    tipo
+    idPortafolio
+    idAuditoria
+  }
+}
+
+
+mutation editarEvidencia {
+  editarEvidencia(input: {
+    idEvidencia: 2
+    idUsuario: 2
+    titulo: "Certificado Java SE 11 (Actualizado)"
+    descripcion: "Actualización de datos"
+    tipo: "LOGRO"
+    recurso: "https://mis-evidencias.com/java11-new.pdf"
+  }) {
+    idEvidencia
+    titulo
+    tipo
+    descripcion
+    idAuditoria
+  }
+}
+
+
+mutation eliminarEvidencia {
+  eliminarEvidencia(
+    idEvidencia: 1
+    idUsuario: 2
+  )
+}
+
+
+query evidenciasUsuario {
+  evidenciasPorUsuario(idUsuario: 2) {
+    idEvidencia
+    titulo
+    tipo
+    idPortafolio
+  }
+}
+
+
+query evidenciasPorPortafolio {
+  evidenciasPorPortafolio(idPortafolio: 1) {
+    idEvidencia
+    titulo
+    tipo
+  }
+}
+
+
+query evidenciasPorAlumno {
+  evidenciasPorAlumno(idAlumno: 2) {
+    idEvidencia
+    titulo
+    tipo
+    idPortafolio
+  }
+}
+
 ```

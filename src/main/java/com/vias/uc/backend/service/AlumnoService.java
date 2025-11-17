@@ -2,11 +2,14 @@ package com.vias.uc.backend.service;
 
 import com.vias.uc.backend.model.Alumno;
 import com.vias.uc.backend.model.Auditoria;
+import com.vias.uc.backend.model.Portafolio;
 import com.vias.uc.backend.model.Usuario;
 import com.vias.uc.backend.model.dto.AlumnoInput;
 import com.vias.uc.backend.model.dto.RegistroAlumnoInput;
+import com.vias.uc.backend.model.dto.AlumnoPerfilOutput;
 import com.vias.uc.backend.repository.AlumnoRepository;
 import com.vias.uc.backend.repository.AuditoriaRepository;
+import com.vias.uc.backend.repository.PortafolioRepository;
 import com.vias.uc.backend.repository.UsuarioRepository;
 
 import org.springframework.stereotype.Service;
@@ -22,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.vias.uc.backend.model.dto.UsuarioInput;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,14 +36,17 @@ public class AlumnoService {
     private final AlumnoRepository alumnoRepository;
     private final UsuarioRepository usuarioRepository;
     private final AuditoriaRepository auditoriaRepository;
+    private final PortafolioRepository portafolioRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public AlumnoService(AlumnoRepository alumnoRepository,
                          UsuarioRepository usuarioRepository,
-                         AuditoriaRepository auditoriaRepository) {
+                         AuditoriaRepository auditoriaRepository,
+                         PortafolioRepository portafolioRepository) {
         this.alumnoRepository = alumnoRepository;
         this.usuarioRepository = usuarioRepository;
         this.auditoriaRepository = auditoriaRepository;
+        this.portafolioRepository = portafolioRepository;
     }
 
     @Transactional
@@ -96,6 +103,21 @@ public class AlumnoService {
         u.setAuditoria(auUsuario);
         u = usuarioRepository.save(u);
 
+        Auditoria auPortafolio = new Auditoria();
+        auPortafolio.setAccion("CREAR_PORTAFOLIO");
+        auPortafolio.setDetalle("Portafolio 1:1 para usuario " + u.getEmail());
+        auPortafolio.setFechaEvento(LocalDateTime.now());
+        auPortafolio = auditoriaRepository.save(auPortafolio);
+
+        // Crear Portafolio 1–a-1 inmutable (PK compartida)
+        Portafolio p = new Portafolio();
+        p.setDescripcion(null);
+        p.setSkills(null);
+        p.setVisibilidad(true);                   // o false, como definas
+        p.setUltimaActualizacion(LocalDateTime.now());
+        p.setIdAuditoria(Long.valueOf(auPortafolio.getIdAuditoria())); // <<<<<< esto evita el NULL
+        portafolioRepository.save(p);
+        // Crear Alumno
         Auditoria auAlumno = new Auditoria();
         auAlumno.setAccion("CREAR_ALUMNO");
         auAlumno.setDetalle("Creación de alumno para " + ui.email());
@@ -125,10 +147,24 @@ public class AlumnoService {
             if (ui.ubicacion() != null) usuario.setUbicacion(ui.ubicacion());
             usuarioRepository.save(usuario);
         }
+
         if (input.carrera() != null) alumno.setCarrera(input.carrera());
         if (input.semestre() != null) alumno.setSemestre(input.semestre());
-        return alumnoRepository.save(alumno);
+
+        Alumno actualizado = alumnoRepository.save(alumno);
+        mostrarConfirmacion("OK");
+
+        // Llamada “trivial” para cumplir con el diagrama
+        return actualizado;
     }
+
+    // (→ “mostrarConfirmacion(estado)” en el diagrama)
+    private Alumno mostrarConfirmacion(String estado) { //diagrama de secuencia
+        // Podés devolver el mismo alumno, null o incluso imprimir algo
+        System.out.println("mostrarConfirmacion(" + estado + ")");
+        return null; // o retornar algo como alumno actualizado, si preferís
+    }
+
 
     @Transactional(readOnly = true)
     public List<Alumno> listarAlumnos() {
@@ -139,4 +175,30 @@ public class AlumnoService {
     public Optional<Alumno> obtenerAlumnoPorId(Long id) {
         return alumnoRepository.findById(id);
     }
+
+    @Transactional(readOnly = true)
+    public AlumnoPerfilOutput consultarPerfil(Long idUsuario) { // (→ "consultarPerfil" en el diagrama)
+        Alumno alumno = alumnoRepository.findById(idUsuario)
+                .orElseThrow(() -> new IllegalArgumentException("Alumno no encontrado id=" + idUsuario));
+
+        Usuario u = alumno.getUsuario();
+
+        // Luego el backend “envía” los datos a la interfaz
+        return mostrarDatosPerfil(u, alumno); //diagrama de secuencia
+    }
+
+    // (→ "mostrarDatosPerfil(datos)" en el diagrama)
+    private AlumnoPerfilOutput mostrarDatosPerfil(Usuario u, Alumno alumno) {
+        return new AlumnoPerfilOutput(
+                u.getNombre(),
+                u.getApellido(),
+                u.getEmail(),
+                u.getTelefono(),
+                u.getUbicacion(),
+                alumno.getCarrera(),
+                alumno.getSemestre()
+        );
+    }
+
+
 }

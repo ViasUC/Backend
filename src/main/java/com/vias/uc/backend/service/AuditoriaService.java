@@ -20,6 +20,6 @@ public class AuditoriaService {
 
     public Integer log(int userId, String accion, String detalle) {
         Auditoria a = crear(accion, detalle, userId);
-        return a.getIdAuditoria();
+        return Math.toIntExact(a.getIdAuditoria());
     }
 }
