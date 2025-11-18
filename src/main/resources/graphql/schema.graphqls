@@ -29,6 +29,15 @@ type Usuario {
   alumnoData: Alumno
 }
 
+type Endorsement {
+  idEndorsement: Int
+  idUsuarioEmisor: Int
+  idUsuarioReceptor: Int
+  fechaEndorsement: String
+  comentario: String
+  idAuditoria: Int
+}
+
 type PostulanteDTO {
   idUsuario: Int
   nombre: String
@@ -156,6 +165,8 @@ type Query {
   oportunidadById(id: Int!): Oportunidad
   postulacionesPorUsuario(idUsuario: Int!): [Postulacion]
   postulantesPorOportunidad(idOportunidad: Int!): [PostulanteDTO]
+  endorsementsRealizados(id: Int!): [Endorsement]
+  endorsementsRecibidos(id: Int!): [Endorsement]
 
 }
 
@@ -267,4 +278,7 @@ eliminarPostulacion(
   idOportunidad: Int!
 ): Boolean
 
+crearEndorsement(emisorId: Int!, receptorId: Int!): Endorsement
+  eliminarEndorsement(id: Int!): Boolean
 }
+
