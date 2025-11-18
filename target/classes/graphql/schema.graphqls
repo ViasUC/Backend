@@ -234,7 +234,8 @@ type Mutation {
 
     # Endorsements
     createEndorsement(input: CreateEndorsementInput!): Endorsement!
-    decideEndorsement(id: ID!, accept: Boolean!): Endorsement!
+    decideEndorsement(input: DecideEndorsementInput!): Endorsement!
+
 
     # --- Portafolio ---
     crearPortafolio(input: GuardarPortafolioInput!): Portafolio
