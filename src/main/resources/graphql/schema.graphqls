@@ -60,7 +60,7 @@ type Oportunidad {
 enum EstadoOportunidad {
     activo
     borrador
-    pausado
+    pausada
     cerrado
 }
 
@@ -150,6 +150,7 @@ type Query {
     oportunidadesPorEstado(estado: String!): [Oportunidad!]!
     oportunidad(id: ID!): Oportunidad
     oportunidadesPorCreador(creadorId: ID!): [Oportunidad!]!
+    oportunidadesPorEmpresa(idEmpresa: ID!): [Oportunidad!]!
 
     # Postulaciones
     postulaciones: [Postulacion]
@@ -231,6 +232,7 @@ type Mutation {
     # Docentes - Oportunidades
     crearOportunidadDocente(input: CrearOportunidadInput!): Oportunidad!
     editarOportunidad(input: EditarOportunidadInput!): Oportunidad!
+    cambiarEstadoOportunidad(idOportunidad: ID!, nuevoEstado: EstadoOportunidad!, idActor: ID!): Oportunidad!
 
     # Endorsements
     createEndorsement(input: CreateEndorsementInput!): Endorsement!
@@ -311,7 +313,8 @@ input RegistroAlumnoInput {
     detalleAuditoria: String = "registro alumno"
 }
 input CrearOportunidadInput {
-  idCreador: ID!          # temporal hasta tomarlo del token en backend
+  idCreador: ID!          # Usuario que crea la oportunidad
+  idEmpresa: Int          # Empresa a la que pertenece (opcional, se obtiene del usuario)
   titulo: String!
   descripcion: String
   requisitos: String
@@ -319,7 +322,7 @@ input CrearOportunidadInput {
   modalidad: String!      # "presencial" | "remoto" | "híbrido"
   tipo: String!           # "pasantía" | "empleo" | ...
   fechaCierre: String
-  estado: EstadoOportunidad          # default backend: "activo"
+  estado: EstadoOportunidad          # default backend: "borrador"
 }
 
 input EditarOportunidadInput {
@@ -416,6 +419,7 @@ type LoginResponse {
     nombre: String
     apellido: String
     rolPrincipal: RolUsuario
+    idEmpresa: Int
 }
 
 # --- Inputs para alta de profesor/investigador ---

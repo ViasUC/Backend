@@ -1,10 +1,14 @@
 package com.vias.uc.backend.graphql;
 
 import com.vias.uc.backend.model.Auditoria;
+import com.vias.uc.backend.model.Empresa;
+import com.vias.uc.backend.model.EmpresaUsuario;
 import com.vias.uc.backend.model.Oportunidad;
 import com.vias.uc.backend.model.Usuario;
 import com.vias.uc.backend.model.enums.EstadoOportunidad;
 import com.vias.uc.backend.repository.AuditoriaRepository;
+import com.vias.uc.backend.repository.EmpresaRepository;
+import com.vias.uc.backend.repository.EmpresaUsuarioRepository;
 import com.vias.uc.backend.repository.OportunidadRepository;
 import com.vias.uc.backend.repository.UsuarioRepository;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -18,6 +22,7 @@ import java.util.Set;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 public class OportunidadResolver {
@@ -25,13 +30,19 @@ public class OportunidadResolver {
     private final OportunidadRepository oportunidadRepository;
     private final UsuarioRepository usuarioRepository;
     private final AuditoriaRepository auditoriaRepository;
+    private final EmpresaUsuarioRepository empresaUsuarioRepository;
+    private final EmpresaRepository empresaRepository;
 
     public OportunidadResolver(OportunidadRepository oportunidadRepository,
                                UsuarioRepository usuarioRepository,
-                               AuditoriaRepository auditoriaRepository) {
+                               AuditoriaRepository auditoriaRepository,
+                               EmpresaUsuarioRepository empresaUsuarioRepository,
+                               EmpresaRepository empresaRepository) {
         this.oportunidadRepository = oportunidadRepository;
         this.usuarioRepository = usuarioRepository;
         this.auditoriaRepository = auditoriaRepository;
+        this.empresaUsuarioRepository = empresaUsuarioRepository;
+        this.empresaRepository = empresaRepository;
     }
 
     // =========================
@@ -70,9 +81,25 @@ public class OportunidadResolver {
                 .build();
         audit = auditoriaRepository.save(audit);
 
-        // 2) Crear oportunidad (forzamos el id del creador validado)
+        // 2) Obtener empresa del usuario (si tiene)
+        Empresa empresaAsociada = null;
+        if (input.idEmpresa() != null) {
+            // Si viene idEmpresa en el input, usarlo directamente
+            empresaAsociada = new Empresa();
+            empresaAsociada.setIdEmpresa(input.idEmpresa());
+        } else {
+            // Si no viene, buscar la empresa activa del usuario en la tabla empresa_usuario
+            List<EmpresaUsuario> relaciones = empresaUsuarioRepository.findByUsuarioAndActivoTrue((long) creadorId);
+            if (!relaciones.isEmpty()) {
+                // Tomar la primera empresa activa del usuario
+                empresaAsociada = relaciones.get(0).getEmpresaEntity();
+            }
+        }
+
+        // 3) Crear oportunidad (forzamos el id del creador validado)
         Oportunidad op = new Oportunidad();
         op.setIdCreador(creadorId);
+        op.setEmpresa(empresaAsociada);  // Asignar empresa
         op.setTitulo(trimOrNull(input.titulo()));
         op.setDescripcion(trimOrNull(input.descripcion()));
         op.setRequisitos(trimOrNull(input.requisitos()));
@@ -82,13 +109,12 @@ public class OportunidadResolver {
         op.setFechaPublicacion(LocalDateTime.now());
         op.setFechaCierre(parseFechaCierre(input.fechaCierre()));
 
+        // Estado por defecto: 'borrador' (puede cambiarse a 'activo' con mutation separada)
         EstadoOportunidad estado = (input.estado() == null)
-                ? EstadoOportunidad.activo
+                ? EstadoOportunidad.borrador
                 : input.estado();
 
         op.setEstado(estado);
-
-
         op.setIdAuditoria(audit.getIdAuditoria().intValue());
 
         return oportunidadRepository.save(op);
@@ -113,7 +139,8 @@ public class OportunidadResolver {
 
         // 2.b) Validar que solo el creador o un administrador puedan editar
         String rolEditor = editor.getRolPrincipal().name().toLowerCase();
-        boolean esCreador = editor.getIdUsuario().equals(op.getIdCreador());
+        // Comparar correctamente Long vs Integer
+        boolean esCreador = editor.getIdUsuario().intValue() == op.getIdCreador();
         boolean esAdmin = "administrador".equals(rolEditor);
 
         if (!esCreador && !esAdmin) {
@@ -156,18 +183,63 @@ public class OportunidadResolver {
         return oportunidadRepository.save(op);
     }
 
+    // =========================
+    // Mutation: cambiar estado de oportunidad (con auditoría)
+    // =========================
+    @MutationMapping
+    public Oportunidad cambiarEstadoOportunidad(
+            @Argument Integer idOportunidad,
+            @Argument EstadoOportunidad nuevoEstado,
+            @Argument String idActor) {
+        
+        if (idOportunidad == null) throw new IllegalArgumentException("idOportunidad es obligatorio");
+        if (nuevoEstado == null) throw new IllegalArgumentException("nuevoEstado es obligatorio");
+        if (isBlank(idActor)) throw new IllegalArgumentException("idActor es obligatorio");
 
+        int actorId = safeParseInt(idActor);
 
+        // 1) Validar que el actor tenga rol habilitado
+        Usuario actor = usuarioRepository.findById((long) actorId)
+                .orElseThrow(() -> new RuntimeException("Actor no encontrado: " + actorId));
+        assertRolHabilitado(actor);
 
+        // 2) Buscar la oportunidad
+        Oportunidad op = oportunidadRepository.findById(idOportunidad)
+                .orElseThrow(() -> new RuntimeException("Oportunidad no encontrada: " + idOportunidad));
 
+        // 3) Validar que solo el creador o un administrador puedan cambiar el estado
+        String rolActor = actor.getRolPrincipal().name().toLowerCase();
+        // Comparar correctamente Long vs Integer
+        boolean esCreador = actor.getIdUsuario().intValue() == op.getIdCreador();
+        boolean esAdmin = "administrador".equals(rolActor);
 
+        if (!esCreador && !esAdmin) {
+            throw new AccessDeniedException("Solo el creador o un administrador pueden cambiar el estado de la oportunidad");
+        }
 
+        // 4) Guardar estado anterior para auditoría
+        EstadoOportunidad estadoAnterior = op.getEstado();
 
+        // 5) Crear registro de auditoría del cambio de estado
+        String detalle = String.format("Cambio de estado de oportunidad id=%d: %s → %s",
+                op.getIdOportunidad(), 
+                estadoAnterior != null ? estadoAnterior.name() : "NULL", 
+                nuevoEstado.name());
 
+        Auditoria audit = Auditoria.builder()
+                .actorId(actorId)
+                .accion("CAMBIAR_ESTADO_OPORTUNIDAD")
+                .detalle(detalle)
+                .build();
+        audit = auditoriaRepository.save(audit);
 
+        // 6) Actualizar el estado y la referencia de auditoría
+        op.setEstado(nuevoEstado);
+        op.setIdAuditoria(audit.getIdAuditoria().intValue());
 
-
-
+        // 7) Guardar cambios
+        return oportunidadRepository.save(op);
+    }
 
     // =========================
     // Field Resolver: Oportunidad.creador
@@ -180,10 +252,8 @@ public class OportunidadResolver {
 
     @SchemaMapping(typeName = "Oportunidad", field = "empresa")
     public String getEmpresaNombre(Oportunidad oportunidad) {
-        // Devuelve solo el nombre de la empresa, no el objeto entero.
-        if (oportunidad.getEmpresa() != null) {
-            return oportunidad.getEmpresa().getNombreEmpresa();
-        }
+        // Retorna null si no hay empresa asociada para evitar LazyInitializationException
+        // La relación ManyToOne es LAZY y la sesión ya está cerrada
         return null;
     }
 
@@ -233,6 +303,7 @@ public class OportunidadResolver {
     // Input local como record (para no crear otro archivo)
     public static record CrearOportunidadInput(
             String idCreador,
+            Integer idEmpresa,
             String titulo,
             String descripcion,
             String requisitos,
@@ -261,6 +332,11 @@ public class OportunidadResolver {
     @QueryMapping
     public List<Oportunidad> oportunidadesPorCreador(@Argument Long creadorId) {
         return oportunidadRepository.findAllByCreadorId(creadorId);
+    }
+
+    @QueryMapping
+    public List<Oportunidad> oportunidadesPorEmpresa(@Argument Long idEmpresa) {
+        return oportunidadRepository.findAllByEmpresaId(idEmpresa);
     }
 
     private static final Set<String> ROLES_HABILITADOS = Set.of(
