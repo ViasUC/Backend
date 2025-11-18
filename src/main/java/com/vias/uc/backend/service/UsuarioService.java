@@ -17,6 +17,8 @@ public interface UsuarioService {
     Profesor actualizarProfesor(Integer id, UsuarioService.ProfesorInput input);
     Investigador actualizarInvestigador(Integer id, UsuarioService.InvestigadorInput input);
 
+    Profesor obtenerProfesorPorUsuarioId(Integer idUsuario);
+    Investigador obtenerInvestigadorPorUsuarioId(Integer idUsuario);
 
     // ===== DTOs anidados (públicos) =====
     class UsuarioInput {
