@@ -491,7 +491,6 @@ rm -rf target
 ```
 
 ## Contacto
-
 Si algo no funciona o tienen dudas para la corrección:
 - Email: alfre_costas@hotmail.com
 - GitHub Backend: https://github.com/ViasUC/Backend
