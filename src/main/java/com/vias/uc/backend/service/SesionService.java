@@ -79,4 +79,28 @@ public class SesionService {
     public boolean tieneSesionActiva(Integer idUsuario) {
         return !sesionRepository.findByIdUsuarioAndFechaFinIsNull(idUsuario).isEmpty();
     }
+
+    /**
+     * Obtiene el ID de usuario desde un token
+     * NOTA: Esta es una implementación simplificada.
+     * En un sistema real, se debería validar y decodificar un JWT
+     * 
+     * @param token Token de sesión
+     * @return ID del usuario
+     */
+    public Long getUserIdFromToken(String token) {
+        // TODO: Implementar validación real de JWT
+        // Por ahora, retornamos un valor basado en la sesión más reciente
+        // En un sistema real, se debería decodificar el JWT y extraer el userId
+        
+        // Implementación temporal: asumimos que el token es válido
+        // y retornamos un ID de usuario mock
+        try {
+            // Aquí debería ir la lógica de decodificación JWT
+            // Por ahora, lanzamos una excepción para forzar autenticación real
+            throw new RuntimeException("Implementar validación de JWT");
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

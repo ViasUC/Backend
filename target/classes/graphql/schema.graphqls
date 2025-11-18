@@ -1,5 +1,12 @@
 enum RolUsuario { administrador profesor investigador empleador egresado alumno empresa }
 
+type AuthPayload {
+    token: String
+    usuario: Usuario
+    success: Boolean!
+    message: String
+}
+
 type Usuario {
     idUsuario: ID!
     nombre: String!

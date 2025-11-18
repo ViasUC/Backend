@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 public class AuthorizationService {
 
     private final UsuarioEmpresaService usuarioEmpresaService;
+    private final SesionService sesionService;
 
     /**
      * Verifica si un usuario tiene un permiso específico en una empresa
@@ -80,5 +81,41 @@ public class AuthorizationService {
      */
     public RolEmpresa obtenerRol(Integer idEmpresa, Long idUsuario) {
         return usuarioEmpresaService.obtenerRolUsuario(idEmpresa, idUsuario);
+    }
+
+    /**
+     * Obtiene el ID de usuario desde el token de autorización
+     * 
+     * @param authHeader Header de autorización (Bearer token)
+     * @return ID del usuario o null si el token es inválido
+     */
+    public Long getUserIdFromToken(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return null;
+        }
+        
+        String token = authHeader.substring(7);
+        
+        // Verificar si el token es válido a través del servicio de sesión
+        try {
+            return sesionService.getUserIdFromToken(token);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Verifica si un usuario es de tipo empresa
+     * 
+     * @param usuarioId ID del usuario
+     * @return true si el usuario es de tipo empresa, false en caso contrario
+     */
+    public boolean isEmpresa(Long usuarioId) {
+        try {
+            // Verificar si tiene relación con alguna empresa activa
+            return usuarioEmpresaService.perteneceAEmpresa(usuarioId);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

@@ -269,4 +269,15 @@ public class UsuarioEmpresaService {
             .map(EmpresaUsuario::getRolEnEmpresa)
             .orElse(null);
     }
+
+    /**
+     * Verifica si un usuario pertenece a alguna empresa activa
+     * 
+     * @param idUsuario ID del usuario
+     * @return true si el usuario tiene al menos una relación activa con alguna empresa
+     */
+    public boolean perteneceAEmpresa(Long idUsuario) {
+        List<EmpresaUsuario> relaciones = empresaUsuarioRepository.findByUsuarioAndActivoTrue(idUsuario);
+        return !relaciones.isEmpty();
+    }
 }
