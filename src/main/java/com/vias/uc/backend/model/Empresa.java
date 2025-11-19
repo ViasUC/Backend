@@ -1,6 +1,10 @@
-package com.vias.uc.backend.model; // O el paquete donde tengas tus modelos
+package com.vias.uc.backend.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.List;
 
 /**
@@ -9,6 +13,9 @@ import java.util.List;
  */
 @Entity
 @Table(name = "empresas")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Empresa {
 
     @Id
@@ -38,9 +45,7 @@ public class Empresa {
     private String descripcion;
 
     @Column(name = "id_auditoria", nullable = false)
-    private Integer idAuditoria; // Nota: Esto podría ser un @OneToOne con Auditoria
-
-    // --- Relaciones ---
+    private Integer idAuditoria;
 
     /**
      * Relación inversa para todas las oportunidades publicadas por esta empresa.
@@ -48,93 +53,6 @@ public class Empresa {
      */
     @OneToMany(mappedBy = "empresa", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Oportunidad> oportunidades;
-
-    // --- Constructores ---
-
-    public Empresa() {
-    }
-
-    // --- Getters y Setters ---
-
-    public Integer getIdEmpresa() {
-        return idEmpresa;
-    }
-
-    public void setIdEmpresa(Integer idEmpresa) {
-        this.idEmpresa = idEmpresa;
-    }
-
-    public String getNombreEmpresa() {
-        return nombreEmpresa;
-    }
-
-    public void setNombreEmpresa(String nombreEmpresa) {
-        this.nombreEmpresa = nombreEmpresa;
-    }
-
-    public String getRuc() {
-        return ruc;
-    }
-
-    public void setRuc(String ruc) {
-        this.ruc = ruc;
-    }
-
-    public String getRazonSocial() {
-        return razonSocial;
-    }
-
-    public void setRazonSocial(String razonSocial) {
-        this.razonSocial = razonSocial;
-    }
-
-    public String getContacto() {
-        return contacto;
-    }
-
-    public void setContacto(String contacto) {
-        this.contacto = contacto;
-    }
-
-    public String getUbicacion() {
-        return ubicacion;
-    }
-
-    public void setUbicacion(String ubicacion) {
-        this.ubicacion = ubicacion;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
-    public Integer getIdAuditoria() {
-        return idAuditoria;
-    }
-
-    public void setIdAuditoria(Integer idAuditoria) {
-        this.idAuditoria = idAuditoria;
-    }
-
-    public List<Oportunidad> getOportunidades() {
-        return oportunidades;
-    }
-
-    public void setOportunidades(List<Oportunidad> oportunidades) {
-        this.oportunidades = oportunidades;
-    }
 
     @Override
     public String toString() {

@@ -12,7 +12,9 @@ import java.util.List;
 //                      vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 public interface OportunidadRepository extends JpaRepository<Oportunidad, Integer>, JpaSpecificationExecutor<Oportunidad> {
 
-    @Query("SELECT o FROM Oportunidad o WHERE o.creador.idUsuario = :creadorId")
+    @Query("SELECT o FROM Oportunidad o WHERE o.idCreador = :creadorId")
     List<Oportunidad> findAllByCreadorId(@Param("creadorId") Long creadorId);
+
+    List<Oportunidad> findByEstado(String estado);
 
 }

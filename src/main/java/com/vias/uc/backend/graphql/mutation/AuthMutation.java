@@ -31,9 +31,32 @@ public class AuthMutation {
     }
 
     @MutationMapping
-    public Usuario login(@Argument("input") LoginInput input) {
+    public LoginResponse login(@Argument("input") LoginInput input) {
         System.out.println(">>> LOGIN recibido: " + input.email());
-        return authService.login(input.email(), input.password());
+        Usuario usuario = authService.login(input.email(), input.password());
+        
+        if (usuario == null) {
+            throw new RuntimeException("Credenciales inválidas");
+        }
+        
+        // Generar token JWT
+        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        String token = Jwts.builder()
+                .setSubject(usuario.getEmail())
+                .claim("idUsuario", usuario.getIdUsuario())
+                .claim("rol", usuario.getRolPrincipal() != null ? usuario.getRolPrincipal().toString() : "alumno")
+                .setIssuedAt(Date.from(Instant.now()))
+                .setExpiration(Date.from(Instant.now().plusSeconds(60 * 60 * 4))) // 4 horas
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+        
+        return new LoginResponse(
+            token,
+            usuario.getIdUsuario().toString(),
+            usuario.getNombre(),
+            usuario.getApellido(),
+            usuario.getRolPrincipal() != null ? usuario.getRolPrincipal().toString() : "alumno"
+        );
     }
 
     @MutationMapping
@@ -69,4 +92,7 @@ public class AuthMutation {
     // DTOs para la respuesta de registro
     public record RegisterResponse(String token, UserRegistered usuario, boolean success, String message) {}
     public record UserRegistered(Long idUsuario, String nombre, String apellido, String email, String rol) {}
+    
+    // DTO para la respuesta de login
+    public record LoginResponse(String token, String idUsuario, String nombre, String apellido, String rolPrincipal) {}
 }
