@@ -9,6 +9,7 @@ import org.springframework.security.access.AccessDeniedException;
 import com.vias.uc.backend.repository.UsuarioRepository;
 import com.vias.uc.backend.model.Usuario;
 import com.vias.uc.backend.model.enums.RolUsuario;
+import com.vias.uc.backend.graphql.dto.PostulacionPageDTO;
 
 import com.vias.uc.backend.repository.PostulacionEvidenciaRepository; // NUEVO
 
@@ -102,6 +103,71 @@ public class PostulacionResolver {
     @QueryMapping
     public List<HistorialPostulacion> historialPostulacion(@Argument Long idPostulacion) {
         return postulacionService.historial(idPostulacion);
+    }
+
+    // ===== F2: query para empresa (ofertante) =====
+    record FiltroPostulacionInput(
+            Long idOportunidad,
+            Long idAlumno,
+            List<EstadoPostulacion> estados,
+            String fechaDesde,
+            String fechaHasta,
+            String texto
+    ) {}
+
+    @QueryMapping
+    public PostulacionPageDTO postulacionesEmpresa(@Argument Long idOfertante,
+                                                   @Argument int page,
+                                                   @Argument int size,
+                                                   @Argument(name = "sort") String sort,
+                                                   @Argument(name = "filtro") FiltroPostulacionInput filtro) {
+
+        // --- Validación básica: que el usuario sea empresa ---
+        Usuario usuario = usuarioRepository.findById(idOfertante)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + idOfertante));
+
+        RolUsuario rol = usuario.getRolPrincipal();
+        if (rol != RolUsuario.empresa) {
+            throw new AccessDeniedException("Sólo perfiles de empresa pueden ver sus postulaciones.");
+        }
+
+        // --- Orden ---
+        Sort orden = Sort.by("fechaPostulacion").descending(); // default
+        if (sort != null && !sort.isBlank()) {
+            String[] parts = sort.split(",");
+            String prop = parts[0];
+            boolean asc = parts.length < 2 || !"desc".equalsIgnoreCase(parts[1]);
+            orden = asc ? Sort.by(prop).ascending() : Sort.by(prop).descending();
+        }
+
+        Pageable pageable = PageRequest.of(page, size, orden);
+
+        // --- Filtros opcionales ---
+        Long idOportunidad = filtro != null ? filtro.idOportunidad() : null;
+        Long idAlumno = filtro != null ? filtro.idAlumno() : null;
+        List<EstadoPostulacion> estados = filtro != null ? filtro.estados() : null;
+        String desde = filtro != null ? filtro.fechaDesde() : null;
+        String hasta = filtro != null ? filtro.fechaHasta() : null;
+        String texto = filtro != null ? filtro.texto() : null;
+
+        // --- Llamada al service nuevo ---
+        Page<Postulacion> res = postulacionService.buscarConFiltrosPorOfertante(
+                idOfertante,
+                idOportunidad,
+                idAlumno,
+                estados,
+                desde,
+                hasta,
+                texto,
+                pageable
+        );
+
+        return new PostulacionPageDTO(
+                res.getContent(),
+                (int) res.getTotalElements(),
+                page,
+                size
+        );
     }
 
     // ===== F1: cambio de estado =====

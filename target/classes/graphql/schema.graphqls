@@ -44,6 +44,7 @@ type Investigador {
     hindex: Int
     usuario: Usuario!
 }
+<<<<<<< HEAD
 # =========================
 # Oportunidades
 # =========================
@@ -63,6 +64,8 @@ type Oportunidad {
     creador: Usuario!     # <-- reemplaza a idCreador
     empresa: String
 }
+=======
+>>>>>>> HEAD@{1}
 
 enum EstadoOportunidad {
     activo
@@ -170,6 +173,14 @@ type Query {
         sort: String = "fechaPostulacion,desc"
     ): PostulacionPage!
 
+    postulacionesEmpresa(
+        idOfertante: ID!
+        page: Int = 0
+        size: Int = 10
+        sort: String
+        filtro: PostulacionFiltro
+    ): PostulacionPage!
+
     historialPostulacion(idPostulacion: ID!): [HistorialPostulacion!]!
 
     buscarPostulaciones(
@@ -190,8 +201,12 @@ type Query {
     # Evidencias
     evidenciasPorAlumno(idAlumno: ID!): [Evidencia!]!
     evidenciasPorUsuario(idUsuario: ID!): [Evidencia!]!
+<<<<<<< HEAD
     evidenciasPorPortafolio(idPortafolio: ID!): [Evidencia!]!
 
+=======
+    
+>>>>>>> HEAD@{1}
     # Portafolios
     portafolioPorUsuario(idUsuario: ID!): Portafolio
     buscarPortafolios(filtros: FiltrosBusqueda): ResultadoBusqueda!
@@ -319,6 +334,7 @@ input RegistroAlumnoInput {
     semestre: Int!
     detalleAuditoria: String = "registro alumno"
 }
+<<<<<<< HEAD
 input CrearOportunidadInput {
   idCreador: ID!          # Usuario que crea la oportunidad
   idEmpresa: Int          # Empresa a la que pertenece (opcional, se obtiene del usuario)
@@ -331,6 +347,8 @@ input CrearOportunidadInput {
   fechaCierre: String
   estado: EstadoOportunidad          # default backend: "borrador"
 }
+=======
+>>>>>>> HEAD@{1}
 
 input EditarOportunidadInput {
   idOportunidad: Int!
@@ -422,6 +440,7 @@ input LoginInput {
   password: String!
 }
 type LoginResponse {
+    token: String!
     idUsuario: ID!
     nombre: String
     apellido: String
@@ -624,6 +643,7 @@ type FiltrosDisponibles {
 }
 
 # =========================
+<<<<<<< HEAD
 # Gestión de Usuarios de Empresa
 # =========================
 
@@ -743,3 +763,48 @@ extend type Mutation {
     desactivarUsuarioEmpresa(input: GestionarUsuarioEmpresaInput!): Boolean!
 }
 
+=======
+# Estados de la oportunidad laboral.
+# =========================
+
+enum EstadoOportunidad {
+  BORRADOR
+  ACTIVA
+  PAUSADA
+  CERRADA
+}
+
+type Oportunidad {
+  id: ID!
+  idOportunidad: ID!
+  titulo: String
+  descripcion: String
+  requisitos: String
+  ubicacion: String
+  modalidad: String
+  tipo: String
+  fechaPublicacion: String
+  fechaCierre: String
+  estado: EstadoOportunidad
+  creador: Usuario!
+  empresa: String
+}
+
+input CrearOportunidadInput {
+  idCreador: ID!          # por ahora, lo mandamos desde el front
+  titulo: String!
+  descripcion: String
+  requisitos: String
+  ubicacion: String
+  modalidad: String!
+  tipo: String!
+  fechaCierre: String
+}
+
+extend type Mutation {
+  crearOportunidadEmpresa(input: CrearOportunidadInput!): Oportunidad!
+  actualizarOportunidad(id: ID!, input: CrearOportunidadInput!): Oportunidad!
+  cambiarEstadoOportunidad(id: ID!, estado: EstadoOportunidad!, idActor: ID!): Oportunidad!
+  eliminarOportunidad(id: ID!, idActor: ID!): Boolean!
+}
+>>>>>>> HEAD@{1}

@@ -27,4 +27,7 @@ public interface PostulacionRepository extends JpaRepository<Postulacion, Intege
     @Override
     @EntityGraph(value = "Postulacion.graph", type = EntityGraph.EntityGraphType.LOAD)
     Page<Postulacion> findAll(Specification<Postulacion> spec, Pageable pageable);
+
+    @EntityGraph(value = "Postulacion.graph", type = EntityGraph.EntityGraphType.LOAD)
+    Page<Postulacion> findByOfertante(Usuario ofertante, Pageable pageable);
 }
