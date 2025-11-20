@@ -137,4 +137,6 @@ public class Publicacion {
         this.idAuditoria = idAuditoria;
     }
 
+    public void setDestacado(boolean destacado) {
+    }
 }

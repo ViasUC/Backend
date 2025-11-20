@@ -230,37 +230,57 @@ public class CanalService {
 
     @Transactional
     public List<Publicacion> feedCanalesSeguidos(Integer idUsuario) {
-
         // 1) Traer los canales que sigue el usuario
         List<CanalSeguidor> seguidos = canalSeguidorRepo.findAllById_IdUsuario(idUsuario);
 
-        System.out.println("Canales seguidos por el usuario: " + seguidos);
-
-
+        // Recuperar los ids de los canales seguidos
         List<Integer> idsCanales = seguidos.stream()
                 .map(cs -> cs.getCanal().getIdCanal())
                 .collect(Collectors.toList());
 
         if (idsCanales.isEmpty()) {
-            return List.of();
+            return List.of();  // Si no hay canales seguidos, retornamos una lista vacía
         }
 
-        // 2) Obtener publicaciones de esos canales
+        // 2) Obtener relaciones entre los canales seguidos y las publicaciones
         List<CanalPublicacion> relaciones = canalPubRepo.findByCanal_IdCanalIn(idsCanales);
 
-        System.out.println("Relaciones entre canales y publicaciones: " + relaciones);
-        // 3) Obtener los ids de publicaciones asociadas a los canales seguidos
+        // Recuperamos los ids de las publicaciones asociadas a esos canales
         List<Integer> idsPublicaciones = relaciones.stream()
                 .map(rel -> rel.getPublicacion().getIdPublicacion())
                 .collect(Collectors.toList());
 
         if (idsPublicaciones.isEmpty()) {
-            return List.of();
+            return List.of();  // Si no hay publicaciones asociadas, retornamos una lista vacía
         }
 
-        // 4) Retornar las publicaciones activas y ordenadas
-        return publicacionRepo.findAllByIdPublicacionInOrderByFechaPublicacionDesc(idsPublicaciones);
+        // 3) Obtener las publicaciones activas ordenadas por fecha
+        List<Publicacion> publicaciones = publicacionRepo.findAllByIdPublicacionInOrderByFechaPublicacionDesc(idsPublicaciones);
+
+        // Ahora agregamos el valor de 'destacado' a cada publicación
+        publicaciones.forEach(pub -> {
+            CanalPublicacion canalPub = relaciones.stream()
+                    .filter(rel -> rel.getPublicacion().getIdPublicacion().equals(pub.getIdPublicacion()))
+                    .findFirst()
+                    .orElse(null);
+
+            // Si encontramos la relación, asignamos el valor de 'destacado' a la publicación
+            if (canalPub != null) {
+                System.out.println("Publicación ID: " + pub.getIdPublicacion() + " - Destacado: " + canalPub.isDestacado());
+                pub.setDestacado(canalPub.isDestacado());  // Aquí asignamos el valor de 'destacado'
+            } else {
+                System.out.println("No se encontró la relación para la publicación ID: " + pub.getIdPublicacion());
+            }
+
+
+
+
+
+        });
+
+        return publicaciones;
     }
+
 
 
 

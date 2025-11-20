@@ -20,7 +20,8 @@ public class CanalPublicacion {
     @JoinColumn(name = "id_publicacion", insertable = false, updatable = false)
     private Publicacion publicacion;
 
-    private boolean destacado = false;
+    @Column(name = "destacado")
+    private boolean destacado;
 
     public CanalPublicacionId getId() {
         return id;

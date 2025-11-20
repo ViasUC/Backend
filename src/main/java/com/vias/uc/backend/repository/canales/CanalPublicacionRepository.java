@@ -13,5 +13,6 @@ public interface CanalPublicacionRepository extends JpaRepository<CanalPublicaci
     List<CanalPublicacion> findByCanal_IdCanalIn(List<Integer> idsCanales);
     List<CanalPublicacion> findByPublicacion_IdPublicacion(Integer idPublicacion);
 
-
+    // Buscar la relación entre un canal y una publicación, para obtener el campo 'destacado'
+    CanalPublicacion findByCanal_IdCanalAndPublicacion_IdPublicacion(Integer idCanal, Integer idPublicacion);
 }

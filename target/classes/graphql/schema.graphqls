@@ -130,6 +130,7 @@ type Publicacion {
   fechaPublicacion: String
   autor: Usuario
   canales: [CanalInformacion!]!
+  destacado: Boolean
 }
 
 
