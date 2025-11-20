@@ -48,6 +48,7 @@ type PostulanteDTO {
   rolPrincipal: String
   completitud: Int
   fechaPostulacion: String
+  estado: String
 }
 
 
@@ -280,5 +281,10 @@ eliminarPostulacion(
 
 crearEndorsement(emisorId: Int!, receptorId: Int!): Endorsement
   eliminarEndorsement(id: Int!): Boolean
-}
 
+  actualizarEstadoPostulacion(
+    idPostulante: Int!
+    idOportunidad: Int!
+    estado: String!
+  ): Boolean
+}

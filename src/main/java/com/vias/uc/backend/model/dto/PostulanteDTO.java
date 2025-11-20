@@ -15,4 +15,5 @@ public class PostulanteDTO {
     private String rolPrincipal;
     private Integer completitud;
     private LocalDateTime fechaPostulacion;
+    private String estado;
 }

@@ -63,7 +63,7 @@ lista.forEach(p -> System.out.println(" - Postulación → " + p.getIdPostulacio
                     dto.setRolPrincipal(u.getRolPrincipal().name());
                     dto.setCompletitud(u.getCompletitud());
                     dto.setFechaPostulacion(p.getFechaPostulacion());
-
+                    dto.setEstado(p.getEstado());
                     return dto;
                 })
                 .filter(x -> x != null)

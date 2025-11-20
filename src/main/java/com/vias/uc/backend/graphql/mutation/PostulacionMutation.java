@@ -11,6 +11,7 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.stereotype.Controller;
 
 import java.time.LocalDateTime;
+import org.springframework.transaction.annotation.Transactional;
 
 @Controller
 @RequiredArgsConstructor
@@ -86,4 +87,35 @@ public class PostulacionMutation {
         System.out.println("✔ Postulación eliminada correctamente");
         return true;
     }
+
+    @MutationMapping
+    @Transactional
+    public Boolean actualizarEstadoPostulacion(
+            @Argument Integer idPostulante,
+            @Argument Integer idOportunidad,
+            @Argument String estado) {
+
+        System.out.println("🔄 Actualizando estado de postulación:");
+        System.out.println(" - idPostulante  = " + idPostulante);
+        System.out.println(" - idOportunidad = " + idOportunidad);
+        System.out.println(" - nuevo estado  = " + estado);
+
+        int filasAfectadas = repo.updateEstado(idPostulante, idOportunidad, estado.toUpperCase());
+
+        if (filasAfectadas == 0) {
+            System.out.println("❌ No existe esa postulación.");
+            return false;
+        }
+
+        // Auditoría
+        Auditoria au = new Auditoria();
+        au.setActorId(idPostulante);
+        au.setAccion("CAMBIAR_ESTADO_POSTULACION");
+        au.setDetalle("Estado cambiado a " + estado + " para oportunidad " + idOportunidad);
+        auditoriaRepo.save(au);
+
+        System.out.println("✔ Estado actualizado correctamente");
+        return true;
+    }
+
 }
