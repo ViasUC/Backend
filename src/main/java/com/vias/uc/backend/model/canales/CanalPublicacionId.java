@@ -39,7 +39,6 @@ public class CanalPublicacionId implements Serializable {
         this.idPublicacion = idPublicacion;
     }
 
-    // equals y hashCode son OBLIGATORIOS en IDs embebidos
 
     @Override
     public boolean equals(Object o) {

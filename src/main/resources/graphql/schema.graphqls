@@ -129,6 +129,7 @@ type Publicacion {
   estado: String
   fechaPublicacion: String
   autor: Usuario
+  canales: [CanalInformacion!]!
 }
 
 

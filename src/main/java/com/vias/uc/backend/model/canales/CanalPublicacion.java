@@ -10,7 +10,7 @@ public class CanalPublicacion {
     @EmbeddedId
     private CanalPublicacionId id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("idCanal")
     @JoinColumn(name = "id_canal")
     private CanalInformacion canal;

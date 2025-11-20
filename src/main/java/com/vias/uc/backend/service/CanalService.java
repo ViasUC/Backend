@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CanalService {
@@ -226,33 +227,48 @@ public class CanalService {
                 .toList();
     }
 
+
+    @Transactional
     public List<Publicacion> feedCanalesSeguidos(Integer idUsuario) {
 
         // 1) Traer los canales que sigue el usuario
         List<CanalSeguidor> seguidos = canalSeguidorRepo.findAllById_IdUsuario(idUsuario);
 
+        System.out.println("Canales seguidos por el usuario: " + seguidos);
+
+
         List<Integer> idsCanales = seguidos.stream()
                 .map(cs -> cs.getCanal().getIdCanal())
-                .toList();
+                .collect(Collectors.toList());
 
         if (idsCanales.isEmpty()) {
             return List.of();
         }
 
         // 2) Obtener publicaciones de esos canales
-        List<CanalPublicacion> relaciones = canalPubRepo.findAllById_IdCanalIn(idsCanales);
+        List<CanalPublicacion> relaciones = canalPubRepo.findByCanal_IdCanalIn(idsCanales);
 
+        System.out.println("Relaciones entre canales y publicaciones: " + relaciones);
+        // 3) Obtener los ids de publicaciones asociadas a los canales seguidos
         List<Integer> idsPublicaciones = relaciones.stream()
                 .map(rel -> rel.getPublicacion().getIdPublicacion())
-                .toList();
+                .collect(Collectors.toList());
 
         if (idsPublicaciones.isEmpty()) {
             return List.of();
         }
 
-        // 3) Retorna publicaciones activas del feed
+        // 4) Retornar las publicaciones activas y ordenadas
         return publicacionRepo.findAllByIdPublicacionInOrderByFechaPublicacionDesc(idsPublicaciones);
     }
+
+
+
+
+
+
+
+
 
 
     @Transactional

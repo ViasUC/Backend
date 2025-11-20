@@ -10,6 +10,8 @@ public interface CanalPublicacionRepository extends JpaRepository<CanalPublicaci
 
     List<CanalPublicacion> findAllByCanal_IdCanalOrderByPublicacion_FechaPublicacionDesc(Integer idCanal);
     List<CanalPublicacion> findAllByCanal_IdCanalInOrderByPublicacion_FechaPublicacionDesc(List<Integer> ids);
-    List<CanalPublicacion> findAllById_IdCanalIn(List<Integer> ids);
+    List<CanalPublicacion> findByCanal_IdCanalIn(List<Integer> idsCanales);
+    List<CanalPublicacion> findByPublicacion_IdPublicacion(Integer idPublicacion);
+
 
 }
