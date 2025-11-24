@@ -47,6 +47,11 @@ public class OportunidadResolver {
         return oportunidadService.porCreador(creadorId);
     }
 
+    @QueryMapping
+    public List<Oportunidad> oportunidadesPorEmpresa(@Argument Long idEmpresa) {
+        return oportunidadRepository.findAllByEmpresaId(idEmpresa);
+    }
+
     // ===== Mutations =====
 
     @MutationMapping
@@ -90,5 +95,12 @@ public class OportunidadResolver {
     @SchemaMapping(typeName = "Oportunidad", field = "id")
     public Integer getId(Oportunidad oportunidad) {
         return oportunidad.getIdOportunidad();
+    }
+
+    @SchemaMapping(typeName = "Oportunidad", field = "empresa")
+    public String resolverEmpresa(Oportunidad oportunidad) {
+        // Por ahora retornamos null ya que el campo 'empresa' en el schema es String
+        // y no tenemos la relación completamente configurada
+        return null;
     }
 }

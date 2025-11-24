@@ -1,7 +1,9 @@
 package com.vias.uc.backend.graphql.mutation;
 
+import com.vias.uc.backend.model.EmpresaUsuario;
 import com.vias.uc.backend.model.Usuario;
 import com.vias.uc.backend.model.dto.LoginInput;
+import com.vias.uc.backend.repository.EmpresaUsuarioRepository;
 import com.vias.uc.backend.service.AuthService;
 import com.vias.uc.backend.service.RegistroService;
 import io.jsonwebtoken.Jwts;
@@ -15,19 +17,22 @@ import org.springframework.stereotype.Controller;
 import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 
 @Controller
 public class AuthMutation {
 
     private final AuthService authService;
     private final RegistroService registroService;
+    private final EmpresaUsuarioRepository empresaUsuarioRepository;
 
     @Value("${app.jwt.secret:defaultSuperSecretKeyForHS256_ChangeThisNow_12345678901234567890}")
     private String jwtSecret;
 
-    public AuthMutation(AuthService authService, RegistroService registroService) {
+    public AuthMutation(AuthService authService, RegistroService registroService, EmpresaUsuarioRepository empresaUsuarioRepository) {
         this.authService = authService;
         this.registroService = registroService;
+        this.empresaUsuarioRepository = empresaUsuarioRepository;
     }
 
     @MutationMapping
@@ -37,6 +42,15 @@ public class AuthMutation {
         
         if (usuario == null) {
             throw new RuntimeException("Credenciales inválidas");
+        }
+        
+        // Obtener idEmpresa si el usuario es de tipo empresa
+        Integer idEmpresa = null;
+        List<EmpresaUsuario> empresasUsuario = empresaUsuarioRepository.findByUsuarioAndActivoTrue(usuario.getIdUsuario());
+        if (!empresasUsuario.isEmpty()) {
+            // Tomamos la primera empresa activa (normalmente un usuario empresa tiene solo una)
+            idEmpresa = empresasUsuario.get(0).getEmpresa();
+            System.out.println(">>> Usuario tiene empresa activa: " + idEmpresa);
         }
         
         // Generar token JWT
@@ -55,7 +69,8 @@ public class AuthMutation {
             usuario.getIdUsuario().toString(),
             usuario.getNombre(),
             usuario.getApellido(),
-            usuario.getRolPrincipal() != null ? usuario.getRolPrincipal().toString() : "alumno"
+            usuario.getRolPrincipal() != null ? usuario.getRolPrincipal().toString() : "alumno",
+            idEmpresa
         );
     }
 
@@ -94,5 +109,5 @@ public class AuthMutation {
     public record UserRegistered(Long idUsuario, String nombre, String apellido, String email, String rol) {}
     
     // DTO para la respuesta de login
-    public record LoginResponse(String token, String idUsuario, String nombre, String apellido, String rolPrincipal) {}
+    public record LoginResponse(String token, String idUsuario, String nombre, String apellido, String rolPrincipal, Integer idEmpresa) {}
 }

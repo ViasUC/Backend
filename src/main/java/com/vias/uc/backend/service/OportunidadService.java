@@ -2,10 +2,12 @@ package com.vias.uc.backend.service;
 
 import com.vias.uc.backend.graphql.dto.CrearOportunidadInput;
 import com.vias.uc.backend.model.Auditoria;
+import com.vias.uc.backend.model.Empresa;
 import com.vias.uc.backend.model.Oportunidad;
 import com.vias.uc.backend.model.Usuario;
 import com.vias.uc.backend.model.enums.EstadoOportunidad;
 import com.vias.uc.backend.repository.AuditoriaRepository;
+import com.vias.uc.backend.repository.EmpresaRepository;
 import com.vias.uc.backend.repository.OportunidadRepository;
 import com.vias.uc.backend.repository.UsuarioRepository;
 import org.springframework.security.access.AccessDeniedException;
@@ -21,13 +23,16 @@ public class OportunidadService {
     private final OportunidadRepository oportunidadRepository;
     private final UsuarioRepository usuarioRepository;
     private final AuditoriaRepository auditoriaRepository;
+    private final EmpresaRepository empresaRepository;
 
     public OportunidadService(OportunidadRepository oportunidadRepository,
                               UsuarioRepository usuarioRepository,
-                              AuditoriaRepository auditoriaRepository) {
+                              AuditoriaRepository auditoriaRepository,
+                              EmpresaRepository empresaRepository) {
         this.oportunidadRepository = oportunidadRepository;
         this.usuarioRepository = usuarioRepository;
         this.auditoriaRepository = auditoriaRepository;
+        this.empresaRepository = empresaRepository;
     }
 
     public List<Oportunidad> porCreador(Long creadorId) {
@@ -41,12 +46,26 @@ public class OportunidadService {
             throw new IllegalArgumentException("Input requerido");
         }
 
+        System.out.println(">>> CREAR OPORTUNIDAD EMPRESA - Input recibido: " + input.getTitulo());
+        System.out.println(">>> idCreador: " + input.getIdCreador());
+        System.out.println(">>> fechaCierre: " + input.getFechaCierre());
+
         int creadorId = Integer.parseInt(input.getIdCreador().trim());
 
         Usuario creador = usuarioRepository.findById((long) creadorId)
                 .orElseThrow(() -> new RuntimeException("Creador no encontrado: " + creadorId));
 
         assertRolHabilitado(creador);
+
+        // Buscar la empresa del usuario
+        Empresa empresa = empresaRepository.findByUsuarioId((long) creadorId)
+                .orElse(null);
+        
+        if (empresa != null) {
+            System.out.println(">>> Empresa encontrada para el usuario: " + empresa.getNombreEmpresa() + " (ID: " + empresa.getIdEmpresa() + ")");
+        } else {
+            System.out.println(">>> ADVERTENCIA: No se encontró empresa para el usuario " + creadorId);
+        }
 
         Auditoria audit = Auditoria.builder()
                 .actorId(creadorId)
@@ -64,13 +83,24 @@ public class OportunidadService {
         op.setModalidad(trimOrNull(input.getModalidad()));
         op.setTipo(trimOrNull(input.getTipo()));
         op.setFechaCierre(parseFecha(input.getFechaCierre()));
+        
+        // Asignar la empresa si existe
+        if (empresa != null) {
+            op.setEmpresa(empresa);
+            System.out.println(">>> Empresa asignada a la oportunidad: " + empresa.getIdEmpresa());
+        }
 
         // Nace siempre como BORRADOR, visible sólo para el creador
         op.setEstado(EstadoOportunidad.borrador);
         op.setFechaPublicacion(null);
         op.setIdAuditoria(audit.getIdAuditoria().intValue());
 
-        return oportunidadRepository.save(op);
+        System.out.println(">>> Guardando oportunidad en BD...");
+        Oportunidad saved = oportunidadRepository.save(op);
+        System.out.println(">>> Oportunidad guardada con ID: " + saved.getIdOportunidad());
+        System.out.println(">>> ID Empresa en oportunidad guardada: " + (saved.getEmpresa() != null ? saved.getEmpresa().getIdEmpresa() : "NULL"));
+        
+        return saved;
     }
 
     // ==== Actualizar ====

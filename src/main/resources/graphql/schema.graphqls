@@ -247,8 +247,11 @@ type Mutation {
 
     # Docentes - Oportunidades
     crearOportunidadDocente(input: CrearOportunidadInput!): Oportunidad!
+    crearOportunidadEmpresa(input: CrearOportunidadInput!): Oportunidad!
     editarOportunidad(input: EditarOportunidadInput!): Oportunidad!
-    cambiarEstadoOportunidad(idOportunidad: ID!, nuevoEstado: EstadoOportunidad!, idActor: ID!): Oportunidad!
+    actualizarOportunidad(id: Int!, input: CrearOportunidadInput!, idActor: ID!): Oportunidad!
+    cambiarEstadoOportunidad(id: Int!, estado: String!, idActor: ID!): Oportunidad!
+    eliminarOportunidad(id: Int!, idActor: ID!): Boolean!
 
     # Endorsements
     createEndorsement(input: CreateEndorsementInput!): Endorsement!

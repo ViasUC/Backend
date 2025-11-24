@@ -199,12 +199,12 @@ public class PostulacionResolver {
             return;
         }
 
-        // Empresa / Profesor / Administrador: permitido (aceptar, rechazar, cancelar)
-        if (rol == RolUsuario.investigador || rol == RolUsuario.profesor || rol == RolUsuario.administrador) {
+        // Empresa / Profesor / Investigador / Administrador: permitido (aceptar, rechazar, cancelar)
+        if (rol == RolUsuario.empresa || rol == RolUsuario.investigador || rol == RolUsuario.profesor || rol == RolUsuario.administrador) {
             return;
         }
 
-        // Otros roles (egresado, investigador si no corresponde): bloqueado
+        // Otros roles (egresado, EMPLEADOR si no corresponde): bloqueado
         throw new AccessDeniedException("No autorizado");
     }
 
