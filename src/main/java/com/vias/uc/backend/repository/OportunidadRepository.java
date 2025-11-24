@@ -15,11 +15,7 @@ public interface OportunidadRepository extends JpaRepository<Oportunidad, Intege
     @Query("SELECT o FROM Oportunidad o WHERE o.idCreador = :creadorId")
     List<Oportunidad> findAllByCreadorId(@Param("creadorId") Long creadorId);
 
-<<<<<<< HEAD
     @Query("SELECT o FROM Oportunidad o WHERE o.empresa.idEmpresa = :idEmpresa ORDER BY o.fechaPublicacion DESC")
     List<Oportunidad> findAllByEmpresaId(@Param("idEmpresa") Long idEmpresa);
-=======
-    List<Oportunidad> findByEstado(String estado);
->>>>>>> HEAD@{1}
 
 }
