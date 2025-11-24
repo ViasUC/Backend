@@ -59,7 +59,6 @@ public class Oportunidad {
     
     @Column(name = "fecha_cierre")
     private LocalDateTime fechaCierre;
-<<<<<<< HEAD
 
     // 'activo','borrador','pausada','cerrado'
     @Enumerated(EnumType.STRING)
@@ -116,12 +115,4 @@ public class Oportunidad {
 
     public Integer getIdAuditoria() { return idAuditoria; }
     public void setIdAuditoria(Integer idAuditoria) { this.idAuditoria = idAuditoria; }
-=======
-    
-    @Column(name = "estado")
-    private String estado;
-    
-    @Column(name = "id_auditoria")
-    private Integer idAuditoria;
->>>>>>> HEAD@{1}
 }

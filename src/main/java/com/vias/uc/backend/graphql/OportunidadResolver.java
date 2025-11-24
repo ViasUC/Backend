@@ -1,6 +1,5 @@
 package com.vias.uc.backend.graphql;
 
-<<<<<<< HEAD
 import com.vias.uc.backend.model.Auditoria;
 import com.vias.uc.backend.model.Empresa;
 import com.vias.uc.backend.model.EmpresaUsuario;
@@ -10,11 +9,6 @@ import com.vias.uc.backend.model.enums.EstadoOportunidad;
 import com.vias.uc.backend.repository.AuditoriaRepository;
 import com.vias.uc.backend.repository.EmpresaRepository;
 import com.vias.uc.backend.repository.EmpresaUsuarioRepository;
-=======
-import com.vias.uc.backend.graphql.dto.CrearOportunidadInput;
-import com.vias.uc.backend.model.Oportunidad;
-import com.vias.uc.backend.model.Usuario;
->>>>>>> HEAD@{1}
 import com.vias.uc.backend.repository.OportunidadRepository;
 import com.vias.uc.backend.repository.UsuarioRepository;
 import com.vias.uc.backend.service.OportunidadService;
@@ -33,7 +27,6 @@ public class OportunidadResolver {
     private final OportunidadService oportunidadService;
     private final OportunidadRepository oportunidadRepository;
     private final UsuarioRepository usuarioRepository;
-<<<<<<< HEAD
     private final AuditoriaRepository auditoriaRepository;
     private final EmpresaUsuarioRepository empresaUsuarioRepository;
     private final EmpresaRepository empresaRepository;
@@ -48,15 +41,6 @@ public class OportunidadResolver {
         this.auditoriaRepository = auditoriaRepository;
         this.empresaUsuarioRepository = empresaUsuarioRepository;
         this.empresaRepository = empresaRepository;
-=======
-
-    public OportunidadResolver(OportunidadService oportunidadService,
-                               OportunidadRepository oportunidadRepository,
-                               UsuarioRepository usuarioRepository) {
-        this.oportunidadService = oportunidadService;
-        this.oportunidadRepository = oportunidadRepository;
-        this.usuarioRepository = usuarioRepository;
->>>>>>> HEAD@{1}
     }
 
     // ===== Queries =====
@@ -80,7 +64,6 @@ public class OportunidadResolver {
     // ===== Mutations =====
 
     @MutationMapping
-<<<<<<< HEAD
     public Oportunidad crearOportunidadDocente(@Argument CrearOportunidadInput input) {
         validarInput(input);
 
@@ -163,18 +146,6 @@ public class OportunidadResolver {
         if (!esCreador && !esAdmin) {
             throw new AccessDeniedException("Solo el creador o un administrador pueden editar la oportunidad");
         }
-=======
-    public Oportunidad crearOportunidadEmpresa(@Argument("input") CrearOportunidadInput input) {
-        return oportunidadService.crearOportunidadEmpresa(input);
-    }
-
-    @MutationMapping
-    public Oportunidad actualizarOportunidad(@Argument Integer id,
-                                             @Argument("input") CrearOportunidadInput input,
-                                             @Argument Long idActor) {
-        return oportunidadService.actualizarOportunidad(id, input, idActor);
-    }
->>>>>>> HEAD@{1}
 
     @MutationMapping
     public Oportunidad cambiarEstadoOportunidad(@Argument Integer id,
@@ -192,7 +163,6 @@ public class OportunidadResolver {
 
     // ===== Field resolvers =====
 
-<<<<<<< HEAD
         // 3) Actualizar solo los campos que vienen con valor
         if (!isBlank(input.titulo())) op.setTitulo(trimOrNull(input.titulo()));
         if (!isBlank(input.descripcion())) op.setDescripcion(trimOrNull(input.descripcion()));
@@ -299,23 +269,12 @@ public class OportunidadResolver {
         // Retorna null si no hay empresa asociada para evitar LazyInitializationException
         // La relación ManyToOne es LAZY y la sesión ya está cerrada
         return null;
-=======
-    @SchemaMapping(typeName = "Oportunidad", field = "creador")
-    public Usuario resolverCreador(Oportunidad oportunidad) {
-        if (oportunidad.getIdCreador() == null) {
-            return null;
-        }
-        return usuarioRepository.findById(oportunidad.getIdCreador().longValue())
-                .orElseThrow(() ->
-                        new RuntimeException("Creador no encontrado: " + oportunidad.getIdCreador()));
->>>>>>> HEAD@{1}
     }
 
     @SchemaMapping(typeName = "Oportunidad", field = "id")
     public Integer getId(Oportunidad oportunidad) {
         return oportunidad.getIdOportunidad();
     }
-<<<<<<< HEAD
 
     // =========================
     // Helpers
@@ -412,6 +371,4 @@ public class OportunidadResolver {
     }
 
 
-=======
->>>>>>> HEAD@{1}
 }
