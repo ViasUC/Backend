@@ -4,6 +4,7 @@ import com.vias.uc.backend.graphql.dto.CrearOportunidadInput;
 import com.vias.uc.backend.model.Auditoria;
 import com.vias.uc.backend.model.Oportunidad;
 import com.vias.uc.backend.model.Usuario;
+import com.vias.uc.backend.model.enums.EstadoOportunidad;
 import com.vias.uc.backend.repository.AuditoriaRepository;
 import com.vias.uc.backend.repository.OportunidadRepository;
 import com.vias.uc.backend.repository.UsuarioRepository;
@@ -65,7 +66,7 @@ public class OportunidadService {
         op.setFechaCierre(parseFecha(input.getFechaCierre()));
 
         // Nace siempre como BORRADOR, visible sólo para el creador
-        op.setEstado("BORRADOR");
+        op.setEstado(EstadoOportunidad.borrador);
         op.setFechaPublicacion(null);
         op.setIdAuditoria(audit.getIdAuditoria().intValue());
 
@@ -101,16 +102,23 @@ public class OportunidadService {
 
         assertPuedeEditar(idActor, op);
 
-        nuevoEstado = nuevoEstado.toUpperCase();
-
-        switch (nuevoEstado) {
-            case "ACTIVA" -> op.setFechaPublicacion(LocalDateTime.now());
-            case "BORRADOR" -> op.setFechaPublicacion(null);
-            case "PAUSADA", "CERRADA" -> { /* no tocamos fechaPublicacion */ }
-            default -> throw new IllegalArgumentException("Estado inválido: " + nuevoEstado);
+        nuevoEstado = nuevoEstado.toLowerCase();
+        
+        // Convertir String a enum
+        EstadoOportunidad estadoEnum;
+        try {
+            estadoEnum = EstadoOportunidad.valueOf(nuevoEstado);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Estado inválido: " + nuevoEstado);
         }
 
-        op.setEstado(nuevoEstado);
+        switch (estadoEnum) {
+            case activo -> op.setFechaPublicacion(LocalDateTime.now());
+            case borrador -> op.setFechaPublicacion(null);
+            case pausada, cerrado -> { /* no tocamos fechaPublicacion */ }
+        }
+
+        op.setEstado(estadoEnum);
         return oportunidadRepository.save(op);
     }
 
