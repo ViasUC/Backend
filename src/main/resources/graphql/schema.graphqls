@@ -74,6 +74,7 @@ type Oportunidad {
 }
 
 
+
 # =========================
 # Postulaciones
 # =========================
@@ -333,7 +334,6 @@ input RegistroAlumnoInput {
     semestre: Int!
     detalleAuditoria: String = "registro alumno"
 }
-
 input CrearOportunidadInput {
   idCreador: ID!          # Usuario que crea la oportunidad
   idEmpresa: Int          # Empresa a la que pertenece (opcional, se obtiene del usuario)
@@ -344,7 +344,7 @@ input CrearOportunidadInput {
   modalidad: String!      # "presencial" | "remoto" | "híbrido"
   tipo: String!           # "pasantía" | "empleo" | ...
   fechaCierre: String
-  estado: EstadoOportunidad          # default backend: "borrador"
+  estado: EstadoOportunidad          # default backend: "activo"
 }
 
 input EditarOportunidadInput {
@@ -709,17 +709,17 @@ extend type Query {
     Lista todos los usuarios activos de una empresa
     """
     listarUsuariosEmpresa(idEmpresa: Int!): [UsuarioEmpresa!]!
-    
+
     """
     Lista todas las solicitudes pendientes de aprobación de una empresa
     """
     listarSolicitudesPendientes(idEmpresa: Int!): [SolicitudAcceso!]!
-    
+
     """
     Obtiene el rol de un usuario específico en una empresa
     """
     obtenerRolUsuario(idEmpresa: Int!, idUsuario: ID!): RolEmpresa
-    
+
     """
     Lista todas las empresas registradas (para el selector de registro)
     """
@@ -733,25 +733,25 @@ extend type Mutation {
     El usuario queda pendiente de aprobación (activo=false)
     """
     solicitarAccesoEmpresa(input: SolicitarAccesoEmpresaInput!): UsuarioEmpresa!
-    
+
     """
     Aprueba la solicitud de un usuario para acceder a una empresa
     Solo puede ser ejecutado por un administrador
     """
     aprobarUsuarioEmpresa(input: GestionarUsuarioEmpresaInput!): UsuarioEmpresa!
-    
+
     """
     Rechaza la solicitud de un usuario (elimina la relación)
     Solo puede ser ejecutado por un administrador
     """
     rechazarUsuarioEmpresa(input: GestionarUsuarioEmpresaInput!): Boolean!
-    
+
     """
     Cambia el rol de un usuario en la empresa
     Solo puede ser ejecutado por un administrador
     """
     cambiarRolUsuarioEmpresa(input: CambiarRolUsuarioInput!): UsuarioEmpresa!
-    
+
     """
     Desactiva un usuario de la empresa
     Solo puede ser ejecutado por un administrador

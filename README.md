@@ -147,7 +147,7 @@ query {
 
 ## F0: Gestión de perfiles
 
-### Registro al sistema: Docente
+### Registro al sistema: Docente/Investigador (Solo administrador tiene permisos)
 ```graphql
 mutation adminRegistrarProfesor{
   registrarProfesor(
@@ -170,22 +170,23 @@ mutation adminRegistrarProfesor{
 }
 ```
 
-### Registro al sistema: Investigador
+### Registro al sistema: Investigador (Solo administrador tiene permisos)
 ```graphql
-mutation registrarInvestigador{
+mutation adminRegistrarInvestigador{
   registrarInvestigador(
+    idActor: 11
     input: {
       usuario: {
-        nombre: "Diego"
+        nombre: "Jorge"
         apellido: "Medina"
-        email: "diego@uca.edu.py"
+        email: "jmedina@uca.edu.py"
         telefono: "0981222333"
-        ubicacion: "Encarnación"
+        ubicacion: "Villeta"
         password: "abcd"
       }
       areasInvestigacion: "Inteligencia Artificial, Deep Learning"
-      afiliaciones: "UCA, Laboratorio de IA"
-      hindex: 5
+      afiliaciones: "Empresas varias"
+      hindex: 3
     }
   ) {
     idUsuario

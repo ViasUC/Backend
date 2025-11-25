@@ -1,17 +1,10 @@
 enum RolUsuario { administrador profesor investigador empleador egresado alumno empresa }
 
-type AuthPayload {
-    token: String
-    usuario: Usuario
-    success: Boolean!
-    message: String
-}
-
 type Usuario {
     idUsuario: ID!
     nombre: String!
     apellido: String
-    email: String
+    email: String!
     telefono: String
     ubicacion: String
     rolPrincipal: RolUsuario        # ← NO String, usa el enum
@@ -19,7 +12,6 @@ type Usuario {
     adminData: Administrador
     egresadoData: Egresado
     alumnoData: Alumno
-    portafolio: Portafolio          # NUEVO: para modal de detalle candidato
 }
 
 type Alumno {
@@ -45,17 +37,9 @@ type Investigador {
     hindex: Int
     usuario: Usuario!
 }
-
 # =========================
 # Oportunidades
 # =========================
-
-enum EstadoOportunidad {
-    activo
-    borrador
-    pausada
-    cerrado
-}
 
 type Oportunidad {
     id: ID!
@@ -71,6 +55,13 @@ type Oportunidad {
     estado: EstadoOportunidad        # en BD: activo/borrador/pausada/cerrado
     creador: Usuario!     # <-- reemplaza a idCreador
     empresa: String
+}
+
+enum EstadoOportunidad {
+    activo
+    borrador
+    pausado
+    cerrado
 }
 
 
@@ -145,7 +136,6 @@ type Query {
     # Usuarios
     usuarios: [Usuario!]!
     usuario(id: ID!): Usuario
-    verificarEmailDisponible(email: String!): Boolean!
 
     # Alumnos
     alumnos: [Alumno!]!
@@ -159,26 +149,16 @@ type Query {
     oportunidadesPorEstado(estado: String!): [Oportunidad!]!
     oportunidad(id: ID!): Oportunidad
     oportunidadesPorCreador(creadorId: ID!): [Oportunidad!]!
-    oportunidadesPorEmpresa(idEmpresa: ID!): [Oportunidad!]!
 
     # Postulaciones
     postulaciones: [Postulacion]
     postulacionesPorAlumno(idAlumno: ID!): [Postulacion]
     postulacionesPorOportunidad(idOportunidad: ID!): [Postulacion]
-    postulacionDetalle(idPostulacion: ID!): Postulacion
     postulacionesPage(
         filtro: PostulacionFiltro
         page: Int = 0
         size: Int = 10
         sort: String = "fechaPostulacion,desc"
-    ): PostulacionPage!
-
-    postulacionesEmpresa(
-        idOfertante: ID!
-        page: Int = 0
-        size: Int = 10
-        sort: String
-        filtro: PostulacionFiltro
     ): PostulacionPage!
 
     historialPostulacion(idPostulacion: ID!): [HistorialPostulacion!]!
@@ -224,7 +204,6 @@ type Mutation {
 
     # Auth
     login(input: LoginInput!): LoginResponse
-    # loginDocenteInvestigador(input: LoginInput!): AuthPayload!  # TODO: Definir AuthPayload type
     register(input: RegisterInput!): RegisterResponse!
 
     # Perfiles
@@ -249,11 +228,7 @@ type Mutation {
 
     # Docentes - Oportunidades
     crearOportunidadDocente(input: CrearOportunidadInput!): Oportunidad!
-    crearOportunidadEmpresa(input: CrearOportunidadInput!): Oportunidad!
     editarOportunidad(input: EditarOportunidadInput!): Oportunidad!
-    actualizarOportunidad(id: Int!, input: CrearOportunidadInput!, idActor: ID!): Oportunidad!
-    cambiarEstadoOportunidad(id: Int!, estado: String!, idActor: ID!): Oportunidad!
-    eliminarOportunidad(id: Int!, idActor: ID!): Boolean!
 
     # Endorsements
     createEndorsement(input: CreateEndorsementInput!): Endorsement!
@@ -333,10 +308,8 @@ input RegistroAlumnoInput {
     semestre: Int!
     detalleAuditoria: String = "registro alumno"
 }
-
 input CrearOportunidadInput {
-  idCreador: ID!          # Usuario que crea la oportunidad
-  idEmpresa: Int          # Empresa a la que pertenece (opcional, se obtiene del usuario)
+  idCreador: ID!          # temporal hasta tomarlo del token en backend
   titulo: String!
   descripcion: String
   requisitos: String
@@ -344,7 +317,7 @@ input CrearOportunidadInput {
   modalidad: String!      # "presencial" | "remoto" | "híbrido"
   tipo: String!           # "pasantía" | "empleo" | ...
   fechaCierre: String
-  estado: EstadoOportunidad          # default backend: "borrador"
+  estado: EstadoOportunidad          # default backend: "activo"
 }
 
 input EditarOportunidadInput {
@@ -437,12 +410,10 @@ input LoginInput {
   password: String!
 }
 type LoginResponse {
-    token: String!
     idUsuario: ID!
     nombre: String
     apellido: String
     rolPrincipal: RolUsuario
-    idEmpresa: Int
 }
 
 # --- Inputs para alta de profesor/investigador ---
@@ -534,7 +505,7 @@ enum TipoCanal {
 # =========================
 
 type Empresa {
-    idEmpresa: Int!
+    id: ID!
     nombreEmpresa: String!
     ruc: String
     razonSocial: String
@@ -574,16 +545,14 @@ input RegisterInput {
     telefono: String!
     password: String!
     ubicacion: String
-    # Datos de empresa (solo para EMPLEADOR - crear nueva)
+    # Datos de empresa (solo para EMPLEADOR)
     nombreEmpresa: String
     ruc: String
     razonSocial: String
     contacto: String
     ubicacionEmpresa: String
     emailEmpresa: String
-    # Datos para unirse a empresa existente (solo para EMPLEADOR)
-    idEmpresaExistente: Int
-    rolSolicitado: RolEmpresa
+    rolEnEmpresa: String
 }
 
 type RegisterResponse {
@@ -639,122 +608,3 @@ type FiltrosDisponibles {
     ubicaciones: [String!]!
 }
 
-# =========================
-# Gestión de Usuarios de Empresa
-# =========================
-
-"""
-Roles internos de usuarios dentro de una empresa
-"""
-enum RolEmpresa {
-    ADMINISTRADOR
-    GERENTE_RRHH
-    AUXILIAR_RRHH
-}
-
-"""
-Información de un usuario asociado a una empresa
-"""
-type UsuarioEmpresa {
-    idEmpresa: Int!
-    idUsuario: ID!
-    usuario: Usuario!
-    rolEnEmpresa: RolEmpresa!
-    activo: Boolean!
-    fechaAlta: String!
-}
-
-"""
-Solicitud de acceso a una empresa (usuario pendiente de aprobación)
-"""
-type SolicitudAcceso {
-    idEmpresa: Int!
-    idUsuario: ID!
-    usuario: Usuario!
-    rolSolicitado: RolEmpresa!
-    fechaSolicitud: String!
-}
-
-"""
-Input para solicitar acceso a una empresa
-"""
-input SolicitarAccesoEmpresaInput {
-    idEmpresa: Int!
-    idUsuario: ID!
-    rolSolicitado: RolEmpresa!
-}
-
-"""
-Input para aprobar o rechazar un usuario
-"""
-input GestionarUsuarioEmpresaInput {
-    idEmpresa: Int!
-    idUsuario: ID!
-    idAdministrador: ID!
-}
-
-"""
-Input para cambiar el rol de un usuario
-"""
-input CambiarRolUsuarioInput {
-    idEmpresa: Int!
-    idUsuario: ID!
-    nuevoRol: RolEmpresa!
-    idAdministrador: ID!
-}
-
-# Extender Query
-extend type Query {
-    """
-    Lista todos los usuarios activos de una empresa
-    """
-    listarUsuariosEmpresa(idEmpresa: Int!): [UsuarioEmpresa!]!
-    
-    """
-    Lista todas las solicitudes pendientes de aprobación de una empresa
-    """
-    listarSolicitudesPendientes(idEmpresa: Int!): [SolicitudAcceso!]!
-    
-    """
-    Obtiene el rol de un usuario específico en una empresa
-    """
-    obtenerRolUsuario(idEmpresa: Int!, idUsuario: ID!): RolEmpresa
-    
-    """
-    Lista todas las empresas registradas (para el selector de registro)
-    """
-    listarEmpresas: [Empresa!]!
-}
-
-# Extender Mutation
-extend type Mutation {
-    """
-    Solicita acceso de un usuario a una empresa con un rol específico
-    El usuario queda pendiente de aprobación (activo=false)
-    """
-    solicitarAccesoEmpresa(input: SolicitarAccesoEmpresaInput!): UsuarioEmpresa!
-    
-    """
-    Aprueba la solicitud de un usuario para acceder a una empresa
-    Solo puede ser ejecutado por un administrador
-    """
-    aprobarUsuarioEmpresa(input: GestionarUsuarioEmpresaInput!): UsuarioEmpresa!
-    
-    """
-    Rechaza la solicitud de un usuario (elimina la relación)
-    Solo puede ser ejecutado por un administrador
-    """
-    rechazarUsuarioEmpresa(input: GestionarUsuarioEmpresaInput!): Boolean!
-    
-    """
-    Cambia el rol de un usuario en la empresa
-    Solo puede ser ejecutado por un administrador
-    """
-    cambiarRolUsuarioEmpresa(input: CambiarRolUsuarioInput!): UsuarioEmpresa!
-    
-    """
-    Desactiva un usuario de la empresa
-    Solo puede ser ejecutado por un administrador
-    """
-    desactivarUsuarioEmpresa(input: GestionarUsuarioEmpresaInput!): Boolean!
-}
