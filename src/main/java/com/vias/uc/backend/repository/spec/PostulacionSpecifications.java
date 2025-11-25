@@ -19,6 +19,13 @@ public class PostulacionSpecifications {
                 postulante == null ? null : cb.equal(root.get("postulante"), postulante);
     }
 
+    public static Specification<Postulacion> porOfertante(Usuario ofertante) {
+        return (root, query, cb) -> {
+            if (ofertante == null) return null;
+            return cb.equal(root.get("ofertante"), ofertante);
+        };
+    }
+
     public static Specification<Postulacion> porEstados(List<EstadoPostulacion> estados) {
         return (root, query, cb) ->
                 (estados == null || estados.isEmpty()) ? null : root.get("estado").in(estados);

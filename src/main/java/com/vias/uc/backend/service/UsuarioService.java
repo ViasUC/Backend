@@ -9,13 +9,16 @@ public interface UsuarioService {
     boolean activo(Integer id);
 
     // Altas
-    Profesor registrarProfesor(UsuarioService.ProfesorInput input);
-    Investigador registrarInvestigador(UsuarioService.InvestigadorInput input);
+    Profesor registrarProfesor(Integer idActor, ProfesorInput input);
+    Investigador registrarInvestigador(Integer idActor, InvestigadorInput input);
+
 
     // Actualizaciones
     Profesor actualizarProfesor(Integer id, UsuarioService.ProfesorInput input);
     Investigador actualizarInvestigador(Integer id, UsuarioService.InvestigadorInput input);
 
+    Profesor obtenerProfesorPorUsuarioId(Integer idUsuario);
+    Investigador obtenerInvestigadorPorUsuarioId(Integer idUsuario);
 
     // ===== DTOs anidados (públicos) =====
     class UsuarioInput {

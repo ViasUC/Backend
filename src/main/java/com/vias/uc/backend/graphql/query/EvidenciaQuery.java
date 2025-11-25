@@ -1,4 +1,4 @@
-package com.vias.uc.backend.graphql;
+package com.vias.uc.backend.graphql.query;
 
 import com.vias.uc.backend.model.Evidencia;
 import com.vias.uc.backend.repository.EvidenciaRepository;

@@ -13,11 +13,10 @@ public interface UsuarioLiteRepository extends Repository<Usuario, Integer> {
     @Query(value = "select rol_principal from public.usuarios where id_usuario = :id", nativeQuery = true)
     String rol(@Param("id") Integer id);
 
-    // Ajusta al nombre real en tu tabla (activo, habilitado, estado, etc.)
     //@Query(value = "select coalesce(activo,true) from public.usuarios where id_usuario = :id", nativeQuery = true)
     //Boolean activo(@Param("id") Integer id);
 
-     //-- Opc. 1: siempre true (no bloquea pruebas)
+     //Opc. 1: siempre true (pruebas)
     @Query(value = "select true", nativeQuery = true)
     Boolean activo(@Param("id") Integer id);
 }
