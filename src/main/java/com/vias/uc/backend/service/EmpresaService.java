@@ -44,4 +44,11 @@ public class EmpresaService {
     public Optional<Empresa> findByEmail(String email) {
         return empresaRepository.findByEmail(email);
     }
+    
+    /**
+     * Lista todas las empresas registradas
+     */
+    public java.util.List<Empresa> getAllEmpresas() {
+        return empresaRepository.findAll();
+    }
 }

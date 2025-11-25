@@ -228,6 +228,56 @@ public class PostulacionService {
         return postulacionRepository.findAll(spec, pageable);
     }
 
+    @Transactional(readOnly = true)
+    public Page<Postulacion> buscarConFiltrosPorOfertante(Long idOfertante,
+                                                          Long idOportunidad,
+                                                          Long idAlumno,
+                                                          List<EstadoPostulacion> estados,
+                                                          String fechaDesdeStr,
+                                                          String fechaHastaStr,
+                                                          String texto,
+                                                          Pageable pageable) {
+
+        // --- Oportunidad (opcional) ---
+        Oportunidad op = null;
+        if (idOportunidad != null) {
+            op = oportunidadRepository.findById(Math.toIntExact(idOportunidad))
+                    .orElseThrow(() -> new RuntimeException("Oportunidad no encontrada: " + idOportunidad));
+        }
+
+        // --- Postulante (opcional, por si querés filtrar también por alumno) ---
+        Usuario postulante = null;
+        if (idAlumno != null) {
+            Alumno alumno = alumnoRepository.findById(idAlumno)
+                    .orElseThrow(() -> new RuntimeException("Alumno no encontrado: " + idAlumno));
+            postulante = Optional.ofNullable(alumno.getUsuario())
+                    .orElseThrow(() -> new RuntimeException("El Alumno " + idAlumno + " no tiene Usuario asociado."));
+        }
+
+        // --- Ofertante (empresa logueada) ---
+        Usuario ofertante = null;
+        if (idOfertante != null) {
+            ofertante = usuarioRepository.findById(idOfertante)
+                    .orElseThrow(() -> new RuntimeException("Ofertante no encontrado: " + idOfertante));
+        }
+
+        // --- Fechas ---
+        LocalDateTime desde = parseFechaInicio(fechaDesdeStr);
+        LocalDateTime hasta = parseFechaFin(fechaHastaStr);
+
+        // --- Especificación con todos los filtros, incluido ofertante ---
+        Specification<Postulacion> spec = Specification
+                .allOf(PostulacionSpecifications.porOportunidad(op))
+                .and(PostulacionSpecifications.porPostulante(postulante))
+                .and(PostulacionSpecifications.porOfertante(ofertante))
+                .and(PostulacionSpecifications.porEstados(estados))
+                .and(PostulacionSpecifications.desde(desde))
+                .and(PostulacionSpecifications.hasta(hasta))
+                .and(PostulacionSpecifications.texto(texto));
+
+        return postulacionRepository.findAll(spec, pageable);
+    }
+
     private LocalDateTime parseFechaInicio(String s) {
         if (s == null || s.isBlank()) return null;
         try { return LocalDate.parse(s).atStartOfDay(); } catch (DateTimeParseException e) { return null; }

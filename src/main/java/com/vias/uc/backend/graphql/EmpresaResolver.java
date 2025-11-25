@@ -24,6 +24,12 @@ public class EmpresaResolver {
     }
 
     @QueryMapping
+    public java.util.List<Empresa> listarEmpresas() {
+        System.out.println(">>> Query listarEmpresas recibido");
+        return empresaService.getAllEmpresas();
+    }
+
+    @QueryMapping
     public Map<String, Object> miEmpresa(@Argument Long idUsuario) {
         System.out.println(">>> Query miEmpresa recibido");
         System.out.println(">>> idUsuario: " + idUsuario);
@@ -103,7 +109,7 @@ public class EmpresaResolver {
 
     private Map<String, Object> convertEmpresaToMap(Empresa empresa) {
         Map<String, Object> map = new HashMap<>();
-        map.put("id", empresa.getIdEmpresa());
+        map.put("idEmpresa", empresa.getIdEmpresa());  // Cambiado de "id" a "idEmpresa"
         map.put("nombreEmpresa", empresa.getNombreEmpresa());
         map.put("ruc", empresa.getRuc());
         map.put("razonSocial", empresa.getRazonSocial());

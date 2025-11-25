@@ -1,20 +1,32 @@
 package com.vias.uc.backend.service;
 
+import com.vias.uc.backend.model.EmpresaUsuario;
 import com.vias.uc.backend.model.Usuario;
+import com.vias.uc.backend.model.enums.RolUsuario;
+import com.vias.uc.backend.repository.EmpresaUsuarioRepository;
 import com.vias.uc.backend.repository.UsuarioRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class AuthService {
 
     private final UsuarioRepository usuarioRepository;
+    private final EmpresaUsuarioRepository empresaUsuarioRepository;
     private final AuditoriaService auditoriaService;
     private final SesionService sesionService;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public AuthService(UsuarioRepository usuarioRepository, AuditoriaService auditoriaService, SesionService sesionService) {
+    public AuthService(
+        UsuarioRepository usuarioRepository,
+        EmpresaUsuarioRepository empresaUsuarioRepository,
+        AuditoriaService auditoriaService, 
+        SesionService sesionService
+    ) {
         this.usuarioRepository = usuarioRepository;
+        this.empresaUsuarioRepository = empresaUsuarioRepository;
         this.auditoriaService = auditoriaService;
         this.sesionService = sesionService;
     }
@@ -63,11 +75,46 @@ public class AuthService {
             return null;
         }
 
+        // Si es EMPLEADOR, verificar que tenga al menos una relación activa con alguna empresa
+        if (usuario.getRolPrincipal() == RolUsuario.empresa) {
+            System.out.println(">>> Verificando estado activo para empleador: " + email);
+            
+            List<EmpresaUsuario> relacionesActivas = empresaUsuarioRepository.findByUsuarioAndActivoTrue(usuario.getIdUsuario());
+            
+            if (relacionesActivas.isEmpty()) {
+                System.out.println(">>> Usuario empleador sin relaciones activas (pendiente de aprobación)");
+                
+                // Registrar intento de login de usuario pendiente
+                auditoriaService.crear(
+                    "LOGIN_PENDIENTE_APROBACION", 
+                    "Intento de login de usuario pendiente de aprobación: " + email, 
+                    usuario.getIdUsuario().intValue()
+                );
+                
+                // Lanzar excepción específica para usuarios pendientes
+                throw new RuntimeException("PENDIENTE_APROBACION:Tu acceso está pendiente de aprobación por el administrador de la empresa.");
+            }
+            
+            System.out.println(">>> Usuario empleador con " + relacionesActivas.size() + " relación(es) activa(s)");
+        }
+
         System.out.println(">>> Login exitoso para: " + email);
         
         // Registrar login exitoso en sesión (esto también crea el registro en auditoría)
         sesionService.registrarLoginExitoso(usuario.getIdUsuario().intValue(), email);
         
         return usuario;
+    }
+
+    /**
+     * Verifica si un email está disponible para registro
+     * @param email Email a verificar
+     * @return true si está disponible, false si ya existe
+     */
+    public boolean isEmailDisponible(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+        return !usuarioRepository.existsByEmail(email.trim().toLowerCase());
     }
 }
