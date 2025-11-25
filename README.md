@@ -259,6 +259,48 @@ mutation actualizarInvestigador{
 
 ```
 
+### Vista de Perfil: Docente
+```graphql
+query obtenerProfesorConUsuario{
+  obtenerProfesorConUsuario(idProfesor: 1024) {
+    usuario {
+      idUsuario
+      nombre
+      apellido
+      email
+      telefono
+      ubicacion
+    }
+    profesor {
+      departamento
+      categoriaDocente
+      areasDocentes
+    }
+  }
+}
+```
+
+### Vista de Perfil: Investigador
+```graphql
+query obtenerInvestigadorConUsuario{
+  obtenerInvestigadorConUsuario(idInvestigador: 1050) {
+    usuario {
+      idUsuario
+      nombre
+      apellido
+      email
+      telefono
+      ubicacion
+    }
+    investigador {
+      areasInvestigacion
+      afiliaciones
+      hindex
+    }
+  }
+}
+```
+
 ## F1: Manejo de postulantes + Ejemplos de uso en GraphQL
 
 ### Crear Postulación

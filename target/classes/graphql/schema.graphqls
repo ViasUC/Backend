@@ -37,6 +37,7 @@ type Investigador {
     hindex: Int
     usuario: Usuario!
 }
+
 # =========================
 # Oportunidades
 # =========================
@@ -128,11 +129,14 @@ type Publicacion {
   estado: String
   fechaPublicacion: String
   autor: Usuario
+  canales: [CanalInformacion!]!
+  destacado: Boolean
 }
 
 
 # ===== Root types =====
 type Query {
+
     # Usuarios
     usuarios: [Usuario!]!
     usuario(id: ID!): Usuario
@@ -143,6 +147,8 @@ type Query {
     alumnoPorId(id: ID!): Alumno
     consultarPerfil(idUsuario: ID!): AlumnoPerfil
     bolsaTrabajo(filtro: BolsaTrabajoFiltro): [Oportunidad]
+    obtenerProfesorConUsuario(idProfesor: ID!): UsuarioConProfesor
+    obtenerInvestigadorConUsuario(idInvestigador: ID!): InvestigadorData
 
     # Oportunidades
     oportunidades: [Oportunidad!]!
@@ -232,7 +238,8 @@ type Mutation {
 
     # Endorsements
     createEndorsement(input: CreateEndorsementInput!): Endorsement!
-    decideEndorsement(id: ID!, accept: Boolean!): Endorsement!
+    decideEndorsement(input: DecideEndorsementInput!): Endorsement!
+
 
     # --- Portafolio ---
     crearPortafolio(input: GuardarPortafolioInput!): Portafolio
@@ -301,6 +308,16 @@ type AlumnoPerfil {
     carrera: String
     semestre: Int
 } #se crea para consultar info del perfil
+
+type UsuarioConProfesor {
+    usuario: Usuario
+    profesor: Profesor
+}
+
+type InvestigadorData {
+    usuario: Usuario
+    investigador: Investigador
+}
 
 input RegistroAlumnoInput {
     usuario: UsuarioRegistroInput!

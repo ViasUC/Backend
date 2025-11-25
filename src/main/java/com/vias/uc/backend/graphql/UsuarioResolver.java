@@ -4,7 +4,8 @@ import com.vias.uc.backend.model.Investigador;
 import com.vias.uc.backend.model.Portafolio;
 import com.vias.uc.backend.model.Profesor;
 import com.vias.uc.backend.model.Usuario;
-import com.vias.uc.backend.repository.PortafolioRepository;
+import com.vias.uc.backend.model.dto.InvestigadorData;
+import com.vias.uc.backend.model.dto.ProfesorData;
 import com.vias.uc.backend.repository.UsuarioRepository;
 import com.vias.uc.backend.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
@@ -64,4 +65,39 @@ public class UsuarioResolver {
     public Investigador actualizarInvestigador(@Argument Integer id, @Argument("input") UsuarioService.InvestigadorInput input) {
         return usuarioService.actualizarInvestigador(id, input);
     }
+
+    @QueryMapping
+    public ProfesorData obtenerProfesorConUsuario(@Argument Long idProfesor) {
+        // Obtener datos de Usuario
+        Usuario usuario = usuarioRepository.findById(idProfesor).orElse(null);
+
+        // Obtener datos de Profesor
+        Profesor profesor = usuarioService.obtenerProfesorPorUsuarioId(Math.toIntExact(idProfesor));
+
+        if (usuario == null || profesor == null) {
+            return null;
+        }
+
+        // Crear y devolver el objeto ProfesorData
+        return new ProfesorData(usuario, profesor);
+    }
+
+    @QueryMapping
+    public InvestigadorData obtenerInvestigadorConUsuario(@Argument Long idInvestigador) {
+        // Obtener datos de Usuario
+        Usuario usuario = usuarioRepository.findById(idInvestigador).orElse(null);
+
+        // Obtener datos de Investigador
+        Investigador investigador = usuarioService.obtenerInvestigadorPorUsuarioId(Math.toIntExact(idInvestigador));
+
+        if (usuario == null || investigador == null) {
+            return null;
+        }
+
+        // Devolver el objeto InvestigadorData con Usuario e Investigador
+        return new InvestigadorData(usuario, investigador);
+    }
+
+
+
 }

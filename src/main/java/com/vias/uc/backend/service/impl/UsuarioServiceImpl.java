@@ -244,4 +244,15 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
     }
 
+    @Override
+    public Profesor obtenerProfesorPorUsuarioId(Integer idUsuario) {
+        return profesorRepository.findByUsuario_IdUsuario(idUsuario);
+    }
+
+    @Override
+    public Investigador obtenerInvestigadorPorUsuarioId(Integer idUsuario) {
+        return investigadorRepository.findByUsuario_IdUsuario(idUsuario);
+    }
+
+
 }

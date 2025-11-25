@@ -38,7 +38,7 @@ public class EndorsementService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rol no definido");
 
         // ejemplo de política: solo DOCENTE o EMPRESARIO pueden avalar
-        if (!rolFrom.matches("profesor|investigador|EMPLEADOR"))
+        if (!rolFrom.matches("profesor|investigador|empresa|administrador"))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Rol no autorizado para avalar");
 
         // anti-duplicado PENDING por (from,to,skill) (match con índice parcial de BD)

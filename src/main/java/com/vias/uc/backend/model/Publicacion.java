@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import com.vias.uc.backend.model.enums.EstadoPublicacion;
 import org.hibernate.annotations.JdbcType;
 import org.hibernate.dialect.PostgreSQLEnumJdbcType;
-import com.vias.uc.backend.model.Usuario;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
@@ -136,5 +135,8 @@ public class Publicacion {
 
     public void setIdAuditoria(Integer idAuditoria) {
         this.idAuditoria = idAuditoria;
+    }
+
+    public void setDestacado(boolean destacado) {
     }
 }
