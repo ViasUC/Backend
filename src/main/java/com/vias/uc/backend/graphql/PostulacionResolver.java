@@ -176,13 +176,19 @@ public class PostulacionResolver {
                                                    @Argument EstadoPostulacion estado,
                                                    @Argument String motivo,
                                                    @Argument Long idActor) {
-        // 🔹 Validar permisos por rol
+        System.out.println(">>> Actualizar postulacion: idPostulacion=" + idPostulacion + ", estado=" + estado + ", idActor=" + idActor);
+        
+        // Validar permisos por rol
         Usuario actor = usuarioRepository.findById(idActor)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + idActor));
+        
+        System.out.println(">>> Actor encontrado: " + actor.getEmail() + ", rol=" + actor.getRolPrincipal());
         assertPermisoActualizar(actor, estado);
 
-        // continuar como ya tenías
-        return postulacionService.actualizarEstado(idPostulacion, estado, motivo, idActor);
+        System.out.println(">>> Permisos validados, actualizando estado...");
+        Postulacion resultado = postulacionService.actualizarEstado(idPostulacion, estado, motivo, idActor);
+        System.out.println(">>> Postulacion actualizada exitosamente");
+        return resultado;
     }
 
     private void assertPermisoActualizar(Usuario actor, EstadoPostulacion nuevoEstado) {
@@ -199,12 +205,16 @@ public class PostulacionResolver {
             return;
         }
 
-        // Empresa / Profesor / Administrador: permitido (aceptar, rechazar, cancelar)
-        if (rol == RolUsuario.investigador || rol == RolUsuario.profesor || rol == RolUsuario.administrador) {
+        // Empresa / Empleador / Profesor / Administrador: permitido (aceptar, rechazar, cancelar)
+        if (rol == RolUsuario.investigador || 
+            rol == RolUsuario.profesor || 
+            rol == RolUsuario.administrador ||
+            rol == RolUsuario.EMPLEADOR ||
+            rol == RolUsuario.empresa) {
             return;
         }
 
-        // Otros roles (egresado, investigador si no corresponde): bloqueado
+        // Otros roles: bloqueado
         throw new AccessDeniedException("No autorizado");
     }
 

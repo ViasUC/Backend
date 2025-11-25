@@ -111,16 +111,13 @@ public class ConvenioController {
     /**
      * UC-EMP-016: Ver Convenios Vigentes
      * GET /api/v1/convenios/vigentes
-     * TEMPORAL: Sin validación de token para testing
      */
     @GetMapping("/vigentes")
     public ResponseEntity<?> listarConveniosVigentes(
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestHeader(value = "X-User-Id", required = false) Long testUserId) {
+            @RequestHeader("Authorization") String authHeader) {
         
         try {
-            // TEMPORAL: Para testing
-            Long usuarioId = testUserId != null ? testUserId : 1002L;
+            Long usuarioId = authorizationService.getUserIdFromToken(authHeader);
 
             List<ConvenioOutput> convenios = convenioService.listarConveniosVigentes(usuarioId);
             

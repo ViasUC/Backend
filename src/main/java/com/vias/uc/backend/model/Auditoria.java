@@ -16,7 +16,7 @@ public class Auditoria {
     private Integer idAuditoria;
 
     @Column(name = "actor_id")
-    private Integer actorId; // Cambiá a Long si tus IDs de usuario son Long
+    private Integer actorId;
 
     @Column(name = "accion")
     private String accion;

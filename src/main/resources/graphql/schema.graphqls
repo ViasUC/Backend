@@ -252,7 +252,7 @@ type Mutation {
 
     # Endorsements
     createEndorsement(input: CreateEndorsementInput!): Endorsement!
-    decideEndorsement(id: ID!, accept: Boolean!): Endorsement!
+    decideEndorsement(input: DecideEndorsementInput!): Endorsement!
 
     # --- Portafolio ---
     crearPortafolio(input: GuardarPortafolioInput!): Portafolio
@@ -753,3 +753,128 @@ extend type Mutation {
     """
     desactivarUsuarioEmpresa(input: GestionarUsuarioEmpresaInput!): Boolean!
 }
+
+# =========================
+# Invitaciones
+# =========================
+
+"""
+Resultado de verificar si existe una invitacion previa
+"""
+type InvitacionExistente {
+    existe: Boolean!
+    fechaEnvio: String
+    mensaje: String
+}
+
+"""
+Resultado de registrar una invitacion
+"""
+type InvitacionResult {
+    success: Boolean!
+    message: String!
+    idAuditoria: Int
+}
+
+"""
+Input para registrar una invitacion
+"""
+input RegistrarInvitacionInput {
+    idUsuario: Int!
+    idEmpresa: Int!
+    idOportunidad: Int
+    idConvenio: Int
+    tipoInvitacion: String! # "OPORTUNIDAD" o "CONVENIO"
+    canal: String! # "EMAIL" o "WHATSAPP"
+    mensaje: String!
+    actorId: Int!
+}
+
+"""
+Convenio entre empresa e institucion
+"""
+type Convenio {
+    idConven: Int!
+    institucion: String!
+    descripcion: String
+    estado: String!
+    fechaIni: String
+    fechaFin: String
+    fechaCreacion: String
+    responsables: String
+    documentoAdjunto: String
+    empresaId: Int
+    duracion: String
+    cantHoras: String
+    objetivos: String
+    beneficios: String
+    requisitos: String
+    observaciones: String
+}
+
+extend type Query {
+    """
+    Verificar si ya existe una invitacion previa para un candidato
+    """
+    verificarInvitacionExistente(
+        idUsuario: Int!
+        idOportunidad: Int
+        idConvenio: Int
+    ): InvitacionExistente!
+    
+    """
+    Obtener oportunidades activas de una empresa
+    """
+    obtenerOportunidadesActivas(idEmpresa: ID!): [Oportunidad!]!
+    
+    """
+    Obtener convenios activos de una empresa (excluye Finalizado)
+    """
+    obtenerConveniosActivos(idEmpresa: ID!): [Convenio!]!
+    
+    """
+    Obtener todas las solicitudes de convenio de una empresa (incluye todos los estados)
+    """
+    obtenerTodasSolicitudes(idEmpresa: ID!): [Convenio!]!
+}
+
+extend type Mutation {
+    """
+    Registrar una invitacion a un candidato
+    Guarda el registro en auditoria y verifica que no exista duplicado
+    """
+    registrarInvitacion(input: RegistrarInvitacionInput!): InvitacionResult!
+    
+    """
+    Dar de baja un convenio
+    Cambia el estado del convenio a Finalizado
+    """
+    darDeBajaConvenio(idConvenio: Int!, motivo: String!): Boolean!
+    
+    """
+    Actualizar un convenio existente
+    """
+    actualizarConvenio(
+        idConvenio: Int!
+        institucion: String!
+        descripcion: String!
+        fechaIni: String!
+        fechaFin: String!
+        responsables: String!
+        duracion: String
+        cantHoras: String
+        objetivos: String
+        beneficios: String
+    ): Convenio!
+    
+    """
+    Activar o desactivar un convenio
+    """
+    toggleActivoConvenio(idConvenio: Int!, activo: Boolean!): Boolean!
+    
+    """
+    Aprobar un convenio (cambia estado de Pendiente a Aprobado)
+    """
+    aprobarConvenio(idConvenio: Int!): Boolean!
+}
+

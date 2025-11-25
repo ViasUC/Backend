@@ -39,6 +39,9 @@ public class AuthMutation {
             throw new RuntimeException("Credenciales inválidas");
         }
         
+        // Obtener idEmpresa del usuario (si es empleador)
+        Integer idEmpresa = authService.obtenerIdEmpresaPorUsuario(usuario.getIdUsuario());
+        
         // Generar token JWT
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
         String token = Jwts.builder()
@@ -55,7 +58,8 @@ public class AuthMutation {
             usuario.getIdUsuario().toString(),
             usuario.getNombre(),
             usuario.getApellido(),
-            usuario.getRolPrincipal() != null ? usuario.getRolPrincipal().toString() : "alumno"
+            usuario.getRolPrincipal() != null ? usuario.getRolPrincipal().toString() : "alumno",
+            idEmpresa
         );
     }
 
@@ -94,5 +98,5 @@ public class AuthMutation {
     public record UserRegistered(Long idUsuario, String nombre, String apellido, String email, String rol) {}
     
     // DTO para la respuesta de login
-    public record LoginResponse(String token, String idUsuario, String nombre, String apellido, String rolPrincipal) {}
+    public record LoginResponse(String token, String idUsuario, String nombre, String apellido, String rolPrincipal, Integer idEmpresa) {}
 }

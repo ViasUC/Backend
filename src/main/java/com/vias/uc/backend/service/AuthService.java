@@ -117,4 +117,18 @@ public class AuthService {
         }
         return !usuarioRepository.existsByEmail(email.trim().toLowerCase());
     }
+    
+    /**
+     * Obtiene el ID de la empresa asociada a un usuario empleador
+     * @param idUsuario ID del usuario
+     * @return ID de la empresa o null si no tiene empresa asociada
+     */
+    public Integer obtenerIdEmpresaPorUsuario(Long idUsuario) {
+        List<EmpresaUsuario> relaciones = empresaUsuarioRepository.findByUsuarioAndActivoTrue(idUsuario);
+        if (!relaciones.isEmpty()) {
+            // getEmpresa() ya devuelve el Integer (ID de la empresa)
+            return relaciones.get(0).getEmpresa();
+        }
+        return null;
+    }
 }
