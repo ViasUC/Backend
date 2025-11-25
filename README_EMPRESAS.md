@@ -1,4 +1,5 @@
-# VIASUC - Backend (Módulo Empresas)
+# VIASUC - Sistema Completo (Backend + Frontend)
+## Módulo Empresas - Grupo 4
 
 **Trabajo Final - Ingeniería de Software**  
 **Universidad Católica Nuestra Señora de la Asunción**  
@@ -7,460 +8,205 @@
 
 ---
 
-## ¿Qué es esto?
+## MUY IMPORTANTE - LEER PRIMERO
 
-Este es el backend del portal VIASUC, específicamente la parte que maneja todo lo relacionado con empresas. Es un servidor REST + GraphQL hecho en Spring Boot que se conecta a PostgreSQL.
+**RAMAS CORRECTAS PARA USAR:**
+- **Frontend**: Rama `main` ← Todo funcionando al 100%
+- **Backend**: Rama `fix/empresa-usuario-clave-compuesta` ← Tiene TODOS los cambios finales
 
-Nosotros (Grupo Empresas) trabajamos principalmente en:
-- Gestión de Oportunidades Laborales (CRUD completo con estados)
-- Sistema de Auditoría para cambios de estado
-- Registro y autenticación de empresas
-- Integración con el módulo de Convenios
+Si usan la rama main del backend NO LES VA A FUNCIONAR porque no tiene el merge con nuestros últimos cambios. Asegúrense de hacer checkout a las ramas correctas antes de instalar.
 
-## Tecnologías Usadas
+---
 
-- **Java 21** - Versión LTS más reciente
+## ¿Qué es este proyecto?
+Este es nuestro trabajo final para la materia de Ingeniería de Software. Básicamente es un portal completo para que las empresas puedan publicar ofertas de trabajo, solicitar convenios con la universidad y buscar candidatos. 
+
+El proyecto tiene dos partes principales:
+- **Backend**: Servidor en Spring Boot con GraphQL que maneja toda la lógica y se conecta a PostgreSQL
+- **Frontend**: Aplicación web en Angular donde las empresas interactúan con todo el sistema
+
+### Funcionalidades implementadas:
+- Sistema de oportunidades laborales (crear, editar, publicar, pausar, cerrar)
+- Módulo de convenios (solicitar, aprobar, gestionar)
+- Sistema de endorsements (recomendaciones entre usuarios)
+- Perfil público de empresa
+- Buscador de portafolios
+- Sistema de auditoría para rastrear cambios
+
+## Tecnologías Que Usamos
+
+### Backend:
+- **Java 21** - Version LTS
 - **Spring Boot 3.x** - Framework principal
-- **GraphQL** - Para las queries y mutations (con DGS de Netflix)
-- **PostgreSQL** - Base de datos relacional
-- **Hibernate/JPA** - ORM para manejar la BD
-- **Maven** - Gestión de dependencias
+- **GraphQL** - Para queries y mutations (Netflix DGS)
+- **PostgreSQL** - Base de datos (hosteada en Google Cloud)
+- **Hibernate/JPA** - ORM
+- **Maven** - Gestor de dependencias
 
-## Estructura del Proyecto (Lo Importante)
+### Frontend:
+- **Angular 18** - Framework con componentes standalone
+- **TypeScript** - JavaScript tipado
+- **Apollo Client** - Cliente GraphQL para Angular
+- **SCSS** - Estilos
+- **Three.js** - Animaciones 3D en login
 
+## Estructura del Proyecto
+
+### Backend (BackEndOriginal/)
 ```
 src/main/java/com/vias/uc/backend/
 ├── graphql/
-│   └── OportunidadResolver.java         # Mutations y queries de oportunidades
+│   ├── OportunidadResolver.java         # Mutations/queries de oportunidades
+│   ├── ConvenioResolver.java            # Mutations/queries de convenios  
+│   ├── EndorsementResolver.java         # Sistema de endorsements
+│   └── PostulacionResolver.java         # Manejo de postulaciones
 │
 ├── model/
-│   ├── Oportunidad.java                 # Entidad principal
+│   ├── Oportunidad.java                 # Entidad de ofertas laborales
 │   ├── Auditoria.java                   # Registro de cambios
-│   ├── Empresa.java                     # Datos de empresa
-│   ├── Usuario.java                     # Usuarios del sistema
+│   ├── Empresa.java, Usuario.java, Convenio.java, etc.
 │   └── enums/
-│       └── EstadoOportunidad.java       # Enum: activo, borrador, pausada, cerrado
+│       ├── EstadoOportunidad.java       # activo, borrador, pausada, cerrado
+│       ├── EstadoConvenio.java          # Pendiente, Aprobado, Activo, Finalizado
+│       └── EstadoEndorsement.java       # PENDING, ACCEPTED, REJECTED
 │
-├── repository/
-│   ├── OportunidadRepository.java       # Queries JPA
-│   ├── AuditoriaRepository.java         
-│   ├── EmpresaRepository.java
-│   └── EmpresaUsuarioRepository.java    # Relación empresa-usuario
-│
-├── service/
-│   ├── ConvenioService.java             # Lógica de convenios
-│   └── AuthorizationService.java        # Validaciones de permisos
-│
-└── controller/
-    └── ConvenioController.java          # Endpoints REST de convenios
+├── repository/                          # Queries JPA
+├── service/                             # Lógica de negocios
+└── controller/                          # Endpoints REST (legacy)
 
 src/main/resources/
-├── application.yml                       # Configuración de BD y server
-└── graphql/
-    └── schema.graphqls                  # Schema GraphQL (tipos, queries, mutations)
+├── application.yml                      # Configuración
+└── graphql/schema.graphqls              # Schema GraphQL completo
+```
+
+### Frontend (ViasucFrontEnd/)
+```
+src/app/
+├── core/                                # Servicios y modelos compartidos
+│   ├── models/                          # Interfaces TypeScript
+│   ├── services/                        # Servicios globales (auth, convenios, etc)
+│   ├── guards/                          # Protección de rutas
+│   └── graphql/                         # Queries y mutations GraphQL
+│
+├── features/                            # Módulos por funcionalidad
+│   ├── auth/                            # Login y registro
+│   ├── empleador/                       # Dashboard de empresa
+│   │   ├── buscar-portafolios/         # Buscar candidatos
+│   │   ├── convenios/                  # Gestión de convenios
+│   │   ├── empresa-endorsements/       # Sistema endorsements
+│   │   └── postulaciones-empresa/      # Ver postulaciones recibidas
+│   └── oportunidades/                   # Módulo ofertas laborales
+│
+└── shared/                              # Componentes reutilizables
 ```
 
 ## Requisitos Previos
+### Para el Backend:
+- **Java JDK 21**
+- **Maven** (incluido como `./mvnw`)
+- **PostgreSQL** (usamos una en Google Cloud)
+- **Git**
 
-Para levantar el BACKEND necesitas:
-- **Java JDK 21** - El proyecto usa Java 21 específicamente
-- **Maven** - Para compilar (viene con el proyecto como `./mvnw`)
-- **PostgreSQL** - Base de datos corriendo
-- **Git** - Para clonar el repo
+### Para el Frontend:
+- **Node.js** (versión 18 o superior)
+- **npm** (viene con Node.js)
+- **Git**
 
-Nota: No necesitas instalar Spring Boot por separado, Maven lo descarga automáticamente.
+## Instrucciones de Instalación y Ejecución
 
-## Instalación y Configuración
+### IMPORTANTE: Script Automático Disponible
+El repositorio incluye un script bash llamado `restart-services-Original.sh` que levanta automáticamente backend y frontend. **Este archivo estará disponible en un archivo ZIP en el aula virtual junto con este README.**
 
-### 1. Clonar el repositorio
+**ANTES DE EMPEZAR:** Asegúrense de estar en las ramas correctas:
+- Frontend: `main`
+- Backend: `fix/empresa-usuario-clave-compuesta`
+
+### Opción 1: Usar el Script Automático (Recomendado)
 ```bash
-git clone https://github.com/ViasUC/Backend.git
-cd Backend
+# Dar permisos de ejecución
+chmod +x restart-services-Original.sh
+
+# Ejecutar
+./restart-services-Original.sh
 ```
 
-### 2. Configurar Base de Datos
+Este script:
+1. Detiene servicios si están corriendo
+2. Levanta el backend en puerto 8080
+3. Levanta el frontend en puerto 4200
+4. Guarda logs en `/logs/`
 
-Editar el archivo `src/main/resources/application.yml`:
+### Opción 2: Instalación Manual
+#### BACKEND
+**1. Clonar el repositorio**
+```bash
+# Clonar
+git clone https://github.com/ViasUC/Empresas.git
+cd Empresas
 
-```yaml
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/viasuc_db
-    username: TU_USUARIO
-    password: TU_PASSWORD
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
+# Backend - cambiar a rama correcta
+cd BackEndOriginal
+git checkout fix/empresa-usuario-clave-compuesta
+git pull origin fix/empresa-usuario-clave-compuesta
 ```
 
-**Importante:** La base de datos debe tener las tablas creadas. El script SQL lo pasó Héctor por el grupo.
+**2. Configurar Base de Datos**
+El archivo `src/main/resources/application.yml` ya tiene la configuración de nuestra BD en Google Cloud. La base de datos ya tiene todas las tablas creadas y con datos de prueba.
 
-### 3. Compilar el proyecto
-
+**3. Compilar y ejecutar**
 ```bash
+# Compilar
 ./mvnw clean compile
-```
 
-Si estás en Windows:
-```bash
-mvnw.cmd clean compile
-```
-
-### 4. Levantar el servidor
-
-```bash
+# Ejecutar
 ./mvnw spring-boot:run
 ```
 
-El servidor arranca en: `http://localhost:8080`
-
-### 5. Probar GraphQL
-
+El servidor quedará en: `http://localhost:8080`
+**4. Verificar**
 Ir a: `http://localhost:8080/graphiql?path=/graphql`
+Deberías ver el GraphQL Playground.
 
-Ahí puedes ejecutar queries y mutations directamente.
-
-## Lo Que Implementamos (Módulo Empresas)
-
-### 1. Gestión de Oportunidades
-
-El módulo principal que desarrollamos. Una oportunidad puede ser una pasantía, trabajo tiempo completo, etc.
-
-#### Estados de una Oportunidad
-```
-activo    -> Publicada, visible para candidatos
-borrador  -> Recién creada, solo visible para la empresa
-pausada   -> Temporalmente oculta
-cerrado   -> Finalizada, no se puede reabrir
-```
-
-Estos valores están en el enum de PostgreSQL:
-```sql
-CREATE TYPE estado_oportunidad AS ENUM ('activo', 'borrador', 'pausada', 'cerrado');
-```
-
-#### Crear una Oportunidad
-
-```graphql
-mutation CrearOportunidad {
-  crearOportunidadDocente(input: {
-    idCreador: "123"
-    titulo: "Desarrollador Junior"
-    descripcion: "Buscamos desarrollador con conocimientos en Java"
-    requisitos: "Java, Spring Boot, SQL"
-    ubicacion: "Asunción"
-    modalidad: "HIBRIDO"
-    tipo: "TIEMPO_COMPLETO"
-    fechaCierre: "2025-12-31T23:59:00"
-  }) {
-    idOportunidad
-    titulo
-    estado
-  }
-}
-```
-
-**Nota:** El estado por defecto es `borrador`. Luego se puede cambiar con `cambiarEstadoOportunidad`.
-
-#### Editar una Oportunidad
-
-```graphql
-mutation EditarOportunidad {
-  editarOportunidad(input: {
-    idOportunidad: 95
-    idEditor: "123"
-    titulo: "Desarrollador Junior (ACTUALIZADO)"
-    descripcion: "Nueva descripción"
-    fechaCierre: "2025-12-31T23:59:00"
-  }) {
-    idOportunidad
-    titulo
-    estado
-  }
-}
-```
-
-**Restricción:** Solo se puede editar si está en estado `borrador`. Si está en otro estado, solo puedes cambiar el estado.
-
-#### Cambiar Estado (con Auditoría)
-
-```graphql
-mutation CambiarEstado {
-  cambiarEstadoOportunidad(
-    idOportunidad: 95
-    nuevoEstado: activo
-    idActor: "123"
-  ) {
-    idOportunidad
-    estado
-  }
-}
-```
-
-Esto automáticamente crea un registro en la tabla `auditoria` con:
-- Quién lo cambió (`idActor`)
-- De qué estado a qué estado
-- Cuándo se hizo el cambio
-- Acción: "CAMBIAR_ESTADO_OPORTUNIDAD"
-
-#### Listar Oportunidades de una Empresa
-
-```graphql
-query ListarOportunidades {
-  oportunidadesPorEmpresa(idEmpresa: 13) {
-    idOportunidad
-    titulo
-    estado
-    fechaPublicacion
-    creador {
-      nombre
-      apellido
-    }
-  }
-}
-```
-
-### 2. Sistema de Auditoría
-
-Cada vez que se crea o modifica una oportunidad, se crea un registro de auditoría:
-
-```java
-@Entity
-@Table(name = "auditoria")
-public class Auditoria {
-    private Integer idAuditoria;
-    private Integer actorId;        // Quién hizo el cambio
-    private String accion;          // Ej: "CREAR_OPORTUNIDAD", "CAMBIAR_ESTADO_OPORTUNIDAD"
-    private String detalle;         // Descripción del cambio
-    private LocalDateTime timestamp; // Cuándo pasó
-}
-```
-
-Esto nos permite tener un historial completo de todos los cambios.
-
-### 3. Validaciones Implementadas
-
-#### En OportunidadResolver.java:
-
-1. **Validación de Rol:** Solo usuarios con rol `administrador`, `profesor`, `investigador` o `empresa` pueden crear oportunidades.
-
-```java
-private void assertRolHabilitado(Usuario usuario) {
-    String rol = usuario.getRolPrincipal().name().toLowerCase();
-    if (!Set.of("administrador", "profesor", "investigador", "empresa").contains(rol)) {
-        throw new AccessDeniedException("No autorizado");
-    }
-}
-```
-
-2. **Validación de Permisos:** Solo el creador o un administrador pueden editar/cambiar estado.
-
-```java
-boolean esCreador = actor.getIdUsuario().longValue() == op.getIdCreador().longValue();
-boolean esAdmin = "administrador".equals(rolActor);
-if (!esCreador && !esAdmin) {
-    throw new AccessDeniedException("Solo el creador o admin pueden modificar");
-}
-```
-
-3. **Validación de Fecha:** La fecha de cierre no puede ser en el pasado.
-
-```java
-if (cierre != null && cierre.isBefore(LocalDateTime.now())) {
-    throw new IllegalArgumentException("fechaCierre no puede ser en el pasado");
-}
-```
-
-### 4. Módulo de Convenios (Integrado)
-
-Trabajo del compañero Federico. Incluye:
-- `ConvenioController.java` - Endpoints REST
-- `ConvenioService.java` - Lógica de negocio
-- `Convenio.java` - Modelo de entidad
-
-Endpoints principales:
-- `POST /api/v1/convenios/solicitar` - Solicitar convenio
-- `GET /api/v1/convenios/mis-solicitudes` - Ver solicitudes
-- `GET /api/v1/convenios/vigentes` - Convenios aprobados
-
-## Problemas que Resolvimos
-
-### 1. Enum de Estados en PostgreSQL
-
-**Problema:** PostgreSQL usa un tipo ENUM personalizado que debe coincidir exactamente con el Java enum.
-
-**Solución:** Creamos el enum en Java con los mismos valores:
-```java
-public enum EstadoOportunidad {
-    activo,
-    borrador,
-    pausada,
-    cerrado
-}
-```
-
-### 2. LazyInitializationException con Empresa
-
-**Problema:** Al intentar acceder a `oportunidad.getEmpresa().getNombreEmpresa()` fuera de la sesión de Hibernate, tiraba error.
-
-**Solución:** Agregamos un try-catch y manejamos el caso cuando empresa es null:
-```java
-@SchemaMapping(typeName = "Oportunidad", field = "empresa")
-public String getEmpresaNombre(Oportunidad oportunidad) {
-    try {
-        if (oportunidad.getEmpresa() != null) {
-            return oportunidad.getEmpresa().getNombreEmpresa();
-        }
-    } catch (Exception e) {
-        return null;
-    }
-    return null;
-}
-```
-
-### 3. Comparación de IDs (Long vs Integer)
-
-**Problema:** `usuario.getIdUsuario()` devuelve `Long` pero `oportunidad.getIdCreador()` es `Integer`, entonces `.equals()` fallaba.
-
-**Solución:** Convertimos ambos a long antes de comparar:
-```java
-boolean esCreador = actor.getIdUsuario().longValue() == op.getIdCreador().longValue();
-```
-
-## Estructura de la Base de Datos
-
-### Tabla: oportunidades
-```sql
-CREATE TABLE oportunidades (
-    id_oportunidad SERIAL PRIMARY KEY,
-    id_creador INTEGER NOT NULL,
-    id_empresa INTEGER,
-    titulo VARCHAR(255) NOT NULL,
-    descripcion TEXT,
-    requisitos TEXT,
-    ubicacion VARCHAR(255),
-    modalidad VARCHAR(50),
-    tipo VARCHAR(50),
-    fecha_publicacion TIMESTAMP,
-    fecha_cierre TIMESTAMP,
-    estado estado_oportunidad DEFAULT 'borrador',
-    id_auditoria INTEGER,
-    FOREIGN KEY (id_creador) REFERENCES usuarios(id_usuario),
-    FOREIGN KEY (id_empresa) REFERENCES empresas(id_empresa),
-    FOREIGN KEY (id_auditoria) REFERENCES auditoria(id_auditoria)
-);
-```
-
-### Tabla: auditoria
-```sql
-CREATE TABLE auditoria (
-    id_auditoria SERIAL PRIMARY KEY,
-    actor_id INTEGER NOT NULL,
-    accion VARCHAR(100) NOT NULL,
-    detalle TEXT,
-    timestamp TIMESTAMP DEFAULT NOW()
-);
-```
-
-## Cómo Probar Todo el Flujo
-
-### 1. Crear una oportunidad (queda en BORRADOR)
-```graphql
-mutation {
-  crearOportunidadDocente(input: {
-    idCreador: "1052"
-    titulo: "Test Oportunidad"
-    descripcion: "Descripción de prueba"
-    ubicacion: "Asunción"
-    modalidad: "PRESENCIAL"
-    tipo: "PASANTIA"
-  }) {
-    idOportunidad
-    estado
-  }
-}
-```
-
-### 2. Publicar (cambiar a ACTIVO)
-```graphql
-mutation {
-  cambiarEstadoOportunidad(
-    idOportunidad: 1
-    nuevoEstado: activo
-    idActor: "1052"
-  ) {
-    estado
-  }
-}
-```
-
-### 3. Verificar que NO se puede editar
-```graphql
-mutation {
-  editarOportunidad(input: {
-    idOportunidad: 1
-    idEditor: "1052"
-    titulo: "Intento editar estando ACTIVO"
-  }) {
-    titulo
-  }
-}
-```
-Esto debería funcionar SOLO para cambios menores. Los cambios grandes requieren volver a BORRADOR.
-
-### 4. Verificar auditoría en la BD
-```sql
-SELECT * FROM auditoria WHERE actor_id = 1052 ORDER BY timestamp DESC;
-```
-
-Deberías ver registros de:
-- CREAR_OPORTUNIDAD
-- CAMBIAR_ESTADO_OPORTUNIDAD
-
-## Endpoints REST (Convenios)
-
-Además de GraphQL, hay endpoints REST para convenios:
-
+#### FRONTEND
+**1. Verificar rama correcta**
 ```bash
-# Solicitar convenio
-POST http://localhost:8080/api/v1/convenios/solicitar
-Content-Type: application/json
-
-{
-  "idUsuario": 1052,
-  "institucion": "Universidad Católica",
-  "descripcion": "Convenio para pasantías"
-}
-
-# Ver mis solicitudes
-GET http://localhost:8080/api/v1/convenios/mis-solicitudes
-X-User-Id: 1052
-
-# Ver convenios vigentes
-GET http://localhost:8080/api/v1/convenios/vigentes
-X-User-Id: 1052
+cd ../ViasucFrontEnd
+git checkout main
+git pull origin main
 ```
 
-## Configuración Importante
+**2. Instalar dependencias**
+```bash
+npm install
+```
+**3. Ejecutar**
+```bash
+npm start
+```
+El frontend quedará en: `http://localhost:4200`
 
-### application.yml
+
+
+## Configuración del Backend (application.yml)
 ```yaml
 server:
   port: 8080
-
 spring:
   datasource:
     url: jdbc:postgresql://34.95.213.224:5432/postgres
     username: postgres
-    password: [REDACTED]
+    password: [ver en el código fuente]
+  
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+  
+  web:
+    cors:
+      allowed-origins: "http://localhost:4200"
+      allowed-methods: GET, POST, PUT, DELETE, OPTIONS
+      allowed-headers: "*"
 
 dgs:
   graphql:
@@ -469,45 +215,102 @@ dgs:
       enabled: true
 ```
 
-## Troubleshooting
+## Problemas Comunes y Soluciones
 
-### Error: "Port 8080 already in use"
-Matar el proceso:
+### "Port 8080 already in use"
+
 ```bash
+# Linux/Mac
 kill -9 $(lsof -ti:8080)
+
+# Windows
+netstat -ano | findstr :8080
+taskkill /PID <PID> /F
 ```
 
-### Error: "Could not create connection to database"
-Verificar que PostgreSQL esté corriendo y las credenciales sean correctas en `application.yml`.
+### "Could not create connection to database"
+Verificar que PostgreSQL esté corriendo o que la BD en la nube (34.95.213.224:5432) sea accesible.
 
-### Error: "No session" (Hibernate)
-Esto pasa cuando intentas acceder a relaciones lazy fuera de una transacción. Solución: usar `@Transactional` o cargar la relación con EAGER.
-
-### Error al compilar GraphQL schema
-Borrar la carpeta `target/` y recompilar:
+### Error al compilar
 ```bash
-rm -rf target
-./mvnw clean compile
+./mvnw clean install -DskipTests
 ```
 
-## Contacto
-Si algo no funciona o tienen dudas para la corrección:
-- Email: alfre_costas@hotmail.com
-- GitHub Backend: https://github.com/ViasUC/Backend
-- Rama que usamos: `fix/empresa-usuario-clave-compuesta`
+### CORS bloqueando peticiones
+Verificar que la configuración CORS esté habilitada en `application.yml` y que el backend esté corriendo.
+
+### Frontend no puede conectarse
+1. Verificar backend en `http://localhost:8080`
+2. Revisar configuración CORS
+3. Ver errores en DevTools del navegador (F12)
+
+## Arquitectura del Sistema
+```
+┌─────────────────────────────────────┐
+│    FRONTEND (Angular 18)            │
+│    Puerto: 4200                     │
+└───────────┬─────────────────────────┘
+            │ HTTP/GraphQL
+┌───────────▼─────────────────────────┐
+│    BACKEND (Spring Boot 3.x)        │
+│    Puerto: 8080                     │
+└───────────┬─────────────────────────┘
+            │ JDBC
+┌───────────▼─────────────────────────┐
+│    PostgreSQL                       │
+│    Host: 34.95.213.224:5432         │
+└─────────────────────────────────────┘
+```
+
+## Decisiones Técnicas
+**¿Por qué GraphQL?** Permite obtener datos relacionados en una sola query, reduciendo múltiples requests REST.
+**¿Por qué Angular 18 standalone?** Componentes standalone más modernos, código más limpio, sin necesidad de NgModules.
+**¿Por qué PostgreSQL?** Soporte nativo de enums y tipos personalizados que usamos en el proyecto.
+**¿Por qué Maven?** Más verboso pero más fácil de entender, configuración clara.
+
+## Archivos Importantes del Proyecto
+**Backend:**
+- `OportunidadResolver.java` - Lógica de oportunidades con GraphQL
+- `ConvenioResolver.java` - Lógica de convenios
+- `EndorsementResolver.java` - Sistema de recomendaciones
+- `schema.graphqls` - Schema GraphQL completo
+- `application.yml` - Configuración
+
+**Frontend:**
+- `src/app/features/empleador/` - Dashboard y funcionalidades
+- `src/app/features/oportunidades/` - Gestión de ofertas
+- `src/app/core/services/` - Servicios GraphQL
+
+## Resumen Rápido para Instalar (TL;DR)
+
+```bash
+# 1. Clonar
+git clone https://github.com/ViasUC/Empresas.git
+cd Empresas
+
+# 2. Backend (IMPORTANTE: usar rama correcta)
+cd BackEndOriginal
+git checkout fix/empresa-usuario-clave-compuesta
+./mvnw spring-boot:run
+
+# 3. Frontend (en otra terminal)
+cd ../ViasucFrontEnd
+git checkout main
+npm install
+npm start
+
+# 4. Abrir http://localhost:4200
+```
+
+**Ramas correctas:**
+- Frontend: `main`
+- Backend: `fix/empresa-usuario-clave-compuesta`
 
 ---
 
-**Nota para los correctores:** 
+## Nota para los Correctores
 
-El código está en la rama `fix/empresa-usuario-clave-compuesta` que tiene integrado:
-1. Nuestro módulo de oportunidades con estados y auditoría
-2. El módulo de convenios de Federico
-3. Todas las correcciones de bugs que encontramos
+El script `restart-services-Original.sh` estará disponible en el classrom dentro de un archivo ZIP junto con este README para facilitar la instalación y ejecución del proyecto.
 
-La parte más importante está en:
-- `OportunidadResolver.java` - Toda la lógica de oportunidades
-- `schema.graphqls` - Definición de tipos y mutations
-- `EstadoOportunidad.java` - El enum que coincide con PostgreSQL
-
-Gracias por revisar nuestro trabajo.
+**Grupo 4 - Empresas**  
+Trabajo Final - Ingeniería de Software 2025
