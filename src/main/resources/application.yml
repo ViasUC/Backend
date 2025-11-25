@@ -15,7 +15,7 @@ spring:
       keepalive-time: 300000
   jpa:
     hibernate:
-      ddl-auto: validate    # valida que las tablas ya existen, no las toca
+      ddl-auto: validate    # valida que el esquema coincida con los modelos
     show-sql: true
     properties:
       hibernate:

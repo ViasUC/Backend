@@ -191,7 +191,8 @@ type Query {
 
     # Portafolios
     portafolioPorUsuario(idUsuario: ID!): Portafolio
-
+    buscarPortafolios(filtros: FiltrosBusqueda): ResultadoBusqueda!
+    obtenerFiltros: FiltrosDisponibles!
 }
 
 
@@ -209,6 +210,7 @@ type Mutation {
 
     # Auth
     login(input: LoginInput!): LoginResponse
+    register(input: RegisterInput!): RegisterResponse!
 
     # Perfiles
     registrarProfesor(idActor: Int!, input: ProfesorInput!): Profesor!
@@ -253,7 +255,8 @@ type Mutation {
     seguirCanal(idCanal: ID!, idUsuario: ID!): Boolean
     dejarDeSeguirCanal(idCanal: ID!, idUsuario: ID!): Boolean!
     destacarPublicacion(idCanal: ID!, idPublicacion: ID!, destacado: Boolean!): Boolean!
-
+    # --- Empresa ---
+    actualizarEmpresa(input: ActualizarEmpresaInput!, idUsuario: ID!): ActualizarEmpresaResponse!
 
 }
 
@@ -480,6 +483,13 @@ type Portafolio {
     ultimaActualizacion: String
     idAuditoria: Int
     evidencias: [Evidencia!]!
+    # Datos del usuario para búsqueda
+    nombre: String
+    apellido: String
+    email: String
+    telefono: String
+    ubicacion: String
+    carrera: String
 }
 
 type Evidencia {
@@ -507,6 +517,111 @@ enum TipoCanal {
   INNOVACION
   NOTICIAS_INSTITUCIONALES
 }
+# =========================
+# Empresa
+# =========================
+
+type Empresa {
+    id: ID!
+    nombreEmpresa: String!
+    ruc: String
+    razonSocial: String
+    contacto: String
+    ubicacion: String
+    email: String
+    descripcion: String
+}
+
+input ActualizarEmpresaInput {
+    nombreEmpresa: String!
+    ruc: String
+    razonSocial: String
+    contacto: String
+    ubicacion: String
+    email: String
+    descripcion: String
+}
+
+type ActualizarEmpresaResponse {
+    success: Boolean!
+    message: String!
+    empresa: Empresa
+}
+
+extend type Query {
+    miEmpresa(idUsuario: ID!): Empresa
+}
 
 
+# Inputs y tipos para registro
+input RegisterInput {
+    tipoUsuario: String!
+    nombre: String!
+    apellido: String!
+    email: String!
+    telefono: String!
+    password: String!
+    ubicacion: String
+    # Datos de empresa (solo para EMPLEADOR)
+    nombreEmpresa: String
+    ruc: String
+    razonSocial: String
+    contacto: String
+    ubicacionEmpresa: String
+    emailEmpresa: String
+    rolEnEmpresa: String
+}
+
+type RegisterResponse {
+    token: String!
+    usuario: UserRegistered!
+    success: Boolean!
+    message: String!
+}
+
+type UserRegistered {
+    idUsuario: ID!
+    nombre: String!
+    apellido: String!
+    email: String!
+    rol: String!
+}
+
+# =========================
+# Búsqueda de Portafolios
+# =========================
+
+input FiltrosBusqueda {
+    textoBusqueda: String
+    carrera: String
+    ubicacion: String
+    habilidades: [String]
+    pagina: Int
+    limite: Int
+}
+
+type PortafolioBusqueda {
+    idPortafolio: Int
+    usuarioId: Int
+    nombre: String
+    apellido: String
+    email: String
+    telefono: String
+    carrera: String
+    ubicacion: String
+    descripcion: String
+    skills: String
+}
+
+type ResultadoBusqueda {
+    portafolios: [PortafolioBusqueda!]!
+    total: Int!
+    pagina: Int!
+    totalPaginas: Int!
+}
+
+type FiltrosDisponibles {
+    carreras: [String!]!
+    ubicaciones: [String!]!
+}
 

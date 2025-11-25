@@ -9,8 +9,10 @@ import org.springframework.security.access.AccessDeniedException;
 import com.vias.uc.backend.repository.UsuarioRepository;
 import com.vias.uc.backend.model.Usuario;
 import com.vias.uc.backend.model.enums.RolUsuario;
+import com.vias.uc.backend.graphql.dto.PostulacionPageDTO;
 
 import com.vias.uc.backend.repository.PostulacionEvidenciaRepository; // NUEVO
+import com.vias.uc.backend.repository.PostulacionRepository; // NUEVO para postulacionDetalle
 
 import java.util.List;
 
@@ -20,13 +22,16 @@ public class PostulacionResolver {
     private final PostulacionService postulacionService;
     private final UsuarioRepository usuarioRepository;
     private final PostulacionEvidenciaRepository postulacionEvidenciaRepository; // NUEVO
+    private final PostulacionRepository postulacionRepository; // NUEVO para postulacionDetalle
 
     public PostulacionResolver(PostulacionService postulacionService,
                                UsuarioRepository usuarioRepository,
-                               PostulacionEvidenciaRepository postulacionEvidenciaRepository) { // NUEVO
+                               PostulacionEvidenciaRepository postulacionEvidenciaRepository,
+                               PostulacionRepository postulacionRepository) { // NUEVO
         this.postulacionService = postulacionService;
         this.usuarioRepository = usuarioRepository;
         this.postulacionEvidenciaRepository = postulacionEvidenciaRepository;   // NUEVO
+        this.postulacionRepository = postulacionRepository; // NUEVO
     }
 
 
@@ -104,6 +109,71 @@ public class PostulacionResolver {
         return postulacionService.historial(idPostulacion);
     }
 
+    // ===== F2: query para empresa (ofertante) =====
+    record FiltroPostulacionInput(
+            Long idOportunidad,
+            Long idAlumno,
+            List<EstadoPostulacion> estados,
+            String fechaDesde,
+            String fechaHasta,
+            String texto
+    ) {}
+
+    @QueryMapping
+    public PostulacionPageDTO postulacionesEmpresa(@Argument Long idOfertante,
+                                                   @Argument int page,
+                                                   @Argument int size,
+                                                   @Argument(name = "sort") String sort,
+                                                   @Argument(name = "filtro") FiltroPostulacionInput filtro) {
+
+        // --- Validación básica: que el usuario sea empresa ---
+        Usuario usuario = usuarioRepository.findById(idOfertante)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + idOfertante));
+
+        RolUsuario rol = usuario.getRolPrincipal();
+        if (rol != RolUsuario.empresa) {
+            throw new AccessDeniedException("Sólo perfiles de empresa pueden ver sus postulaciones.");
+        }
+
+        // --- Orden ---
+        Sort orden = Sort.by("fechaPostulacion").descending(); // default
+        if (sort != null && !sort.isBlank()) {
+            String[] parts = sort.split(",");
+            String prop = parts[0];
+            boolean asc = parts.length < 2 || !"desc".equalsIgnoreCase(parts[1]);
+            orden = asc ? Sort.by(prop).ascending() : Sort.by(prop).descending();
+        }
+
+        Pageable pageable = PageRequest.of(page, size, orden);
+
+        // --- Filtros opcionales ---
+        Long idOportunidad = filtro != null ? filtro.idOportunidad() : null;
+        Long idAlumno = filtro != null ? filtro.idAlumno() : null;
+        List<EstadoPostulacion> estados = filtro != null ? filtro.estados() : null;
+        String desde = filtro != null ? filtro.fechaDesde() : null;
+        String hasta = filtro != null ? filtro.fechaHasta() : null;
+        String texto = filtro != null ? filtro.texto() : null;
+
+        // --- Llamada al service nuevo ---
+        Page<Postulacion> res = postulacionService.buscarConFiltrosPorOfertante(
+                idOfertante,
+                idOportunidad,
+                idAlumno,
+                estados,
+                desde,
+                hasta,
+                texto,
+                pageable
+        );
+
+        return new PostulacionPageDTO(
+                res.getContent(),
+                (int) res.getTotalElements(),
+                page,
+                size
+        );
+    }
+
     // ===== F1: cambio de estado =====
     @MutationMapping
     public Postulacion actualizarEstadoPostulacion(@Argument Long idPostulacion,
@@ -133,18 +203,25 @@ public class PostulacionResolver {
             return;
         }
 
-        // Empresa / Profesor / Administrador: permitido (aceptar, rechazar, cancelar)
-        if (rol == RolUsuario.investigador || rol == RolUsuario.profesor || rol == RolUsuario.administrador) {
+        // Empresa / Profesor / Investigador / Administrador: permitido (aceptar, rechazar, cancelar)
+        if (rol == RolUsuario.empresa || rol == RolUsuario.investigador || rol == RolUsuario.profesor || rol == RolUsuario.administrador) {
             return;
         }
 
-        // Otros roles (egresado, investigador si no corresponde): bloqueado
+        // Otros roles (egresado, EMPLEADOR si no corresponde): bloqueado
         throw new AccessDeniedException("No autorizado");
     }
 
     @QueryMapping
     public List<Evidencia> evidenciasPorAlumno(@Argument Long idAlumno) {
         return postulacionService.evidenciasPorAlumno(idAlumno);
+    }
+
+    // ===== F3: obtener detalle de postulación para modal =====
+    @QueryMapping
+    public Postulacion postulacionDetalle(@Argument Long idPostulacion) {
+        return postulacionRepository.findById(idPostulacion.intValue())
+                .orElseThrow(() -> new RuntimeException("Postulación no encontrada: " + idPostulacion));
     }
 
 }
