@@ -46,7 +46,7 @@ public class AuthMutation {
         
         // Obtener idEmpresa si el usuario es de tipo empresa
         Integer idEmpresa = null;
-        List<EmpresaUsuario> empresasUsuario = empresaUsuarioRepository.findByUsuarioAndActivoTrue(usuario.getIdUsuario());
+        List<EmpresaUsuario> empresasUsuario = empresaUsuarioRepository.findByUsuarioAndActivoTrue(Long.valueOf(usuario.getIdUsuario()));
         if (!empresasUsuario.isEmpty()) {
             // Tomamos la primera empresa activa (normalmente un usuario empresa tiene solo una)
             idEmpresa = empresasUsuario.get(0).getEmpresa();
@@ -106,7 +106,7 @@ public class AuthMutation {
 
     // DTOs para la respuesta de registro
     public record RegisterResponse(String token, UserRegistered usuario, boolean success, String message) {}
-    public record UserRegistered(Long idUsuario, String nombre, String apellido, String email, String rol) {}
+    public record UserRegistered(Integer idUsuario, String nombre, String apellido, String email, String rol) {}
     
     // DTO para la respuesta de login
     public record LoginResponse(String token, String idUsuario, String nombre, String apellido, String rolPrincipal, Integer idEmpresa) {}

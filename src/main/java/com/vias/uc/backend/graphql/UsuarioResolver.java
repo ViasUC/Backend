@@ -6,6 +6,7 @@ import com.vias.uc.backend.model.Profesor;
 import com.vias.uc.backend.model.Usuario;
 import com.vias.uc.backend.model.dto.InvestigadorData;
 import com.vias.uc.backend.model.dto.ProfesorData;
+import com.vias.uc.backend.repository.PortafolioRepository;
 import com.vias.uc.backend.repository.UsuarioRepository;
 import com.vias.uc.backend.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,7 @@ public class UsuarioResolver {
     // === Field Resolvers ===
     @SchemaMapping(typeName = "Usuario", field = "portafolio")
     public Portafolio portafolio(Usuario usuario) {
-        return portafolioRepository.findByIdUsuario(usuario.getIdUsuario()).orElse(null);
+        return portafolioRepository.findByIdUsuario(Long.valueOf(usuario.getIdUsuario())).orElse(null);
     }
 
     // === Mutations ===

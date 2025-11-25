@@ -95,7 +95,7 @@ public class RegistroService {
         // Crear relación en estado pendiente
         EmpresaUsuario empresaUsuario = new EmpresaUsuario();
         empresaUsuario.setEmpresa(idEmpresa);
-        empresaUsuario.setUsuario(usuario.getIdUsuario());
+        empresaUsuario.setUsuario(Long.valueOf(usuario.getIdUsuario()));
         empresaUsuario.setEmpresaEntity(empresa);
         empresaUsuario.setUsuarioEntity(usuario);
         empresaUsuario.setRolEnEmpresa(rolSolicitado);
@@ -138,7 +138,7 @@ public class RegistroService {
         // El primer usuario que crea la empresa es ADMINISTRADOR
         EmpresaUsuario empresaUsuario = new EmpresaUsuario();
         empresaUsuario.setEmpresa(empresa.getIdEmpresa());
-        empresaUsuario.setUsuario(usuario.getIdUsuario());
+        empresaUsuario.setUsuario(Long.valueOf(usuario.getIdUsuario()));
         empresaUsuario.setEmpresaEntity(empresa);
         empresaUsuario.setUsuarioEntity(usuario);
         empresaUsuario.setRolEnEmpresa(RolEmpresa.ADMINISTRADOR);

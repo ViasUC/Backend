@@ -79,7 +79,7 @@ public class AuthService {
         if (usuario.getRolPrincipal() == RolUsuario.empresa) {
             System.out.println(">>> Verificando estado activo para empleador: " + email);
             
-            List<EmpresaUsuario> relacionesActivas = empresaUsuarioRepository.findByUsuarioAndActivoTrue(usuario.getIdUsuario());
+            List<EmpresaUsuario> relacionesActivas = empresaUsuarioRepository.findByUsuarioAndActivoTrue(Long.valueOf(usuario.getIdUsuario()));
             
             if (relacionesActivas.isEmpty()) {
                 System.out.println(">>> Usuario empleador sin relaciones activas (pendiente de aprobación)");

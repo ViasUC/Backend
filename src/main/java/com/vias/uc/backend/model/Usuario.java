@@ -72,10 +72,6 @@ public class Usuario {
 
     // ======= getters / setters =======
 
-    public Integer getIdUsuario() {
-        return idUsuario;
-    }
-
     public void setIdUsuario(Integer idUsuario) {
         this.idUsuario = idUsuario;
     }
