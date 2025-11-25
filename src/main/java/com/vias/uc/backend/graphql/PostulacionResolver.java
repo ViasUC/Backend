@@ -12,6 +12,7 @@ import com.vias.uc.backend.model.enums.RolUsuario;
 import com.vias.uc.backend.graphql.dto.PostulacionPageDTO;
 
 import com.vias.uc.backend.repository.PostulacionEvidenciaRepository; // NUEVO
+import com.vias.uc.backend.repository.PostulacionRepository; // NUEVO para postulacionDetalle
 
 import java.util.List;
 
@@ -21,13 +22,16 @@ public class PostulacionResolver {
     private final PostulacionService postulacionService;
     private final UsuarioRepository usuarioRepository;
     private final PostulacionEvidenciaRepository postulacionEvidenciaRepository; // NUEVO
+    private final PostulacionRepository postulacionRepository; // NUEVO para postulacionDetalle
 
     public PostulacionResolver(PostulacionService postulacionService,
                                UsuarioRepository usuarioRepository,
-                               PostulacionEvidenciaRepository postulacionEvidenciaRepository) { // NUEVO
+                               PostulacionEvidenciaRepository postulacionEvidenciaRepository,
+                               PostulacionRepository postulacionRepository) { // NUEVO
         this.postulacionService = postulacionService;
         this.usuarioRepository = usuarioRepository;
         this.postulacionEvidenciaRepository = postulacionEvidenciaRepository;   // NUEVO
+        this.postulacionRepository = postulacionRepository; // NUEVO
     }
 
 
@@ -211,6 +215,13 @@ public class PostulacionResolver {
     @QueryMapping
     public List<Evidencia> evidenciasPorAlumno(@Argument Long idAlumno) {
         return postulacionService.evidenciasPorAlumno(idAlumno);
+    }
+
+    // ===== F3: obtener detalle de postulación para modal =====
+    @QueryMapping
+    public Postulacion postulacionDetalle(@Argument Long idPostulacion) {
+        return postulacionRepository.findById(idPostulacion.intValue())
+                .orElseThrow(() -> new RuntimeException("Postulación no encontrada: " + idPostulacion));
     }
 
 }

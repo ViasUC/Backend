@@ -19,6 +19,7 @@ type Usuario {
     adminData: Administrador
     egresadoData: Egresado
     alumnoData: Alumno
+    portafolio: Portafolio          # NUEVO: para modal de detalle candidato
 }
 
 type Alumno {
@@ -164,6 +165,7 @@ type Query {
     postulaciones: [Postulacion]
     postulacionesPorAlumno(idAlumno: ID!): [Postulacion]
     postulacionesPorOportunidad(idOportunidad: ID!): [Postulacion]
+    postulacionDetalle(idPostulacion: ID!): Postulacion
     postulacionesPage(
         filtro: PostulacionFiltro
         page: Int = 0

@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PostulacionRepository extends JpaRepository<Postulacion, Integer>, JpaSpecificationExecutor<Postulacion> {
 
@@ -30,4 +31,8 @@ public interface PostulacionRepository extends JpaRepository<Postulacion, Intege
 
     @EntityGraph(value = "Postulacion.graph", type = EntityGraph.EntityGraphType.LOAD)
     Page<Postulacion> findByOfertante(Usuario ofertante, Pageable pageable);
+    
+    @Override
+    @EntityGraph(value = "Postulacion.graph", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<Postulacion> findById(Integer id);
 }
